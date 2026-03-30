@@ -7,18 +7,24 @@
  * App shell
  * ---------------------------------------------------------------- */
 
-.app {
+/* body.app-layout is the root class set in views/layouts/app.php */
+.app,
+body.app-layout {
   display: flex;
   min-height: 100vh;
   background: var(--color-bg);
 }
 
 /* Main content area — shifted right on desktop when sidebar is present */
-.app__content {
+/* .app__content is the design spec name; .app-main is what app.php emits */
+.app__content,
+.app-main {
   flex: 1;
   min-width: 0;
   display: flex;
   flex-direction: column;
+  /* Bottom padding so content clears the fixed mobile bottom nav */
+  padding-bottom: calc(var(--nav-height-mob) + env(safe-area-inset-bottom, 16px));
 }
 
 /* ----------------------------------------------------------------
@@ -40,11 +46,26 @@
   padding-top: env(safe-area-inset-top, 0px);
 }
 
+/* Page title shown in the mobile header centre */
+.app-header__title {
+  font-size: var(--text-body);
+  font-weight: var(--weight-semibold);
+  color: var(--color-text);
+  flex: 1;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding: 0 var(--space-2);
+}
+
 .app-header__logo {
   display: flex;
   align-items: center;
   gap: var(--space-2);
   text-decoration: none;
+  font-weight: var(--weight-bold);
+  color: var(--color-brand-dark);
 }
 
 .app-header__logo-img {
@@ -269,8 +290,6 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  /* Bottom padding for mobile nav bar */
-  padding-bottom: calc(var(--nav-height-mob) + env(safe-area-inset-bottom, 16px));
 }
 
 .page__header {
@@ -300,6 +319,33 @@
   max-width: var(--form-max-width);
   margin: 0 auto;
   width: 100%;
+}
+
+/* ----------------------------------------------------------------
+ * Page header row — used on places/index, create, show, visit pages
+ * ---------------------------------------------------------------- */
+
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  padding: var(--space-2) 0 var(--space-4);
+}
+
+.page-header h2 {
+  margin: 0;
+}
+
+/* ----------------------------------------------------------------
+ * Place list wrapper (places/index.php)
+ * ---------------------------------------------------------------- */
+
+.place-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0; /* Each .place-card has its own margin-bottom */
 }
 
 /* ----------------------------------------------------------------
@@ -381,6 +427,55 @@
   max-width: 280px;
   font-family: var(--font-script);
   font-size: var(--text-script-md);
+}
+
+/* ----------------------------------------------------------------
+ * Visit detail page (visits/show.php)
+ * ---------------------------------------------------------------- */
+
+.visit-detail {
+  padding: var(--space-4);
+}
+
+.visit-detail__note {
+  background: #FDFCF8;
+  padding: var(--space-4);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-warm-dark);
+  line-height: var(--leading-relaxed);
+}
+
+.visit-detail__fields {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.visit-detail__meta {
+  font-size: var(--text-body-sm);
+  color: var(--color-text-muted);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.visit-detail__gallery {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+/* ----------------------------------------------------------------
+ * Sidebar logo area (nav-desktop.php uses .sidebar-logo)
+ * ---------------------------------------------------------------- */
+
+.sidebar-logo {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding-bottom: var(--space-4);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.10);
+  margin-bottom: var(--space-2);
 }
 
 /* ----------------------------------------------------------------
@@ -520,11 +615,10 @@
     display: none; /* Sidebar replaces the mobile header */
   }
 
-  .app__content {
+  /* Both the spec alias and the actual template class */
+  .app__content,
+  .app-main {
     margin-left: var(--sidebar-width);
-  }
-
-  .page {
     padding-bottom: 0; /* No bottom nav on desktop */
   }
 

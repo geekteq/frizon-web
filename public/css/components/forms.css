@@ -423,6 +423,126 @@
 }
 
 /* ----------------------------------------------------------------
+ * Chip row wrapper (places/create.php and edit.php)
+ * <div class="chip-row"> wraps chip-option labels
+ * ---------------------------------------------------------------- */
+
+.chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+/* ----------------------------------------------------------------
+ * Place form (places/create.php uses .place-form as <form> class)
+ * ---------------------------------------------------------------- */
+
+.place-form {
+  max-width: var(--form-max-width);
+}
+
+/* ----------------------------------------------------------------
+ * Form hint text (below inputs — e.g. "Kommaseparerat")
+ * ---------------------------------------------------------------- */
+
+.form-hint {
+  font-size: var(--text-caption);
+  color: var(--color-text-subtle);
+  margin-top: var(--space-1);
+}
+
+/* ----------------------------------------------------------------
+ * Chip-option pattern used in create.php and visits/create.php
+ *
+ * HTML structure:
+ *   <label class="chip-option">
+ *     <input type="radio" ...>
+ *     <span class="chip">Label</span>
+ *   </label>
+ *
+ * The design spec uses .chip-option__input + .chip-option__label;
+ * the templates use the simpler .chip-option > input + .chip pattern.
+ * Both are supported below.
+ * ---------------------------------------------------------------- */
+
+.chip-option {
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+  position: relative;
+}
+
+/* Hide the native radio/checkbox inside .chip-option */
+.chip-option input[type="radio"],
+.chip-option input[type="checkbox"] {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* The visible chip label */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-2xl);
+  border: 1.5px solid var(--color-border);
+  background: var(--color-white);
+  color: var(--color-text-muted);
+  font-size: var(--text-body-sm);
+  font-weight: var(--weight-medium);
+  cursor: pointer;
+  white-space: nowrap;
+  min-height: 36px;
+  transition:
+    background var(--transition-fast),
+    border-color var(--transition-fast),
+    color var(--transition-fast);
+  user-select: none;
+}
+
+.chip:hover {
+  border-color: var(--color-accent-light);
+  color: var(--color-text);
+}
+
+/* Selected state — when the hidden input inside .chip-option is checked */
+.chip-option input:checked + .chip {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+  color: var(--color-white);
+}
+
+.chip-option input:focus-visible + .chip {
+  outline: 3px solid var(--color-accent-mid);
+  outline-offset: 2px;
+}
+
+/* Per-type chip variants (place type selector) */
+.chip--stellplatz  input:checked + .chip,
+.chip-option input:checked + .chip--stellplatz  { background: var(--color-stop-stellplatz); border-color: var(--color-stop-stellplatz); }
+.chip-option input:checked + .chip--camping     { background: var(--color-stop-camping); border-color: var(--color-stop-camping); }
+.chip-option input:checked + .chip--wild_camping{ background: var(--color-stop-wildcamp); border-color: var(--color-stop-wildcamp); }
+.chip-option input:checked + .chip--fika        { background: var(--color-stop-fika); border-color: var(--color-stop-fika); }
+.chip-option input:checked + .chip--lunch       { background: var(--color-stop-lunch); border-color: var(--color-stop-lunch); }
+.chip-option input:checked + .chip--dinner      { background: var(--color-stop-dinner); border-color: var(--color-stop-dinner); }
+.chip-option input:checked + .chip--breakfast   { background: var(--color-stop-breakfast); border-color: var(--color-stop-breakfast); }
+.chip-option input:checked + .chip--sight       { background: var(--color-stop-sight); border-color: var(--color-stop-sight); }
+.chip-option input:checked + .chip--shopping    { background: var(--color-stop-shopping); border-color: var(--color-stop-shopping); }
+
+/* Would-return chips */
+.chip-option input:checked + .chip--yes    { background: var(--color-success); border-color: var(--color-success); }
+.chip-option input:checked + .chip--maybe  { background: var(--color-warning); border-color: var(--color-warning); }
+.chip-option input:checked + .chip--no     { background: var(--color-error); border-color: var(--color-error); }
+
+/* ----------------------------------------------------------------
  * Publish state radio (private / ready-for-publish)
  * ---------------------------------------------------------------- */
 

@@ -58,14 +58,25 @@
 }
 
 /* ----------------------------------------------------------------
- * Statistics grid — 2x2 on mobile, 4 in a row on desktop
+ * Dashboard wrapper
+ * dashboard/index.php wraps everything in .dashboard
  * ---------------------------------------------------------------- */
 
-.stats-grid {
+.dashboard {
+  padding: var(--space-4);
+}
+
+/* ----------------------------------------------------------------
+ * Statistics grid — 2x2 on mobile, 4 in a row on desktop
+ * .stats-grid is the design spec name; .dashboard-stats is what the template emits
+ * ---------------------------------------------------------------- */
+
+.stats-grid,
+.dashboard-stats {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: var(--space-3);
-  padding: var(--space-4);
+  padding: var(--space-4) 0;
 }
 
 /* ----------------------------------------------------------------
@@ -117,9 +128,10 @@
     box-shadow: var(--shadow-md);
   }
 
-  .stats-grid {
+  .stats-grid,
+  .dashboard-stats {
     grid-template-columns: repeat(4, 1fr);
-    padding: 0 var(--space-6) var(--space-6);
+    padding: 0 0 var(--space-6);
   }
 
   .dashboard-welcome {

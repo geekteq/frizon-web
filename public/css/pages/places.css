@@ -204,10 +204,50 @@
 
 /* ----------------------------------------------------------------
  * Place detail page
+ * places/show.php wraps content in .place-detail
  * ---------------------------------------------------------------- */
+
+/* Outer wrapper */
+.place-detail {
+  padding: var(--space-4);
+}
 
 .place-detail__gallery {
   /* .gallery component handles this */
+}
+
+/* .place-detail__meta — the type badge + country row in show.php */
+.place-detail__meta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  margin-bottom: var(--space-3);
+}
+
+/* .place-detail__coords — lat/lng display */
+.place-detail__coords {
+  font-family: ui-monospace, monospace;
+  font-size: var(--text-caption);
+  color: var(--color-text-subtle);
+  margin-bottom: var(--space-4);
+}
+
+/* .place-detail__tags — tag chip row */
+.place-detail__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-bottom: var(--space-4);
+}
+
+/* .place-detail__actions — button row */
+.place-detail__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  margin-bottom: var(--space-4);
 }
 
 .place-detail__info {

@@ -94,10 +94,70 @@
 }
 
 /* ----------------------------------------------------------------
- * FAB — Center "Add place" button
+ * Bottom nav active state
+ * nav-mobile.php emits bottom-nav__item--active, not .is-active
  * ---------------------------------------------------------------- */
 
-/* The FAB slot takes the same flex-1 space but lifts the button above navbar */
+.bottom-nav__item--active {
+  color: var(--color-accent);
+  opacity: 1;
+}
+
+.bottom-nav__item--active::before {
+  content: '';
+  position: absolute;
+  top: 6px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 4px;
+  height: 4px;
+  border-radius: var(--radius-full);
+  background: var(--color-accent);
+}
+
+/* ----------------------------------------------------------------
+ * FAB — Center "Add place" button in the bottom nav
+ * nav-mobile.php uses .bottom-nav__fab directly as a button element
+ * ---------------------------------------------------------------- */
+
+.bottom-nav__fab {
+  /* Same visual as .fab but lives inside the bottom nav flex row */
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  position: relative;
+}
+
+.bottom-nav__fab > svg {
+  width: 52px;
+  height: 52px;
+  border-radius: var(--radius-full);
+  background: var(--color-accent);
+  color: var(--color-white);
+  padding: 12px;
+  box-shadow: var(--shadow-float);
+  /* Lift above nav bar */
+  margin-bottom: 12px;
+  transition: background var(--transition-fast), transform var(--transition-spring);
+  flex-shrink: 0;
+}
+
+.bottom-nav__fab:hover > svg {
+  background: var(--color-accent-mid);
+}
+
+.bottom-nav__fab:active > svg {
+  transform: scale(0.94);
+}
+
+/* ----------------------------------------------------------------
+ * FAB slot takes the same flex-1 space but lifts the button above navbar */
 .bottom-nav__fab-slot {
   flex: 1;
   display: flex;
@@ -142,6 +202,34 @@
   height: 28px;
 }
 
+/* Header FAB — used in header.php as the quick GPS save button */
+.fab--header {
+  width: 40px;
+  height: 40px;
+  /* Smaller than the bottom-nav FAB */
+  border-radius: var(--radius-full);
+  background: var(--color-accent);
+  color: var(--color-white);
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background var(--transition-fast), transform var(--transition-fast);
+  -webkit-tap-highlight-color: transparent;
+  flex-shrink: 0;
+  box-shadow: var(--shadow-md);
+  padding: 0;
+}
+
+.fab--header:hover {
+  background: var(--color-accent-mid);
+}
+
+.fab--header:active {
+  transform: scale(0.95);
+}
+
 /* Extended FAB — with label (for empty states) */
 .fab--extended {
   width: auto;
@@ -164,6 +252,55 @@
   bottom: calc(var(--nav-height-mob) + var(--space-4) + env(safe-area-inset-bottom, 0px));
   right: var(--space-4);
   z-index: 50;
+}
+
+/* ----------------------------------------------------------------
+ * Sidebar nav — aliases for class names used in nav-desktop.php
+ * Template emits: .sidebar-nav, .sidebar-nav__label, .sidebar-nav__item,
+ *                 .sidebar-nav__item--active
+ * Design spec defines: .sidebar__nav, .sidebar__section-label,
+ *                      .sidebar__nav-link, .sidebar__nav-link.is-active
+ * ---------------------------------------------------------------- */
+
+.sidebar-nav {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.sidebar-nav__label {
+  font-size: 11px;
+  font-weight: var(--weight-semibold);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.40);
+  padding: var(--space-4) var(--space-4) var(--space-2);
+}
+
+.sidebar-nav__item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  height: 48px;
+  padding: 0 var(--space-4);
+  color: rgba(255, 255, 255, 0.65);
+  font-size: var(--text-body);
+  font-weight: var(--weight-medium);
+  text-decoration: none;
+  transition: background var(--transition-fast), color var(--transition-fast);
+  border-left: 3px solid transparent;
+}
+
+.sidebar-nav__item:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--color-white);
+  text-decoration: none;
+}
+
+.sidebar-nav__item--active {
+  background: rgba(255, 255, 255, 0.15);
+  color: var(--color-white);
+  border-left-color: var(--color-accent-light);
 }
 
 /* ----------------------------------------------------------------
