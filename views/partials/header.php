@@ -1,5 +1,7 @@
 <header class="app-header">
-    <span class="app-header__logo">Frizon</span>
+    <span class="app-header__logo">
+        <img src="/img/frizon-logo.png" alt="Frizon of Sweden" width="36" height="36" style="border-radius:50%;">
+    </span>
     <span class="app-header__title"><?= htmlspecialchars($pageTitle ?? '') ?></span>
     <div class="app-header__actions">
         <button class="fab fab--header" id="gps-quick-add" aria-label="Spara plats här">
