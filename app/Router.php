@@ -50,7 +50,7 @@ class Router
             if (preg_match($route['pattern'], $uri, $matches)) {
                 $params = array_filter($matches, 'is_string', ARRAY_FILTER_USE_KEY);
 
-                $controllerFile = dirname(__DIR__) . '/app/Controllers/' . $route['controller'] . '.php';
+                $controllerFile = __DIR__ . '/Controllers/' . $route['controller'] . '.php';
                 require_once $controllerFile;
 
                 $controller = new $route['controller']($pdo, $config);
