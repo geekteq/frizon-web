@@ -7,3 +7,6 @@ storage/uploads/detail/*
 vendor/
 *.log
 .DS_Store
+Skärmavbild*
+claude.md
+test-results/
