@@ -32,7 +32,12 @@ class Visit
 
     public function findById(int $id): ?array
     {
-        $stmt = $this->pdo->prepare('SELECT * FROM visits WHERE id = ?');
+        $stmt = $this->pdo->prepare('
+            SELECT v.*, p.name as place_name, p.slug as place_slug, p.place_type
+            FROM visits v
+            JOIN places p ON p.id = v.place_id
+            WHERE v.id = ?
+        ');
         $stmt->execute([$id]);
         return $stmt->fetch() ?: null;
     }
@@ -48,6 +53,11 @@ class Visit
         ');
         $stmt->execute([$placeId]);
         return $stmt->fetchAll();
+    }
+
+    public function findByPlace(int $placeId): array
+    {
+        return $this->allForPlace($placeId);
     }
 
     public function create(array $data): int
@@ -103,5 +113,21 @@ class Visit
     {
         $stmt = $this->pdo->prepare('DELETE FROM visits WHERE id = ?');
         $stmt->execute([$id]);
+    }
+
+    public function suitableForValues(): array
+    {
+        $stmt = $this->pdo->query('SELECT DISTINCT suitable_for FROM visits WHERE suitable_for IS NOT NULL AND suitable_for != ""');
+        $values = [];
+        foreach ($stmt->fetchAll(PDO::FETCH_COLUMN) as $row) {
+            foreach (explode(',', $row) as $val) {
+                $trimmed = trim($val);
+                if ($trimmed !== '') {
+                    $values[$trimmed] = true;
+                }
+            }
+        }
+        ksort($values);
+        return array_keys($values);
     }
 }
