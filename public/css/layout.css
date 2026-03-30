@@ -23,8 +23,10 @@ body.app-layout {
   min-width: 0;
   display: flex;
   flex-direction: column;
-  /* Bottom padding so content clears the fixed mobile bottom nav */
+  padding: var(--space-4);
   padding-bottom: calc(var(--nav-height-mob) + env(safe-area-inset-bottom, 16px));
+  max-width: 960px;
+  width: 100%;
 }
 
 /* ----------------------------------------------------------------
@@ -619,6 +621,7 @@ body.app-layout {
   .app__content,
   .app-main {
     margin-left: var(--sidebar-width);
+    padding: var(--space-6) var(--space-8);
     padding-bottom: 0; /* No bottom nav on desktop */
   }
 
