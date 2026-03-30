@@ -100,6 +100,42 @@
 }
 
 /* ----------------------------------------------------------------
+ * Filter bar (used in places/index.php)
+ * ---------------------------------------------------------------- */
+
+.filter-bar {
+  margin-bottom: var(--space-4);
+}
+
+.filter-bar__form {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.filter-bar__search {
+  flex: 1;
+  min-width: 0;
+  min-height: 44px;
+}
+
+.filter-bar__select {
+  min-height: 44px;
+  width: auto;
+  min-width: 120px;
+}
+
+/* ----------------------------------------------------------------
+ * Place list (used in places/index.php)
+ * ---------------------------------------------------------------- */
+
+.place-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+/* ----------------------------------------------------------------
  * Category filter chips (horizontal scroll row)
  * ---------------------------------------------------------------- */
 
