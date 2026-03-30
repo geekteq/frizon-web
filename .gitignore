@@ -1,0 +1,9 @@
+.env
+storage/uploads/originals/*
+storage/uploads/thumbnails/*
+storage/uploads/cards/*
+storage/uploads/detail/*
+!storage/uploads/*/.gitkeep
+vendor/
+*.log
+.DS_Store
