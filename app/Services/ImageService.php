@@ -37,27 +37,28 @@ class ImageService
             return null;
         }
 
-        $ext = match ($mimeType) {
+        // All variants stored as WebP for Lighthouse performance
+        $filename = date('Ymd_His') . '_' . bin2hex(random_bytes(4)) . '.webp';
+
+        // Save original (keep source format for archival)
+        $origExt = match ($mimeType) {
             'image/jpeg' => 'jpg',
             'image/png'  => 'png',
             'image/webp' => 'webp',
             default      => 'jpg',
         };
-
-        $filename = date('Ymd_His') . '_' . bin2hex(random_bytes(4)) . '.' . $ext;
-
-        // Save original
-        $originalDest = $this->basePath . '/originals/' . $filename;
+        $originalFilename = str_replace('.webp', '.' . $origExt, $filename);
+        $originalDest = $this->basePath . '/originals/' . $originalFilename;
         if (!move_uploaded_file($tmpPath, $originalDest)) {
             return null;
         }
 
-        // Generate variants
+        // Generate WebP variants for all sizes
         foreach (self::VARIANTS as $dir => [$maxW, $maxH]) {
             $this->resize($originalDest, $this->basePath . '/' . $dir . '/' . $filename, $maxW, $maxH, $mimeType);
         }
 
-        return ['filename' => $filename];
+        return ['filename' => $filename, 'original_filename' => $originalFilename];
     }
 
     private function resize(string $source, string $dest, int $maxW, int $maxH, string $mimeType): void
@@ -92,12 +93,8 @@ class ImageService
 
         imagecopyresampled($resized, $img, 0, 0, 0, 0, $newW, $newH, $origW, $origH);
 
-        match ($mimeType) {
-            'image/jpeg' => imagejpeg($resized, $dest, 85),
-            'image/png'  => imagepng($resized, $dest, 6),
-            'image/webp' => imagewebp($resized, $dest, 85),
-            default      => null,
-        };
+        // Always output WebP for optimal Lighthouse scores
+        imagewebp($resized, $dest, 82);
 
         imagedestroy($img);
         imagedestroy($resized);
