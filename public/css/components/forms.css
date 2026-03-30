@@ -1,0 +1,468 @@
+/**
+ * Frizon.org — Form components
+ * Inputs, textareas, selects, labels, errors — from UI-DESIGN.md section 2.4
+ */
+
+/* ----------------------------------------------------------------
+ * Form group wrapper
+ * ---------------------------------------------------------------- */
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  margin-bottom: var(--space-4);
+}
+
+.form-group:last-child {
+  margin-bottom: 0;
+}
+
+/* ----------------------------------------------------------------
+ * Label
+ * ---------------------------------------------------------------- */
+
+.form-label {
+  display: block;
+  font-size: var(--text-label);
+  font-weight: var(--weight-medium);
+  color: var(--color-text-muted);
+  margin-bottom: var(--space-1);
+}
+
+.form-label--required::after {
+  content: ' *';
+  color: var(--color-error);
+}
+
+/* ----------------------------------------------------------------
+ * Base input / select shared styles
+ * ---------------------------------------------------------------- */
+
+.form-input,
+.form-select,
+.form-textarea {
+  display: block;
+  width: 100%;
+  min-height: 48px;
+  padding: var(--space-3) var(--space-4);
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-white);
+  /* 16px+ prevents iOS auto-zoom on focus */
+  font-size: 1rem;
+  font-family: var(--font-base);
+  font-weight: var(--weight-regular);
+  color: var(--color-text);
+  line-height: var(--leading-normal);
+  transition:
+    border-color var(--transition-fast),
+    box-shadow var(--transition-fast);
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.form-input::placeholder,
+.form-textarea::placeholder {
+  color: var(--color-brand-light);
+}
+
+/* Focus */
+.form-input:focus,
+.form-select:focus,
+.form-textarea:focus {
+  outline: none;
+  border-color: var(--color-accent-mid);
+  box-shadow: 0 0 0 3px rgba(61, 122, 135, 0.15);
+}
+
+/* Hover */
+.form-input:hover:not(:focus):not(:disabled),
+.form-select:hover:not(:focus):not(:disabled),
+.form-textarea:hover:not(:focus):not(:disabled) {
+  border-color: var(--color-brand-light);
+}
+
+/* Disabled */
+.form-input:disabled,
+.form-select:disabled,
+.form-textarea:disabled {
+  background: var(--color-bg);
+  color: var(--color-text-subtle);
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+/* Read-only */
+.form-input:read-only,
+.form-textarea:read-only {
+  background: var(--color-bg);
+  cursor: default;
+}
+
+/* ----------------------------------------------------------------
+ * Error state
+ * ---------------------------------------------------------------- */
+
+.form-input.is-error,
+.form-select.is-error,
+.form-textarea.is-error {
+  border-color: var(--color-error);
+  box-shadow: 0 0 0 3px rgba(181, 64, 64, 0.10);
+}
+
+.form-input.is-error:focus,
+.form-select.is-error:focus,
+.form-textarea.is-error:focus {
+  border-color: var(--color-error);
+  box-shadow: 0 0 0 3px rgba(181, 64, 64, 0.20);
+}
+
+/* Error message */
+.form-error {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: var(--text-caption);
+  color: var(--color-error);
+  margin-top: var(--space-1);
+}
+
+.form-error__icon {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+}
+
+/* Success / help text */
+.form-help {
+  font-size: var(--text-caption);
+  color: var(--color-text-subtle);
+  margin-top: var(--space-1);
+}
+
+/* ----------------------------------------------------------------
+ * Textarea
+ * ---------------------------------------------------------------- */
+
+.form-textarea {
+  min-height: 120px;
+  padding: var(--space-3) var(--space-4);
+  resize: vertical;
+  line-height: var(--leading-relaxed);
+}
+
+/* Note textarea — parchment/raw note style */
+.form-textarea--note {
+  background: #FDFCF8;
+  border-color: var(--color-warm-dark);
+  font-size: 1rem;
+  min-height: 140px;
+}
+
+.form-textarea--note:focus {
+  border-color: var(--color-warm-dark);
+  box-shadow: 0 0 0 3px rgba(196, 184, 154, 0.20);
+}
+
+/* AI draft textarea */
+.form-textarea--ai-draft {
+  background: rgba(122, 95, 158, 0.03);
+  border-color: rgba(122, 95, 158, 0.25);
+}
+
+.form-textarea--ai-draft:focus {
+  border-color: rgba(122, 95, 158, 0.50);
+  box-shadow: 0 0 0 3px rgba(122, 95, 158, 0.10);
+}
+
+/* ----------------------------------------------------------------
+ * Select
+ * ---------------------------------------------------------------- */
+
+.form-select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%234A6070' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right var(--space-3) center;
+  padding-right: 2.5rem;
+  cursor: pointer;
+}
+
+/* ----------------------------------------------------------------
+ * Checkbox and radio
+ * ---------------------------------------------------------------- */
+
+.form-check {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 44px;
+  cursor: pointer;
+}
+
+.form-check__input {
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-white);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: border-color var(--transition-fast), background var(--transition-fast);
+  -webkit-appearance: none;
+  appearance: none;
+  position: relative;
+}
+
+.form-check__input[type="radio"] {
+  border-radius: var(--radius-full);
+}
+
+.form-check__input:checked {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+}
+
+.form-check__input:checked::after {
+  content: '';
+  position: absolute;
+  inset: 3px;
+  border-radius: inherit;
+}
+
+/* Checkmark for checkbox */
+.form-check__input[type="checkbox"]:checked::after {
+  content: '';
+  position: absolute;
+  left: 4px;
+  top: 1px;
+  width: 8px;
+  height: 12px;
+  border: 2px solid var(--color-white);
+  border-top: none;
+  border-left: none;
+  transform: rotate(45deg);
+  border-radius: 0;
+  inset: unset;
+}
+
+/* Radio dot */
+.form-check__input[type="radio"]:checked::after {
+  content: '';
+  position: absolute;
+  inset: 4px;
+  border-radius: var(--radius-full);
+  background: var(--color-white);
+}
+
+.form-check__input:focus-visible {
+  outline: 3px solid var(--color-accent-mid);
+  outline-offset: 2px;
+}
+
+.form-check__label {
+  font-size: var(--text-body);
+  color: var(--color-text);
+  line-height: var(--leading-normal);
+  cursor: pointer;
+}
+
+/* ----------------------------------------------------------------
+ * Input with icon / action inside
+ * ---------------------------------------------------------------- */
+
+.form-input-wrapper {
+  position: relative;
+}
+
+.form-input-wrapper .form-input {
+  padding-right: 3rem;
+}
+
+.form-input-wrapper .form-input--icon-left {
+  padding-left: 2.75rem;
+}
+
+.form-input-action {
+  position: absolute;
+  right: var(--space-3);
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--color-text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-1);
+  min-height: 32px;
+  min-width: 32px;
+  transition: color var(--transition-fast);
+}
+
+.form-input-action:hover {
+  color: var(--color-text);
+}
+
+.form-input-icon {
+  position: absolute;
+  left: var(--space-3);
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--color-text-muted);
+  width: 20px;
+  height: 20px;
+  pointer-events: none;
+}
+
+/* ----------------------------------------------------------------
+ * Search input
+ * ---------------------------------------------------------------- */
+
+.form-search {
+  position: relative;
+  flex: 1;
+}
+
+.form-search .form-input {
+  padding-left: 2.75rem;
+}
+
+.form-search__icon {
+  position: absolute;
+  left: var(--space-3);
+  top: 50%;
+  transform: translateY(-50%);
+  width: 20px;
+  height: 20px;
+  color: var(--color-text-subtle);
+  pointer-events: none;
+}
+
+/* ----------------------------------------------------------------
+ * Character counter
+ * ---------------------------------------------------------------- */
+
+.form-char-count {
+  font-size: var(--text-caption);
+  color: var(--color-text-subtle);
+  text-align: right;
+  margin-top: var(--space-1);
+}
+
+.form-char-count.is-near-limit {
+  color: var(--color-warning);
+}
+
+.form-char-count.is-over-limit {
+  color: var(--color-error);
+}
+
+/* ----------------------------------------------------------------
+ * Date input
+ * ---------------------------------------------------------------- */
+
+.form-input[type="date"],
+.form-input[type="datetime-local"] {
+  cursor: pointer;
+}
+
+/* ----------------------------------------------------------------
+ * Form section / collapsible
+ * ---------------------------------------------------------------- */
+
+.form-section {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  margin-bottom: var(--space-4);
+}
+
+.form-section__toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-bg);
+  border: none;
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+  font-size: var(--text-body);
+  font-weight: var(--weight-medium);
+  color: var(--color-text-muted);
+  transition: background var(--transition-fast), color var(--transition-fast);
+  gap: var(--space-2);
+}
+
+.form-section__toggle:hover {
+  background: var(--color-info-bg);
+  color: var(--color-text);
+}
+
+.form-section__toggle-icon {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  transition: transform var(--transition-normal);
+}
+
+.form-section.is-open .form-section__toggle-icon {
+  transform: rotate(180deg);
+}
+
+.form-section__body {
+  padding: var(--space-4);
+  border-top: 1px solid var(--color-border);
+  display: none;
+}
+
+.form-section.is-open .form-section__body {
+  display: block;
+}
+
+/* ----------------------------------------------------------------
+ * Publish state radio (private / ready-for-publish)
+ * ---------------------------------------------------------------- */
+
+.publish-option {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: border-color var(--transition-fast), background var(--transition-fast);
+}
+
+.publish-option:has(input:checked) {
+  border-color: var(--color-accent);
+  background: var(--color-info-bg);
+}
+
+.publish-option__icon {
+  width: 20px;
+  height: 20px;
+  color: var(--color-text-muted);
+}
+
+.publish-option:has(input:checked) .publish-option__icon {
+  color: var(--color-accent);
+}
+
+.publish-option__text {
+  flex: 1;
+}
+
+.publish-option__label {
+  font-size: var(--text-body);
+  font-weight: var(--weight-medium);
+  color: var(--color-text);
+}
+
+.publish-option__desc {
+  font-size: var(--text-caption);
+  color: var(--color-text-muted);
+}

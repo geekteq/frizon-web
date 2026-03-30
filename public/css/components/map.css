@@ -1,0 +1,371 @@
+/**
+ * Frizon.org — Map styles
+ * Leaflet overrides, custom markers, clusters, and popups
+ * From UI-DESIGN.md sections 6.2 and 6.3
+ */
+
+/* ----------------------------------------------------------------
+ * Leaflet container
+ * ---------------------------------------------------------------- */
+
+.leaflet-container {
+  font-family: var(--font-base);
+  width: 100%;
+  height: 100%;
+  background: var(--color-bg);
+}
+
+/* Remove default Leaflet blue focus outline */
+.leaflet-container:focus {
+  outline: none;
+}
+
+/* ----------------------------------------------------------------
+ * Leaflet controls — style to match design system
+ * ---------------------------------------------------------------- */
+
+.leaflet-bar,
+.leaflet-control-zoom {
+  border: 1px solid var(--color-border) !important;
+  border-radius: var(--radius-md) !important;
+  box-shadow: var(--shadow-md) !important;
+  overflow: hidden;
+}
+
+.leaflet-bar a,
+.leaflet-control-zoom-in,
+.leaflet-control-zoom-out {
+  width: 36px !important;
+  height: 36px !important;
+  line-height: 36px !important;
+  font-size: 18px !important;
+  font-weight: var(--weight-bold) !important;
+  color: var(--color-text-muted) !important;
+  background-color: var(--color-white) !important;
+  border-bottom: 1px solid var(--color-border) !important;
+  transition: background var(--transition-fast), color var(--transition-fast) !important;
+}
+
+.leaflet-bar a:last-child,
+.leaflet-control-zoom-out {
+  border-bottom: none !important;
+}
+
+.leaflet-bar a:hover,
+.leaflet-control-zoom-in:hover,
+.leaflet-control-zoom-out:hover {
+  background-color: var(--color-info-bg) !important;
+  color: var(--color-accent) !important;
+}
+
+/* Attribution text */
+.leaflet-control-attribution {
+  font-size: 10px !important;
+  color: var(--color-text-subtle) !important;
+  background: rgba(255,255,255,0.75) !important;
+  backdrop-filter: blur(4px);
+  border-radius: var(--radius-sm) 0 0 0 !important;
+}
+
+.leaflet-control-attribution a {
+  color: var(--color-accent) !important;
+}
+
+/* ----------------------------------------------------------------
+ * Custom place marker
+ * ---------------------------------------------------------------- */
+
+.map-marker {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Diamond / rotated square bubble */
+.map-marker__bubble {
+  width: 36px;
+  height: 36px;
+  border-radius: 50% 50% 50% 0;
+  transform: rotate(-45deg);
+  background: var(--marker-color, var(--color-accent));
+  border: 3px solid var(--color-white);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.30);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Icon inside bubble — counter-rotated to stay upright */
+.map-marker__icon {
+  transform: rotate(45deg);
+  width: 18px;
+  height: 18px;
+  color: var(--color-white);
+  flex-shrink: 0;
+}
+
+/* Stem below bubble */
+.map-marker__pin {
+  width: 2px;
+  height: 8px;
+  background: var(--marker-color, var(--color-accent));
+  margin: 0 auto;
+}
+
+/* Per-type marker colours via CSS custom property on element */
+.map-marker--breakfast  { --marker-color: var(--color-stop-breakfast); }
+.map-marker--lunch      { --marker-color: var(--color-stop-lunch); }
+.map-marker--dinner     { --marker-color: var(--color-stop-dinner); }
+.map-marker--fika       { --marker-color: var(--color-stop-fika); }
+.map-marker--sight      { --marker-color: var(--color-stop-sight); }
+.map-marker--shopping   { --marker-color: var(--color-stop-shopping); }
+.map-marker--stellplatz { --marker-color: var(--color-stop-stellplatz); }
+.map-marker--wildcamp   { --marker-color: var(--color-stop-wildcamp); }
+.map-marker--camping    { --marker-color: var(--color-stop-camping); }
+
+/* Selected / active marker — larger */
+.map-marker.is-selected .map-marker__bubble {
+  width: 42px;
+  height: 42px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.40);
+}
+
+/* ----------------------------------------------------------------
+ * Cluster marker
+ * ---------------------------------------------------------------- */
+
+.map-cluster {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-full);
+  background: var(--color-accent);
+  border: 3px solid var(--color-white);
+  box-shadow: 0 2px 12px rgba(44, 95, 106, 0.40);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform var(--transition-fast);
+}
+
+.map-cluster:hover {
+  transform: scale(1.08);
+}
+
+.map-cluster__count {
+  color: var(--color-white);
+  font-family: var(--font-base);
+  font-weight: var(--weight-bold);
+  font-size: 14px;
+  line-height: 1;
+}
+
+/* Size steps based on cluster count */
+.map-cluster--sm {
+  width: 36px;
+  height: 36px;
+}
+
+.map-cluster--sm .map-cluster__count {
+  font-size: 12px;
+}
+
+.map-cluster--md {
+  width: 44px;
+  height: 44px;
+}
+
+.map-cluster--md .map-cluster__count {
+  font-size: 14px;
+}
+
+.map-cluster--lg {
+  width: 52px;
+  height: 52px;
+  background: var(--color-brand-dark);
+}
+
+.map-cluster--lg .map-cluster__count {
+  font-size: 16px;
+}
+
+/* ----------------------------------------------------------------
+ * Current position marker
+ * ---------------------------------------------------------------- */
+
+.map-marker--current-position {
+  width: 20px;
+  height: 20px;
+  border-radius: var(--radius-full);
+  background: #4A8CC4;
+  border: 3px solid var(--color-white);
+  box-shadow: 0 0 0 8px rgba(74, 140, 196, 0.20);
+  animation: pulse-gps 2s infinite;
+}
+
+@keyframes pulse-gps {
+  0%   { box-shadow: 0 0 0 0px rgba(74, 140, 196, 0.20); }
+  70%  { box-shadow: 0 0 0 12px rgba(74, 140, 196, 0); }
+  100% { box-shadow: 0 0 0 0px rgba(74, 140, 196, 0); }
+}
+
+/* ----------------------------------------------------------------
+ * Leaflet popup overrides
+ * ---------------------------------------------------------------- */
+
+.leaflet-popup-content-wrapper {
+  border-radius: var(--radius-lg) !important;
+  box-shadow: 0 4px 20px rgba(61, 79, 95, 0.20) !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  border: 1px solid var(--color-border) !important;
+}
+
+.leaflet-popup-content {
+  margin: 0 !important;
+  width: 240px !important;
+}
+
+.leaflet-popup-tip-container {
+  margin-top: -1px;
+}
+
+.leaflet-popup-tip {
+  background: var(--color-white) !important;
+  box-shadow: none !important;
+}
+
+.leaflet-popup-close-button {
+  top: var(--space-2) !important;
+  right: var(--space-2) !important;
+  width: 24px !important;
+  height: 24px !important;
+  line-height: 24px !important;
+  font-size: 18px !important;
+  color: var(--color-text-muted) !important;
+  background: rgba(255,255,255,0.80) !important;
+  border-radius: var(--radius-full) !important;
+}
+
+/* ----------------------------------------------------------------
+ * Popup content layout
+ * ---------------------------------------------------------------- */
+
+.map-popup__image {
+  width: 100%;
+  height: 120px;
+  object-fit: cover;
+  display: block;
+}
+
+.map-popup__image-placeholder {
+  width: 100%;
+  height: 80px;
+  background: var(--color-bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-border);
+}
+
+.map-popup__image-placeholder-icon {
+  width: 32px;
+  height: 32px;
+}
+
+.map-popup__body {
+  padding: var(--space-3);
+}
+
+.map-popup__name {
+  font-weight: var(--weight-semibold);
+  font-size: var(--text-body);
+  color: var(--color-text);
+  margin: 0 0 var(--space-1);
+}
+
+.map-popup__meta {
+  font-size: var(--text-caption);
+  color: var(--color-text-muted);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-1);
+  flex-wrap: wrap;
+}
+
+.map-popup__link {
+  display: block;
+  padding: var(--space-2) var(--space-3);
+  background: var(--color-accent);
+  color: var(--color-white) !important;
+  text-align: center;
+  font-size: var(--text-caption);
+  font-weight: var(--weight-semibold);
+  text-decoration: none;
+  transition: background var(--transition-fast);
+}
+
+.map-popup__link:hover {
+  background: var(--color-accent-mid);
+  text-decoration: none;
+}
+
+/* ----------------------------------------------------------------
+ * Map overlay — search/filter bar on public map
+ * ---------------------------------------------------------------- */
+
+.map-search-overlay {
+  position: absolute;
+  top: var(--space-3);
+  left: var(--space-3);
+  right: var(--space-3);
+  z-index: 50;
+  background: var(--color-white);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  padding: var(--space-2) var(--space-3);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+/* ----------------------------------------------------------------
+ * Sliding panel below map (mobile — place list on map view)
+ * ---------------------------------------------------------------- */
+
+.map-bottom-panel {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 50;
+  background: var(--color-white);
+  border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+  box-shadow: 0 -4px 20px rgba(61, 79, 95, 0.15);
+  max-height: 35vh;
+  overflow-y: auto;
+  transform: translateY(calc(100% - 48px)); /* Show just the handle */
+  transition: transform var(--transition-normal);
+  -webkit-overflow-scrolling: touch;
+}
+
+.map-bottom-panel.is-expanded {
+  transform: translateY(0);
+}
+
+.map-bottom-panel__handle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 48px;
+  cursor: pointer;
+}
+
+.map-bottom-panel__handle-bar {
+  width: 40px;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--color-border);
+}

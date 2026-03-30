@@ -1,0 +1,232 @@
+/**
+ * Frizon.org — Skeleton loading states
+ * Shimmer animation for dynamic content — from UI-DESIGN.md section 2.9
+ */
+
+/* ----------------------------------------------------------------
+ * Base skeleton element
+ * ---------------------------------------------------------------- */
+
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    #F0F4F7 25%,
+    #E2EBF0 50%,
+    #F0F4F7 75%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.5s infinite linear;
+  border-radius: var(--radius-sm);
+  display: block;
+}
+
+@keyframes skeleton-shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* ----------------------------------------------------------------
+ * Skeleton size helpers
+ * ---------------------------------------------------------------- */
+
+.skeleton--text {
+  height: 1em;
+  border-radius: var(--radius-sm);
+}
+
+.skeleton--text-sm {
+  height: 0.75em;
+  border-radius: var(--radius-sm);
+}
+
+.skeleton--title {
+  height: 1.5em;
+  border-radius: var(--radius-sm);
+}
+
+.skeleton--circle {
+  border-radius: var(--radius-full);
+  aspect-ratio: 1;
+}
+
+.skeleton--rect {
+  border-radius: var(--radius-md);
+}
+
+/* ----------------------------------------------------------------
+ * Skeleton card (place card loading state)
+ * ---------------------------------------------------------------- */
+
+.skeleton-place-card {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  background: var(--color-white);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  min-height: 88px;
+}
+
+.skeleton-place-card__image {
+  width: 80px;
+  height: 80px;
+  border-radius: var(--radius-md);
+  flex-shrink: 0;
+}
+
+.skeleton-place-card__body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.skeleton-place-card__name {
+  height: 18px;
+  width: 65%;
+}
+
+.skeleton-place-card__meta {
+  height: 14px;
+  width: 45%;
+}
+
+.skeleton-place-card__sub {
+  height: 12px;
+  width: 55%;
+}
+
+/* ----------------------------------------------------------------
+ * Skeleton trip card
+ * ---------------------------------------------------------------- */
+
+.skeleton-trip-card {
+  background: var(--color-white);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.skeleton-trip-card__cover {
+  width: 100%;
+  height: 120px;
+}
+
+.skeleton-trip-card__body {
+  padding: var(--space-3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.skeleton-trip-card__title {
+  height: 20px;
+  width: 60%;
+}
+
+.skeleton-trip-card__dates {
+  height: 14px;
+  width: 40%;
+}
+
+.skeleton-trip-card__stats {
+  height: 12px;
+  width: 70%;
+}
+
+/* ----------------------------------------------------------------
+ * Skeleton list item
+ * ---------------------------------------------------------------- */
+
+.skeleton-list-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  min-height: 72px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.skeleton-list-item__icon {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-md);
+  flex-shrink: 0;
+}
+
+.skeleton-list-item__body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.skeleton-list-item__name {
+  height: 16px;
+  width: 55%;
+}
+
+.skeleton-list-item__sub {
+  height: 12px;
+  width: 35%;
+}
+
+/* ----------------------------------------------------------------
+ * Skeleton stat cards (dashboard grid)
+ * ---------------------------------------------------------------- */
+
+.skeleton-stat-card {
+  background: var(--color-white);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.skeleton-stat-card__icon {
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-full);
+}
+
+.skeleton-stat-card__value {
+  height: 32px;
+  width: 48px;
+}
+
+.skeleton-stat-card__label {
+  height: 12px;
+  width: 60%;
+}
+
+/* ----------------------------------------------------------------
+ * Skeleton paragraph lines
+ * ---------------------------------------------------------------- */
+
+.skeleton-paragraph {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.skeleton-paragraph .skeleton--text:nth-child(3) {
+  width: 80%;
+}
+
+.skeleton-paragraph .skeleton--text:nth-child(4) {
+  width: 60%;
+}
+
+/* ----------------------------------------------------------------
+ * Skeleton for map (full area shimmer)
+ * ---------------------------------------------------------------- */
+
+.skeleton-map {
+  width: 100%;
+  height: 100%;
+  border-radius: 0;
+}

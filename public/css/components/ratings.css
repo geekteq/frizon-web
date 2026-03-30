@@ -1,0 +1,257 @@
+/**
+ * Frizon.org — Ratings component
+ * Star display, sub-rating dots, and interactive rating input
+ * From UI-DESIGN.md section 2.8
+ */
+
+/* ----------------------------------------------------------------
+ * Star rating — read-only display
+ * ---------------------------------------------------------------- */
+
+.stars {
+  display: inline-flex;
+  align-items: center;
+  gap: 1px;
+}
+
+/* Individual star icon */
+.star {
+  color: var(--color-warning);
+}
+
+.star--empty {
+  color: rgba(200, 134, 42, 0.25);
+}
+
+.star--half {
+  position: relative;
+  color: rgba(200, 134, 42, 0.25);
+}
+
+/* Half-star clip via overflow + pseudo */
+.star--half::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  clip-path: inset(0 50% 0 0);
+  /* Hack: use background to simulate filled half — JS approach preferred */
+}
+
+/* Size variants */
+.stars--sm .star { width: 14px; height: 14px; }
+.stars--md .star { width: 18px; height: 18px; }
+.stars--lg .star { width: 24px; height: 24px; }
+
+/* Numeric value next to stars */
+.stars__value {
+  font-size: var(--text-body-sm);
+  font-weight: var(--weight-medium);
+  color: var(--color-warning);
+  margin-left: var(--space-1);
+}
+
+/* Compact inline star rating (used in place cards) */
+.star-rating-inline {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 13px;
+  color: var(--color-warning);
+  font-weight: var(--weight-medium);
+}
+
+.star-rating-inline__icon {
+  width: 13px;
+  height: 13px;
+}
+
+/* ----------------------------------------------------------------
+ * Sub-rating dots — display mode (read-only)
+ * ---------------------------------------------------------------- */
+
+.sub-ratings {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.sub-rating {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.sub-rating__label {
+  font-size: var(--text-body-sm);
+  color: var(--color-text-muted);
+  min-width: 80px;
+  flex-shrink: 0;
+}
+
+.sub-rating__dots {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  flex: 1;
+}
+
+.sub-rating__dot {
+  width: 10px;
+  height: 10px;
+  border-radius: var(--radius-full);
+  background: var(--color-border);
+  flex-shrink: 0;
+  transition: background var(--transition-fast), transform var(--transition-spring);
+}
+
+.sub-rating__dot.is-filled {
+  background: var(--color-accent);
+}
+
+.sub-rating__value {
+  font-size: var(--text-caption);
+  color: var(--color-text-muted);
+  min-width: 1.5em;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+/* Divider before total */
+.sub-ratings__total-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: var(--space-2);
+  border-top: 1px solid var(--color-border);
+  margin-top: var(--space-1);
+}
+
+.sub-ratings__total-label {
+  font-size: var(--text-body-sm);
+  font-weight: var(--weight-semibold);
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-size: 11px;
+}
+
+.sub-ratings__total-value {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-weight: var(--weight-semibold);
+  color: var(--color-warning);
+}
+
+.sub-ratings__total-star {
+  width: 16px;
+  height: 16px;
+}
+
+/* ----------------------------------------------------------------
+ * Interactive sub-rating input (circle buttons 1–5)
+ * ---------------------------------------------------------------- */
+
+.sub-rating-input {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.sub-rating-input__row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.sub-rating-input__label {
+  font-size: var(--text-body-sm);
+  color: var(--color-text-muted);
+  min-width: 80px;
+  flex-shrink: 0;
+}
+
+.sub-rating-input__circles {
+  display: flex;
+  gap: var(--space-2);
+  align-items: center;
+}
+
+/* Hide the actual radio input */
+.sub-rating-input__radio {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  border: 0;
+}
+
+/* Visible circle button */
+.sub-rating-input__circle {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-full);
+  border: 1.5px solid var(--color-border);
+  background: var(--color-white);
+  color: var(--color-text-muted);
+  font-size: var(--text-body-sm);
+  font-weight: var(--weight-medium);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition:
+    border-color var(--transition-fast),
+    background var(--transition-fast),
+    color var(--transition-fast),
+    transform var(--transition-spring);
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.sub-rating-input__circle:hover {
+  border-color: var(--color-accent-mid);
+  background: rgba(61, 122, 135, 0.08);
+  color: var(--color-text);
+}
+
+/* Selected state via radio input */
+.sub-rating-input__radio:checked + .sub-rating-input__circle {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+  color: var(--color-white);
+  transform: scale(1.10);
+}
+
+.sub-rating-input__radio:focus-visible + .sub-rating-input__circle {
+  outline: 3px solid var(--color-accent-mid);
+  outline-offset: 2px;
+}
+
+/* Computed total display below inputs */
+.sub-rating-input__total {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-2);
+  padding-top: var(--space-2);
+  border-top: 1px solid var(--color-border);
+  font-size: var(--text-body-sm);
+  color: var(--color-text-muted);
+}
+
+.sub-rating-input__total-stars {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  color: var(--color-warning);
+}
+
+.sub-rating-input__total-value {
+  font-weight: var(--weight-semibold);
+  font-size: var(--text-body);
+  color: var(--color-warning);
+}

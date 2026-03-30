@@ -1,0 +1,188 @@
+/**
+ * Frizon.org — Toast notifications
+ * From UI-DESIGN.md section 2.7
+ */
+
+/* ----------------------------------------------------------------
+ * Toast container
+ * ---------------------------------------------------------------- */
+
+.toast-container {
+  position: fixed;
+  /* Top-center on mobile, top-right on desktop */
+  top: calc(var(--header-height-mob) + var(--space-3));
+  left: var(--space-4);
+  right: var(--space-4);
+  z-index: 400;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  /* Pointer events only on individual toasts */
+  pointer-events: none;
+}
+
+/* ----------------------------------------------------------------
+ * Individual toast
+ * ---------------------------------------------------------------- */
+
+.toast {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  background: var(--color-white);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  border-left: 4px solid transparent;
+  padding: var(--space-3) var(--space-4);
+  min-height: 52px;
+  max-width: 320px;
+  width: 100%;
+  margin: 0 auto;
+  pointer-events: auto;
+
+  /* Animation: slide in from top */
+  animation: toast-in var(--transition-normal) ease-out;
+}
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Fade-out class applied by JS before removal */
+.toast.is-hiding {
+  animation: toast-out var(--transition-normal) ease-in forwards;
+}
+
+@keyframes toast-out {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+}
+
+/* ----------------------------------------------------------------
+ * Toast variants
+ * ---------------------------------------------------------------- */
+
+.toast--success {
+  background: var(--color-success-bg);
+  border-left-color: var(--color-success);
+}
+
+.toast--warning {
+  background: var(--color-warning-bg);
+  border-left-color: var(--color-warning);
+}
+
+.toast--error {
+  background: var(--color-error-bg);
+  border-left-color: var(--color-error);
+}
+
+.toast--info {
+  background: var(--color-info-bg);
+  border-left-color: var(--color-info);
+}
+
+/* ----------------------------------------------------------------
+ * Toast inner elements
+ * ---------------------------------------------------------------- */
+
+.toast__icon {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.toast--success .toast__icon { color: var(--color-success); }
+.toast--warning .toast__icon { color: var(--color-warning); }
+.toast--error   .toast__icon { color: var(--color-error); }
+.toast--info    .toast__icon { color: var(--color-info); }
+
+.toast__body {
+  flex: 1;
+  min-width: 0;
+}
+
+.toast__message {
+  font-size: var(--text-body-sm);
+  font-weight: var(--weight-medium);
+  color: var(--color-text);
+  line-height: var(--leading-normal);
+  margin: 0;
+}
+
+/* Optional action link (e.g. "Ångra") */
+.toast__action {
+  display: inline-block;
+  margin-top: var(--space-1);
+  font-size: var(--text-caption);
+  font-weight: var(--weight-semibold);
+  color: var(--color-accent);
+  text-decoration: underline;
+  cursor: pointer;
+  background: none;
+  border: none;
+  padding: 0;
+}
+
+.toast__action:hover {
+  color: var(--color-accent-mid);
+}
+
+/* Dismiss button */
+.toast__close {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--color-text-subtle);
+  padding: 0;
+  flex-shrink: 0;
+  border-radius: var(--radius-sm);
+  transition: color var(--transition-fast), background var(--transition-fast);
+  margin-top: -2px;
+}
+
+.toast__close:hover {
+  color: var(--color-text);
+  background: rgba(0,0,0,0.06);
+}
+
+.toast__close-icon {
+  width: 14px;
+  height: 14px;
+}
+
+/* ----------------------------------------------------------------
+ * Desktop positioning
+ * ---------------------------------------------------------------- */
+
+@media (min-width: 1024px) {
+  .toast-container {
+    top: calc(var(--header-height-desk) + var(--space-4));
+    left: auto;
+    right: var(--space-6);
+    width: 320px;
+  }
+
+  .toast {
+    margin: 0;
+  }
+}

@@ -1,0 +1,413 @@
+/**
+ * Frizon.org — Button components
+ * All button variants from UI-DESIGN.md section 2.3
+ */
+
+/* ----------------------------------------------------------------
+ * Base button styles (shared by all variants)
+ * ---------------------------------------------------------------- */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  font-family: var(--font-base);
+  font-size: var(--text-button);
+  font-weight: var(--weight-semibold);
+  line-height: 1;
+  text-decoration: none;
+  white-space: nowrap;
+  border: 2px solid transparent;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition:
+    background var(--transition-fast),
+    color var(--transition-fast),
+    border-color var(--transition-fast),
+    box-shadow var(--transition-fast),
+    transform var(--transition-fast);
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  /* Default: medium size */
+  min-height: 48px;
+  padding: var(--space-3) var(--space-6);
+}
+
+.btn:focus-visible {
+  outline: 3px solid var(--color-accent-mid);
+  outline-offset: 2px;
+}
+
+.btn:disabled,
+.btn[aria-disabled="true"] {
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* Button icon sizing */
+.btn__icon {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+.btn__icon--sm {
+  width: 16px;
+  height: 16px;
+}
+
+/* Loading spinner inside button */
+.btn__spinner {
+  width: 18px;
+  height: 18px;
+  border: 2px solid currentColor;
+  border-top-color: transparent;
+  border-radius: var(--radius-full);
+  animation: btn-spin 0.6s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes btn-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ----------------------------------------------------------------
+ * Primary button
+ * ---------------------------------------------------------------- */
+
+.btn-primary {
+  background: var(--color-accent);
+  color: var(--color-white);
+  border-color: var(--color-accent);
+}
+
+.btn-primary:hover {
+  background: var(--color-accent-mid);
+  border-color: var(--color-accent-mid);
+  text-decoration: none;
+  color: var(--color-white);
+}
+
+.btn-primary:active {
+  background: #1E4A53;
+  border-color: #1E4A53;
+  transform: translateY(1px);
+}
+
+.btn-primary:disabled,
+.btn-primary[aria-disabled="true"] {
+  background: var(--color-border);
+  border-color: var(--color-border);
+  color: var(--color-brand-light);
+}
+
+/* Full-width variant */
+.btn-primary--full {
+  width: 100%;
+}
+
+/* ----------------------------------------------------------------
+ * Secondary button (outlined)
+ * ---------------------------------------------------------------- */
+
+.btn-secondary {
+  background: transparent;
+  color: var(--color-accent);
+  border-color: var(--color-accent);
+  /* Compensate for 2px border so height matches primary */
+  padding: calc(var(--space-3) - 0px) var(--space-6);
+}
+
+.btn-secondary:hover {
+  background: rgba(44, 95, 106, 0.08);
+  text-decoration: none;
+  color: var(--color-accent);
+}
+
+.btn-secondary:active {
+  background: rgba(44, 95, 106, 0.15);
+  transform: translateY(1px);
+}
+
+.btn-secondary:disabled,
+.btn-secondary[aria-disabled="true"] {
+  border-color: var(--color-border);
+  color: var(--color-brand-light);
+  background: transparent;
+}
+
+/* ----------------------------------------------------------------
+ * Ghost button (no border)
+ * ---------------------------------------------------------------- */
+
+.btn-ghost {
+  background: transparent;
+  color: var(--color-text-muted);
+  border-color: transparent;
+  min-height: 44px;
+  padding: var(--space-2) var(--space-4);
+}
+
+.btn-ghost:hover {
+  background: rgba(61, 79, 95, 0.08);
+  color: var(--color-text);
+  text-decoration: none;
+}
+
+.btn-ghost:active {
+  background: rgba(61, 79, 95, 0.14);
+  transform: translateY(1px);
+}
+
+.btn-ghost:disabled,
+.btn-ghost[aria-disabled="true"] {
+  color: var(--color-brand-muted);
+}
+
+/* ----------------------------------------------------------------
+ * Danger / destructive button
+ * ---------------------------------------------------------------- */
+
+.btn-danger {
+  background: var(--color-error);
+  color: var(--color-white);
+  border-color: var(--color-error);
+}
+
+.btn-danger:hover {
+  background: #9E3535;
+  border-color: #9E3535;
+  text-decoration: none;
+  color: var(--color-white);
+}
+
+.btn-danger:active {
+  background: #8A2E2E;
+  transform: translateY(1px);
+}
+
+.btn-danger:disabled,
+.btn-danger[aria-disabled="true"] {
+  background: var(--color-border);
+  border-color: var(--color-border);
+  color: var(--color-brand-light);
+}
+
+/* ----------------------------------------------------------------
+ * AI / Broderade-ut button (sand/parchment style)
+ * ---------------------------------------------------------------- */
+
+.btn-ai {
+  background: #FDFCF8;
+  color: var(--color-text-muted);
+  border: 1.5px solid var(--color-warm-dark);
+  font-weight: var(--weight-medium);
+}
+
+.btn-ai:hover {
+  background: var(--color-warm);
+  border-color: var(--color-warm-dark);
+  color: var(--color-text);
+  text-decoration: none;
+}
+
+.btn-ai:active {
+  transform: translateY(1px);
+}
+
+/* ----------------------------------------------------------------
+ * Size variants
+ * ---------------------------------------------------------------- */
+
+/* Small */
+.btn--sm {
+  font-size: var(--text-caption);
+  min-height: 36px;
+  padding: var(--space-2) var(--space-4);
+}
+
+.btn--sm .btn__icon {
+  width: 16px;
+  height: 16px;
+}
+
+/* Large */
+.btn--lg {
+  font-size: var(--text-body-lg);
+  min-height: 52px;
+  padding: var(--space-3) var(--space-8);
+}
+
+.btn--lg .btn__icon {
+  width: 22px;
+  height: 22px;
+}
+
+/* Full-width */
+.btn--full {
+  width: 100%;
+}
+
+/* Icon-only button */
+.btn--icon-only {
+  width: 44px;
+  min-height: 44px;
+  padding: 0;
+  justify-content: center;
+}
+
+.btn--icon-only.btn--sm {
+  width: 36px;
+  min-height: 36px;
+}
+
+/* ----------------------------------------------------------------
+ * Loading state
+ * ---------------------------------------------------------------- */
+
+.btn.is-loading {
+  pointer-events: none;
+  position: relative;
+}
+
+.btn.is-loading .btn__text {
+  opacity: 0;
+}
+
+.btn.is-loading::after {
+  content: '';
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  border: 2px solid currentColor;
+  border-top-color: transparent;
+  border-radius: var(--radius-full);
+  animation: btn-spin 0.6s linear infinite;
+}
+
+/* ----------------------------------------------------------------
+ * Toggle / chip-option radio buttons (price level, would-return, etc.)
+ * ---------------------------------------------------------------- */
+
+.chip-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.chip-options--scroll {
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  padding-bottom: var(--space-1);
+}
+
+.chip-options--scroll::-webkit-scrollbar {
+  display: none;
+}
+
+/* Hide the actual radio/checkbox input */
+.chip-option__input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Visible label styled as a chip */
+.chip-option__label {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-2xl);
+  border: 1.5px solid var(--color-border);
+  background: var(--color-white);
+  color: var(--color-text-muted);
+  font-size: var(--text-body-sm);
+  font-weight: var(--weight-medium);
+  cursor: pointer;
+  white-space: nowrap;
+  min-height: 36px;
+  transition:
+    background var(--transition-fast),
+    border-color var(--transition-fast),
+    color var(--transition-fast);
+  user-select: none;
+}
+
+.chip-option__label:hover {
+  border-color: var(--color-accent-light);
+  color: var(--color-text);
+}
+
+/* Selected state — input:checked + label */
+.chip-option__input:checked + .chip-option__label {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+  color: var(--color-white);
+}
+
+.chip-option__input:focus-visible + .chip-option__label {
+  outline: 3px solid var(--color-accent-mid);
+  outline-offset: 2px;
+}
+
+/* Stop-type chip variant (coloured) */
+.chip-option--breakfast .chip-option__input:checked + .chip-option__label {
+  background: var(--color-stop-breakfast);
+  border-color: var(--color-stop-breakfast);
+}
+.chip-option--lunch .chip-option__input:checked + .chip-option__label {
+  background: var(--color-stop-lunch);
+  border-color: var(--color-stop-lunch);
+}
+.chip-option--dinner .chip-option__input:checked + .chip-option__label {
+  background: var(--color-stop-dinner);
+  border-color: var(--color-stop-dinner);
+}
+.chip-option--fika .chip-option__input:checked + .chip-option__label {
+  background: var(--color-stop-fika);
+  border-color: var(--color-stop-fika);
+}
+.chip-option--sight .chip-option__input:checked + .chip-option__label {
+  background: var(--color-stop-sight);
+  border-color: var(--color-stop-sight);
+}
+.chip-option--shopping .chip-option__input:checked + .chip-option__label {
+  background: var(--color-stop-shopping);
+  border-color: var(--color-stop-shopping);
+}
+.chip-option--stellplatz .chip-option__input:checked + .chip-option__label {
+  background: var(--color-stop-stellplatz);
+  border-color: var(--color-stop-stellplatz);
+}
+.chip-option--wildcamp .chip-option__input:checked + .chip-option__label {
+  background: var(--color-stop-wildcamp);
+  border-color: var(--color-stop-wildcamp);
+}
+.chip-option--camping .chip-option__input:checked + .chip-option__label {
+  background: var(--color-stop-camping);
+  border-color: var(--color-stop-camping);
+}
+
+/* Would-return chips */
+.chip-option--yes .chip-option__input:checked + .chip-option__label {
+  background: var(--color-success);
+  border-color: var(--color-success);
+}
+.chip-option--maybe .chip-option__input:checked + .chip-option__label {
+  background: var(--color-warning);
+  border-color: var(--color-warning);
+}
+.chip-option--no .chip-option__input:checked + .chip-option__label {
+  background: var(--color-error);
+  border-color: var(--color-error);
+}

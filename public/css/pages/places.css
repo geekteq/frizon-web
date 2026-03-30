@@ -1,0 +1,343 @@
+/**
+ * Frizon.org — Places pages
+ * Index, filter bar, map/list toggle, place detail
+ * From UI-DESIGN.md section 3.3 and 3.4
+ */
+
+/* ----------------------------------------------------------------
+ * Places index header actions
+ * ---------------------------------------------------------------- */
+
+.places-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-white);
+  border-bottom: 1px solid var(--color-border);
+  gap: var(--space-3);
+}
+
+.places-header__title {
+  font-size: var(--text-h3);
+  font-weight: var(--weight-bold);
+  color: var(--color-text);
+  margin: 0;
+  flex: 1;
+}
+
+.places-header__controls {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-shrink: 0;
+}
+
+/* ----------------------------------------------------------------
+ * Search bar row
+ * ---------------------------------------------------------------- */
+
+.places-search-bar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  background: var(--color-white);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.places-search-bar .form-search {
+  flex: 1;
+}
+
+/* Filter button (opens bottom sheet) */
+.places-filter-btn {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-2) var(--space-3);
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-white);
+  color: var(--color-text-muted);
+  font-size: var(--text-body-sm);
+  font-weight: var(--weight-medium);
+  cursor: pointer;
+  white-space: nowrap;
+  min-height: 44px;
+  transition: border-color var(--transition-fast), background var(--transition-fast);
+}
+
+.places-filter-btn:hover {
+  border-color: var(--color-accent-light);
+  color: var(--color-text);
+}
+
+.places-filter-btn.has-filters {
+  border-color: var(--color-accent);
+  background: var(--color-info-bg);
+  color: var(--color-accent);
+}
+
+.places-filter-btn__icon {
+  width: 16px;
+  height: 16px;
+}
+
+/* Active filter count badge */
+.places-filter-btn__count {
+  background: var(--color-accent);
+  color: var(--color-white);
+  border-radius: var(--radius-full);
+  font-size: 11px;
+  font-weight: var(--weight-bold);
+  min-width: 18px;
+  height: 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 4px;
+}
+
+/* ----------------------------------------------------------------
+ * Category filter chips (horizontal scroll row)
+ * ---------------------------------------------------------------- */
+
+.places-filter-chips {
+  display: flex;
+  gap: var(--space-2);
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  padding: var(--space-2) var(--space-4);
+  background: var(--color-white);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.places-filter-chips::-webkit-scrollbar {
+  display: none;
+}
+
+/* ----------------------------------------------------------------
+ * Places list (scrollable cards)
+ * ---------------------------------------------------------------- */
+
+.places-list {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.places-list__inner {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+/* Wrap cards in a list on larger screens */
+@media (min-width: 640px) {
+  .places-list__inner {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-4);
+    padding: var(--space-4);
+  }
+}
+
+@media (min-width: 1280px) {
+  .places-list__inner {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* ----------------------------------------------------------------
+ * Map view (full screen below header)
+ * ---------------------------------------------------------------- */
+
+.places-map-view {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+  /* Fill the page below the header + search row */
+  display: none;
+}
+
+.places-map-view.is-active {
+  display: flex;
+  flex-direction: column;
+}
+
+.places-list-view {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.places-list-view.is-hidden {
+  display: none;
+}
+
+/* ----------------------------------------------------------------
+ * Filter panel bottom sheet content
+ * ---------------------------------------------------------------- */
+
+.filter-panel__section {
+  margin-bottom: var(--space-4);
+}
+
+.filter-panel__section-title {
+  font-size: 11px;
+  font-weight: var(--weight-semibold);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-text-subtle);
+  margin-bottom: var(--space-2);
+}
+
+.filter-panel__actions {
+  display: flex;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border-top: 1px solid var(--color-border);
+}
+
+/* ----------------------------------------------------------------
+ * Place detail page
+ * ---------------------------------------------------------------- */
+
+.place-detail__gallery {
+  /* .gallery component handles this */
+}
+
+.place-detail__info {
+  padding: var(--space-4);
+}
+
+.place-detail__name {
+  font-size: var(--text-h2);
+  font-weight: var(--weight-bold);
+  color: var(--color-text);
+  margin: 0 0 var(--space-2);
+}
+
+.place-detail__meta-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  margin-bottom: var(--space-3);
+}
+
+.place-detail__location-info {
+  font-size: var(--text-body-sm);
+  color: var(--color-text-muted);
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.place-detail__location-icon {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+}
+
+.place-detail__mini-map {
+  height: 140px;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  margin-bottom: var(--space-4);
+  border: 1px solid var(--color-border);
+}
+
+.place-detail__coordinates {
+  font-family: ui-monospace, monospace;
+  font-size: var(--text-caption);
+  color: var(--color-text-subtle);
+  padding: var(--space-2) var(--space-3);
+  background: var(--color-bg);
+  border-radius: var(--radius-sm);
+  margin-bottom: var(--space-4);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.place-detail__section {
+  padding: var(--space-4);
+  border-top: 1px solid var(--color-border);
+}
+
+.place-detail__section-title {
+  font-size: var(--text-body-sm);
+  font-weight: var(--weight-semibold);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-text-muted);
+  margin: 0 0 var(--space-3);
+}
+
+/* Visits section header with count + add button */
+.place-detail__visits-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-3);
+}
+
+/* ----------------------------------------------------------------
+ * Status section group headers on trips/places index
+ * ---------------------------------------------------------------- */
+
+.status-group {
+  margin-bottom: var(--space-6);
+}
+
+.status-group__header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-4);
+  margin-bottom: var(--space-2);
+}
+
+.status-group__label {
+  font-size: 11px;
+  font-weight: var(--weight-semibold);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-text-subtle);
+}
+
+.status-group__accent {
+  flex: 1;
+  height: 2px;
+  border-radius: var(--radius-full);
+  background: var(--color-border);
+}
+
+/* Ongoing — teal left accent */
+.status-group--ongoing .status-group__accent {
+  background: var(--color-accent);
+}
+
+/* Planned — sand */
+.status-group--planned .status-group__accent {
+  background: var(--color-warm-dark);
+}
+
+/* Finished — muted */
+.status-group--finished .status-group__accent {
+  background: var(--color-border);
+}
+
+/* ----------------------------------------------------------------
+ * Desktop adjustments
+ * ---------------------------------------------------------------- */
+
+@media (min-width: 1024px) {
+  .places-list__inner {
+    padding: var(--space-6);
+  }
+}

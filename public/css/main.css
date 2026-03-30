@@ -1,0 +1,45 @@
+/**
+ * Frizon.org — Main stylesheet
+ * Imports all CSS files in the correct cascade order.
+ *
+ * Load order:
+ *   1. Variables (custom properties — everything depends on these)
+ *   2. Reset    (normalise browser defaults)
+ *   3. Base     (body, typography, links)
+ *   4. Layout   (page shell, sidebar, header, grid)
+ *   5. Components (UI building blocks)
+ *   6. Pages    (page-specific overrides)
+ *   7. Utilities (single-purpose helpers — highest specificity wins)
+ *
+ * Note: this app does not use a build pipeline — @import is fine
+ * for a low-traffic two-user private application.
+ */
+
+/* 1 — Foundation */
+@import url('variables.css');
+@import url('reset.css');
+@import url('base.css');
+
+/* 2 — Structure */
+@import url('layout.css');
+
+/* 3 — Components */
+@import url('components/navigation.css');
+@import url('components/buttons.css');
+@import url('components/forms.css');
+@import url('components/cards.css');
+@import url('components/ratings.css');
+@import url('components/tags.css');
+@import url('components/modals.css');
+@import url('components/toast.css');
+@import url('components/map.css');
+@import url('components/skeleton.css');
+@import url('components/gallery.css');
+
+/* 4 — Pages */
+@import url('pages/auth.css');
+@import url('pages/dashboard.css');
+@import url('pages/places.css');
+
+/* 5 — Utilities (must be last so helpers override component styles) */
+@import url('utilities.css');

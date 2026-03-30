@@ -1,0 +1,143 @@
+/**
+ * Frizon.org — Auth pages (login)
+ * From UI-DESIGN.md section 3.1
+ */
+
+/* ----------------------------------------------------------------
+ * Login page layout
+ * ---------------------------------------------------------------- */
+
+.auth-page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  /* Gradient background using brand steel blue */
+  background: linear-gradient(160deg, var(--color-brand-primary) 0%, var(--color-brand-light) 100%);
+  padding: var(--space-6) var(--space-4);
+}
+
+/* ----------------------------------------------------------------
+ * Brand / logo area above the form
+ * ---------------------------------------------------------------- */
+
+.auth-brand {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-6);
+  text-align: center;
+}
+
+.auth-brand__logo {
+  width: 120px;
+  height: auto;
+  object-fit: contain;
+  /* Drop shadow to lift logo on gradient background */
+  filter: drop-shadow(0 4px 12px rgba(0,0,0,0.15));
+}
+
+.auth-brand__tagline {
+  font-family: var(--font-script);
+  font-size: 22px;
+  font-weight: var(--weight-bold);
+  color: var(--color-white);
+  letter-spacing: 0.01em;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+
+/* ----------------------------------------------------------------
+ * Form card
+ * ---------------------------------------------------------------- */
+
+.auth-card {
+  background: var(--color-white);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-xl);
+  padding: var(--space-8);
+  width: 100%;
+  max-width: 400px;
+}
+
+.auth-card__title {
+  font-size: var(--text-h3);
+  font-weight: var(--weight-bold);
+  color: var(--color-text);
+  margin: 0 0 var(--space-6);
+  text-align: center;
+}
+
+/* ----------------------------------------------------------------
+ * Form elements inside auth card
+ * ---------------------------------------------------------------- */
+
+.auth-card .form-group {
+  margin-bottom: var(--space-4);
+}
+
+.auth-card .btn-primary {
+  width: 100%;
+  margin-top: var(--space-2);
+}
+
+/* Forgot password link */
+.auth-card__forgot {
+  display: block;
+  text-align: center;
+  margin-top: var(--space-4);
+  font-size: var(--text-body-sm);
+  color: var(--color-text-muted);
+  text-decoration: none;
+  transition: color var(--transition-fast);
+}
+
+.auth-card__forgot:hover {
+  color: var(--color-accent);
+  text-decoration: underline;
+}
+
+/* ----------------------------------------------------------------
+ * Auth error state
+ * ---------------------------------------------------------------- */
+
+.auth-error {
+  display: none;
+  background: var(--color-error-bg);
+  border-left: 4px solid var(--color-error);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+  margin-bottom: var(--space-4);
+  font-size: var(--text-body-sm);
+  color: var(--color-error);
+  font-weight: var(--weight-medium);
+}
+
+.auth-error.is-visible {
+  display: block;
+}
+
+/* Shake animation on form error */
+.auth-card.is-shaking {
+  animation: shake 400ms cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+}
+
+@keyframes shake {
+  10%, 90% { transform: translateX(-2px); }
+  20%, 80% { transform: translateX(4px); }
+  30%, 50%, 70% { transform: translateX(-6px); }
+  40%, 60% { transform: translateX(6px); }
+}
+
+/* ----------------------------------------------------------------
+ * Password visibility toggle
+ * ---------------------------------------------------------------- */
+
+.auth-card .form-input-wrapper .form-input {
+  padding-right: 3rem;
+}
+
+.auth-card .form-input-action {
+  color: var(--color-text-muted);
+}

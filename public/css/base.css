@@ -1,0 +1,251 @@
+/**
+ * Frizon.org — Base styles
+ * Body, typography, links, alerts, and foundational elements
+ */
+
+/* ----------------------------------------------------------------
+ * Body
+ * ---------------------------------------------------------------- */
+
+body {
+  font-family: var(--font-base);
+  font-size: var(--text-body-lg);
+  font-weight: var(--weight-regular);
+  line-height: var(--leading-normal);
+  color: var(--color-text);
+  background-color: var(--color-bg);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ----------------------------------------------------------------
+ * Headings
+ * ---------------------------------------------------------------- */
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-base);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-tight);
+  color: var(--color-text);
+}
+
+h1 { font-size: var(--text-h1); }
+h2 { font-size: var(--text-h2); }
+h3 { font-size: var(--text-h3); }
+h4 { font-size: var(--text-h4); }
+
+/* ----------------------------------------------------------------
+ * Text elements
+ * ---------------------------------------------------------------- */
+
+p {
+  line-height: var(--leading-normal);
+  margin-bottom: var(--space-4);
+}
+
+p:last-child {
+  margin-bottom: 0;
+}
+
+small {
+  font-size: var(--text-body-sm);
+  color: var(--color-text-muted);
+}
+
+strong {
+  font-weight: var(--weight-semibold);
+}
+
+/* Script/decorative text */
+.text-script {
+  font-family: var(--font-script);
+  font-weight: var(--weight-bold);
+}
+
+.text-script--lg {
+  font-size: var(--text-script-lg);
+}
+
+.text-script--md {
+  font-size: var(--text-script-md);
+}
+
+/* ----------------------------------------------------------------
+ * Links
+ * ---------------------------------------------------------------- */
+
+a {
+  color: var(--color-accent);
+  text-decoration: none;
+  transition: color var(--transition-fast);
+}
+
+a:hover {
+  color: var(--color-accent-mid);
+  text-decoration: underline;
+}
+
+a:focus-visible {
+  outline: 3px solid var(--color-accent-mid);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+/* ----------------------------------------------------------------
+ * Lists
+ * ---------------------------------------------------------------- */
+
+ul, ol {
+  padding-left: var(--space-5);
+}
+
+li {
+  margin-bottom: var(--space-1);
+  line-height: var(--leading-normal);
+}
+
+/* ----------------------------------------------------------------
+ * Code / pre
+ * ---------------------------------------------------------------- */
+
+code {
+  font-family: ui-monospace, 'Cascadia Code', 'Source Code Pro', monospace;
+  font-size: 0.875em;
+  background: var(--color-info-bg);
+  color: var(--color-accent);
+  padding: 0.1em 0.3em;
+  border-radius: var(--radius-sm);
+}
+
+pre {
+  background: var(--color-brand-dark);
+  color: var(--color-white);
+  padding: var(--space-4);
+  border-radius: var(--radius-md);
+  overflow-x: auto;
+  font-size: var(--text-body-sm);
+  line-height: var(--leading-relaxed);
+}
+
+pre code {
+  background: transparent;
+  color: inherit;
+  padding: 0;
+}
+
+/* ----------------------------------------------------------------
+ * Horizontal rule
+ * ---------------------------------------------------------------- */
+
+hr {
+  border: none;
+  border-top: 1px solid var(--color-border);
+  margin: var(--space-6) 0;
+}
+
+/* ----------------------------------------------------------------
+ * Alerts / Inline messages
+ * ---------------------------------------------------------------- */
+
+.alert {
+  display: flex;
+  gap: var(--space-3);
+  align-items: flex-start;
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  border-left: 4px solid transparent;
+  font-size: var(--text-body-sm);
+  line-height: var(--leading-normal);
+}
+
+.alert--success {
+  background: var(--color-success-bg);
+  border-left-color: var(--color-success);
+  color: var(--color-success);
+}
+
+.alert--warning {
+  background: var(--color-warning-bg);
+  border-left-color: var(--color-warning);
+  color: var(--color-warning);
+}
+
+.alert--error {
+  background: var(--color-error-bg);
+  border-left-color: var(--color-error);
+  color: var(--color-error);
+}
+
+.alert--info {
+  background: var(--color-info-bg);
+  border-left-color: var(--color-info);
+  color: var(--color-info);
+}
+
+.alert__icon {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+}
+
+.alert__text {
+  flex: 1;
+}
+
+.alert__title {
+  font-weight: var(--weight-semibold);
+  margin-bottom: var(--space-1);
+}
+
+/* ----------------------------------------------------------------
+ * Section labels (uppercase category headings)
+ * ---------------------------------------------------------------- */
+
+.section-label {
+  font-size: 11px;
+  font-weight: var(--weight-semibold);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+  margin-bottom: var(--space-2);
+}
+
+/* ----------------------------------------------------------------
+ * Focus styles — accessible, never hidden
+ * ---------------------------------------------------------------- */
+
+:focus-visible {
+  outline: 3px solid var(--color-accent-mid);
+  outline-offset: 2px;
+}
+
+/* ----------------------------------------------------------------
+ * Selection
+ * ---------------------------------------------------------------- */
+
+::selection {
+  background: rgba(44, 95, 106, 0.20);
+  color: var(--color-text);
+}
+
+/* ----------------------------------------------------------------
+ * Scrollbar (webkit — subtle)
+ * ---------------------------------------------------------------- */
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: var(--radius-full);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-brand-light);
+}

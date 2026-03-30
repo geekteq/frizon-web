@@ -1,0 +1,224 @@
+/**
+ * Frizon.org — Navigation component
+ * Mobile bottom bar + desktop sidebar nav items
+ * The sidebar shell is in layout.css; this file covers the bottom nav.
+ */
+
+/* ----------------------------------------------------------------
+ * Mobile bottom navigation bar
+ * ---------------------------------------------------------------- */
+
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  height: var(--nav-height-mob);
+  background: var(--color-white);
+  border-top: 1px solid var(--color-border);
+  box-shadow: 0 -4px 12px rgba(61, 79, 95, 0.08);
+  display: flex;
+  align-items: stretch;
+  /* Account for iOS home indicator */
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* Faux extra height spacer when safe-area is present */
+.bottom-nav::after {
+  content: '';
+  position: absolute;
+  bottom: calc(-1 * env(safe-area-inset-bottom, 0px));
+  left: 0;
+  right: 0;
+  height: env(safe-area-inset-bottom, 0px);
+  background: var(--color-white);
+}
+
+/* ----------------------------------------------------------------
+ * Bottom nav items (5 tabs)
+ * ---------------------------------------------------------------- */
+
+.bottom-nav__item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  padding: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--color-text-muted);
+  opacity: 0.65;
+  text-decoration: none;
+  position: relative;
+  min-height: 44px; /* Accessibility touch target */
+  transition: opacity var(--transition-fast), color var(--transition-fast);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.bottom-nav__item:hover {
+  opacity: 0.85;
+}
+
+.bottom-nav__item.is-active {
+  color: var(--color-accent);
+  opacity: 1;
+}
+
+/* Active indicator dot above icon */
+.bottom-nav__item.is-active::before {
+  content: '';
+  position: absolute;
+  top: 6px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 4px;
+  height: 4px;
+  border-radius: var(--radius-full);
+  background: var(--color-accent);
+}
+
+.bottom-nav__icon {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+}
+
+.bottom-nav__label {
+  font-size: var(--text-nav);
+  font-weight: var(--weight-medium);
+  line-height: 1;
+}
+
+/* ----------------------------------------------------------------
+ * FAB — Center "Add place" button
+ * ---------------------------------------------------------------- */
+
+/* The FAB slot takes the same flex-1 space but lifts the button above navbar */
+.bottom-nav__fab-slot {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  padding-bottom: var(--space-2);
+  position: relative;
+  /* No label below FAB — aria-label handles accessibility */
+}
+
+.fab {
+  width: 56px;
+  height: 56px;
+  border-radius: var(--radius-full);
+  background: var(--color-accent);
+  color: var(--color-white);
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow-float);
+  /* Lift 12px above navbar */
+  margin-bottom: 12px;
+  transition: background var(--transition-fast), transform var(--transition-spring), box-shadow var(--transition-fast);
+  -webkit-tap-highlight-color: transparent;
+  flex-shrink: 0;
+}
+
+.fab:hover {
+  background: var(--color-accent-mid);
+}
+
+.fab:active {
+  transform: scale(0.94);
+  box-shadow: var(--shadow-md);
+}
+
+.fab__icon {
+  width: 28px;
+  height: 28px;
+}
+
+/* Extended FAB — with label (for empty states) */
+.fab--extended {
+  width: auto;
+  border-radius: var(--radius-2xl);
+  padding: 0 var(--space-5);
+  gap: var(--space-2);
+  white-space: nowrap;
+  font-size: var(--text-button);
+  font-weight: var(--weight-semibold);
+}
+
+.fab--extended .fab__icon {
+  width: 20px;
+  height: 20px;
+}
+
+/* Fixed FAB (e.g., "+ New visit" on place detail, fixed bottom-right) */
+.fab--fixed {
+  position: fixed;
+  bottom: calc(var(--nav-height-mob) + var(--space-4) + env(safe-area-inset-bottom, 0px));
+  right: var(--space-4);
+  z-index: 50;
+}
+
+/* ----------------------------------------------------------------
+ * Hide bottom nav on desktop
+ * ---------------------------------------------------------------- */
+
+@media (min-width: 1024px) {
+  .bottom-nav {
+    display: none;
+  }
+
+  .fab--fixed {
+    bottom: var(--space-6);
+    right: var(--space-6);
+  }
+}
+
+/* ----------------------------------------------------------------
+ * Toggle buttons (map/list view switcher, used in places index header)
+ * ---------------------------------------------------------------- */
+
+.view-toggle {
+  display: flex;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.view-toggle__btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 36px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: var(--color-text-muted);
+  transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+.view-toggle__btn:hover {
+  background: var(--color-info-bg);
+}
+
+.view-toggle__btn.is-active {
+  background: var(--color-accent);
+  color: var(--color-white);
+}
+
+.view-toggle__btn + .view-toggle__btn {
+  border-left: 1px solid var(--color-border);
+}
+
+.view-toggle__icon {
+  width: 18px;
+  height: 18px;
+}
