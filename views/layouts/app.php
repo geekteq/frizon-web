@@ -17,12 +17,15 @@ $pageTitle = $pageTitle ?? 'Frizon';
 </head>
 <body class="app-layout">
     <?php include dirname(__DIR__) . '/partials/nav-desktop.php'; ?>
-    <?php include dirname(__DIR__) . '/partials/header.php'; ?>
 
-    <main class="app-main">
-        <?php include dirname(__DIR__) . '/partials/toast.php'; ?>
-        <?= $content ?>
-    </main>
+    <div class="app-content">
+        <?php include dirname(__DIR__) . '/partials/header.php'; ?>
+
+        <main class="app-main">
+            <?php include dirname(__DIR__) . '/partials/toast.php'; ?>
+            <?= $content ?>
+        </main>
+    </div>
 
     <?php include dirname(__DIR__) . '/partials/nav-mobile.php'; ?>
 

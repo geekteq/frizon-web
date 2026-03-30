@@ -15,16 +15,19 @@ body.app-layout {
   background: var(--color-bg);
 }
 
-/* Main content area — shifted right on desktop when sidebar is present */
-/* .app__content is the design spec name; .app-main is what app.php emits */
-.app__content,
-.app-main {
+/* Content wrapper — contains header + main, sits next to sidebar on desktop */
+.app-content {
   flex: 1;
   min-width: 0;
   display: flex;
   flex-direction: column;
-  padding: var(--space-4);
   padding-bottom: calc(var(--nav-height-mob) + env(safe-area-inset-bottom, 16px));
+}
+
+/* Main content area */
+.app-main {
+  flex: 1;
+  padding: var(--space-4);
   max-width: 960px;
   width: 100%;
 }
@@ -617,12 +620,13 @@ body.app-layout {
     display: none; /* Sidebar replaces the mobile header */
   }
 
-  /* Both the spec alias and the actual template class */
-  .app__content,
-  .app-main {
+  .app-content {
     margin-left: var(--sidebar-width);
+    padding-bottom: 0;
+  }
+
+  .app-main {
     padding: var(--space-6) var(--space-8);
-    padding-bottom: 0; /* No bottom nav on desktop */
   }
 
   .app-header--desktop {
