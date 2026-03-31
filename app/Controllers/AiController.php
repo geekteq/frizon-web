@@ -8,6 +8,7 @@ require_once dirname(__DIR__) . '/Services/AiService.php';
 require_once dirname(__DIR__) . '/Models/Visit.php';
 require_once dirname(__DIR__) . '/Models/VisitRating.php';
 require_once dirname(__DIR__) . '/Models/AiDraft.php';
+require_once dirname(__DIR__) . '/Models/Place.php';
 
 class AiController
 {
@@ -91,6 +92,77 @@ class AiController
                 'created_at' => $draft['created_at'],
             ],
         ]);
+    }
+
+    /**
+     * POST /adm/platser/{slug}/ai/generera
+     * Generate AI text from place data + any existing description as seed.
+     */
+    public function generatePlaceDraft(array $params): void
+    {
+        Auth::requireLogin();
+        header('Content-Type: application/json');
+
+        if (!CsrfService::verify()) {
+            http_response_code(403);
+            echo json_encode(['success' => false, 'error' => 'Ogiltig säkerhetstoken.']);
+            return;
+        }
+
+        $placeModel = new Place($this->pdo);
+        $place = $placeModel->findBySlug($params['slug']);
+        if (!$place) {
+            http_response_code(404);
+            echo json_encode(['success' => false, 'error' => 'Platsen hittades inte.']);
+            return;
+        }
+
+        // Gather context from place + best visit data if any
+        $context = [
+            'place_name'  => $place['name'],
+            'place_type'  => $place['place_type'],
+            'country_code' => $place['country_code'],
+            'raw_note'    => $place['default_public_text'] ?? '',
+        ];
+
+        // Enrich with latest visit data if available
+        $stmt = $this->pdo->prepare('
+            SELECT v.*, vr.total_rating_cached, vr.location_rating, vr.calmness_rating,
+                   vr.service_rating, vr.value_rating, vr.return_value_rating
+            FROM visits v
+            LEFT JOIN visit_ratings vr ON vr.visit_id = v.id
+            WHERE v.place_id = ?
+            ORDER BY v.visited_at DESC LIMIT 1
+        ');
+        $stmt->execute([$place['id']]);
+        $visit = $stmt->fetch();
+
+        if ($visit) {
+            $context['plus_notes']   = $visit['plus_notes'];
+            $context['minus_notes']  = $visit['minus_notes'];
+            $context['tips_notes']   = $visit['tips_notes'];
+            $context['suitable_for'] = $visit['suitable_for'];
+            $context['price_level']  = $visit['price_level'];
+            $context['would_return'] = $visit['would_return'];
+            $context['total_rating'] = $visit['total_rating_cached'];
+        }
+
+        // Also include user-provided seed text from the textarea
+        $input = json_decode(file_get_contents('php://input'), true);
+        if (!empty($input['current_text'])) {
+            $context['raw_note'] = $input['current_text'];
+        }
+
+        try {
+            $aiService = new AiService();
+            $draftText = $aiService->generateDraft($context);
+        } catch (RuntimeException $e) {
+            http_response_code(500);
+            echo json_encode(['success' => false, 'error' => $e->getMessage()]);
+            return;
+        }
+
+        echo json_encode(['success' => true, 'text' => $draftText]);
     }
 
     /**

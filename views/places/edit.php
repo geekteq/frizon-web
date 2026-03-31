@@ -63,8 +63,12 @@
     </div>
 
     <div class="form-group">
-        <label for="default_public_text" class="form-label">Beskrivning (visas publikt)</label>
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:var(--space-2);">
+            <label for="default_public_text" class="form-label" style="margin:0;">Beskrivning (visas publikt)</label>
+            <button type="button" id="ai-place-btn" class="btn btn-secondary btn--sm" style="font-size:var(--text-xs);">Brodera ut text</button>
+        </div>
         <textarea id="default_public_text" name="default_public_text" class="form-textarea" rows="4"><?= htmlspecialchars($p['default_public_text'] ?? '') ?></textarea>
+        <p id="ai-place-status" style="font-size:var(--text-sm); color:var(--color-text-muted); margin-top:var(--space-1); display:none;"></p>
     </div>
 
     <div class="flex gap-3">
@@ -115,5 +119,44 @@ document.addEventListener('DOMContentLoaded', function() {
     map.on('click', function(e) { marker.setLatLng(e.latlng); syncInputs(e.latlng); });
     latInput.addEventListener('change', syncMap);
     lngInput.addEventListener('change', syncMap);
+
+    // AI generate for place description
+    var aiBtn = document.getElementById('ai-place-btn');
+    var aiStatus = document.getElementById('ai-place-status');
+    var descField = document.getElementById('default_public_text');
+    if (aiBtn && descField) {
+        aiBtn.addEventListener('click', function() {
+            aiBtn.disabled = true;
+            aiBtn.textContent = 'Genererar...';
+            aiStatus.style.display = 'block';
+            aiStatus.textContent = 'Skapar utkast med AI...';
+
+            var csrf = document.querySelector('input[name="_csrf"]');
+            fetch('/adm/platser/<?= htmlspecialchars($p['slug']) ?>/ai/generera', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-Token': csrf ? csrf.value : ''
+                },
+                body: JSON.stringify({ current_text: descField.value })
+            })
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                if (data.success) {
+                    descField.value = data.text;
+                    aiStatus.textContent = 'Utkast infogat — redigera och spara.';
+                } else {
+                    aiStatus.textContent = data.error || 'Något gick fel.';
+                }
+            })
+            .catch(function() {
+                aiStatus.textContent = 'Nätverksfel — försök igen.';
+            })
+            .finally(function() {
+                aiBtn.disabled = false;
+                aiBtn.textContent = 'Brodera ut text';
+            });
+        });
+    }
 });
 </script>
