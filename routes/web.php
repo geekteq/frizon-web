@@ -27,6 +27,24 @@ function registerRoutes(Router $router): void
     $router->put('/besok/{id}', 'VisitController', 'update');
     $router->delete('/besok/{id}', 'VisitController', 'destroy');
 
+    // Trips
+    $router->get('/resor', 'TripController', 'index');
+    $router->get('/resor/ny', 'TripController', 'create');
+    $router->post('/resor', 'TripController', 'store');
+    $router->get('/resor/{slug}', 'TripController', 'show');
+    $router->get('/resor/{slug}/redigera', 'TripController', 'edit');
+    $router->put('/resor/{slug}', 'TripController', 'update');
+    $router->delete('/resor/{slug}', 'TripController', 'destroy');
+
+    // Trip stops
+    $router->post('/resor/{slug}/hallplatser', 'TripController', 'addStop');
+    $router->delete('/resor/hallplatser/{stopId}', 'TripController', 'removeStop');
+    $router->put('/resor/{slug}/hallplatser/ordning', 'TripController', 'reorderStops');
+
+    // Trip routing and export
+    $router->post('/resor/{slug}/berakna-rutt', 'TripController', 'calculateRoute');
+    $router->get('/resor/{slug}/export/gpx', 'TripController', 'exportGpx');
+
     // API endpoints (JSON)
     $router->get('/api/platser/nearby', 'PlaceController', 'nearby');
     $router->post('/api/images/upload', 'VisitController', 'uploadImage');

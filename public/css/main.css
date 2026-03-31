@@ -40,6 +40,7 @@
 @import url('pages/auth.css');
 @import url('pages/dashboard.css');
 @import url('pages/places.css');
+@import url('pages/trips.css');
 
 /* 5 — Utilities (must be last so helpers override component styles) */
 @import url('utilities.css');

@@ -16,7 +16,7 @@
             <div class="stat-card__label">Länder</div>
         </div>
         <div class="stat-card">
-            <div class="stat-card__number">0</div>
+            <div class="stat-card__number"><?= $stats['trips'] ?></div>
             <div class="stat-card__label">Resor</div>
         </div>
     </div>
