@@ -41,6 +41,8 @@ $pageTitle = $pageTitle ?? 'Frizon of Sweden';
             <a href="/integritetspolicy" style="color:rgba(255,255,255,0.6); text-decoration:underline;">Integritetspolicy</a>
             <span style="color:rgba(255,255,255,0.4);"> &middot; </span>
             <a href="/cookiepolicy" style="color:rgba(255,255,255,0.6); text-decoration:underline;">Cookiepolicy</a>
+            <span style="color:rgba(255,255,255,0.4);"> &middot; </span>
+            <a href="/adm" style="color:rgba(255,255,255,0.4); text-decoration:none;">Admin</a>
         </p>
         <p style="font-size:var(--text-xs); color:rgba(255,255,255,0.45);">
             &copy; <?= date('Y') ?> <a href="https://mobileminds.se" target="_blank" rel="noopener" style="color:rgba(255,255,255,0.55); text-decoration:underline;">Mobile Minds AB</a>
