@@ -59,7 +59,7 @@ class Auth
     {
         if (!self::check()) {
             flash('error', 'Du måste logga in.');
-            redirect('/login');
+            redirect('/adm/login');
         }
     }
 }

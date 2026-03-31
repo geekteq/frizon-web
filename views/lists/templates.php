@@ -1,15 +1,15 @@
 <div class="flex-between mb-4">
     <h2>Listmallar</h2>
     <div class="flex gap-2">
-        <a href="/listor" class="btn btn-ghost btn--sm">&larr; Listor</a>
-        <a href="/listor/mallar/ny" class="btn btn-primary btn--sm">+ Ny mall</a>
+        <a href="/adm/listor" class="btn btn-ghost btn--sm">&larr; Listor</a>
+        <a href="/adm/listor/mallar/ny" class="btn btn-primary btn--sm">+ Ny mall</a>
     </div>
 </div>
 
 <?php if (empty($templates)): ?>
     <div class="empty-state">
         <p class="text-muted">Inga mallar ännu.</p>
-        <a href="/listor/mallar/ny" class="btn btn-primary mt-4">Skapa din första mall</a>
+        <a href="/adm/listor/mallar/ny" class="btn btn-primary mt-4">Skapa din första mall</a>
     </div>
 <?php else: ?>
     <?php foreach ($templates as $t): ?>
@@ -25,7 +25,7 @@
             <?php if ($t['description']): ?>
                 <p class="text-sm text-muted mt-1"><?= htmlspecialchars($t['description']) ?></p>
             <?php endif; ?>
-            <form method="POST" action="/listor/mallar/<?= $t['id'] ?>" class="mt-2">
+            <form method="POST" action="/adm/listor/mallar/<?= $t['id'] ?>" class="mt-2">
                 <?php include dirname(__DIR__) . '/partials/csrf-field.php'; ?>
                 <input type="hidden" name="_method" value="DELETE">
                 <button type="submit" class="btn btn-danger btn--sm" onclick="return confirm('Ta bort mallen?')">Ta bort</button>

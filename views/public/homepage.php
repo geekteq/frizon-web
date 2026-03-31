@@ -2,10 +2,24 @@
 $placeTypes = [
     'breakfast'=>'Frukost','lunch'=>'Lunch','dinner'=>'Middag','fika'=>'Fika',
     'sight'=>'Sevärdhet','shopping'=>'Shopping','stellplatz'=>'Ställplats',
-    'wild_camping'=>'Vildcamping','camping'=>'Camping',
+    'wild_camping'=>'Fricamping','camping'=>'Camping',
 ];
 ?>
 
+<!-- Welcome section -->
+<div style="max-width:680px; margin:0 auto; padding:var(--space-8) var(--space-4) var(--space-6); text-align:center;">
+    <h1 style="font-size:var(--text-2xl); font-weight:var(--weight-bold); margin-bottom:var(--space-3); color:var(--color-text);">Välkommen till Frizon of Sweden</h1>
+    <p style="font-size:var(--text-base); line-height:var(--leading-relaxed); color:var(--color-text-muted); margin-bottom:var(--space-4);">
+        Vi är Mattias och Ulrica — och Frizze, vår Adria Twin som tar oss ut på vägarna.
+        Här delar vi platser vi besökt, vad vi tyckte och om de är värda ett återbesök.
+        Allt sett ur en husbilsresandes perspektiv.
+    </p>
+    <p style="font-size:var(--text-sm); color:var(--color-text-muted);">
+        Följ oss på <a href="https://www.instagram.com/frizon_of_sweden" target="_blank" rel="noopener" style="color:var(--color-accent); text-decoration:underline;">Instagram @frizon_of_sweden</a>
+    </p>
+</div>
+
+<?php if (!empty($places)): ?>
 <!-- Map -->
 <div id="public-map" class="public-map"
      data-places='<?= htmlspecialchars(json_encode(array_map(fn($p) => [
@@ -21,24 +35,25 @@ $placeTypes = [
 <!-- Filters -->
 <div class="public-filters">
     <div class="filter-bar">
-        <a href="/pub" class="filter-bar__chip <?= !$filterType && !$filterCountry ? 'is-active' : '' ?>">Alla</a>
+        <a href="/" class="filter-bar__chip <?= !$filterType && !$filterCountry ? 'is-active' : '' ?>">Alla</a>
         <?php foreach ($allTypes as $type): ?>
-            <a href="/pub?type=<?= $type ?>" class="filter-bar__chip <?= $filterType === $type ? 'is-active' : '' ?>"><?= $placeTypes[$type] ?? $type ?></a>
+            <a href="/?type=<?= $type ?>" class="filter-bar__chip <?= $filterType === $type ? 'is-active' : '' ?>"><?= $placeTypes[$type] ?? $type ?></a>
         <?php endforeach; ?>
         <?php foreach ($allPublic as $cc): ?>
-            <a href="/pub?country=<?= $cc ?>" class="filter-bar__chip <?= $filterCountry === $cc ? 'is-active' : '' ?>"><?= strtoupper($cc) ?></a>
+            <a href="/?country=<?= $cc ?>" class="filter-bar__chip <?= $filterCountry === $cc ? 'is-active' : '' ?>"><?= strtoupper($cc) ?></a>
         <?php endforeach; ?>
     </div>
 </div>
+<?php endif; ?>
 
 <!-- Place cards -->
 <div class="public-places">
     <?php if (empty($places)): ?>
-        <p class="text-muted text-center" style="padding:var(--space-8) 0;">Inga publika platser ännu.</p>
+        <p class="text-muted text-center" style="padding:var(--space-6) 0; font-style:italic;">Vi har inte publicerat några platser ännu — men det kommer snart!</p>
     <?php else: ?>
         <div class="place-grid">
             <?php foreach ($places as $p): ?>
-                <a href="/pub/platser/<?= htmlspecialchars($p['slug']) ?>" class="pub-place-card">
+                <a href="/platser/<?= htmlspecialchars($p['slug']) ?>" class="pub-place-card">
                     <?php if ($p['is_featured']): ?>
                         <span class="pub-place-card__featured">Utvald</span>
                     <?php endif; ?>
@@ -80,7 +95,7 @@ document.addEventListener('DOMContentLoaded', function() {
     var bounds = L.latLngBounds();
     places.forEach(function(p) {
         var marker = L.marker([p.lat, p.lng]).addTo(map);
-        var popup = '<strong><a href="/pub/platser/' + p.slug + '">' + p.name + '</a></strong>';
+        var popup = '<strong><a href="/platser/' + p.slug + '">' + p.name + '</a></strong>';
         if (p.rating) popup += '<br>&#9733; ' + p.rating;
         marker.bindPopup(popup);
         bounds.extend([p.lat, p.lng]);

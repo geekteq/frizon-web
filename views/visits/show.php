@@ -1,5 +1,5 @@
 <div class="page-header mb-4">
-    <a href="/platser/<?= htmlspecialchars($visit['place_slug']) ?>" class="btn-ghost btn--sm">&larr; <?= htmlspecialchars($visit['place_name']) ?></a>
+    <a href="/adm/platser/<?= htmlspecialchars($visit['place_slug']) ?>" class="btn-ghost btn--sm">&larr; <?= htmlspecialchars($visit['place_name']) ?></a>
 </div>
 
 <div class="visit-detail">
@@ -61,12 +61,45 @@
         </div>
     <?php endif; ?>
 
+    <!-- AI-utkast -->
+    <div class="ai-draft-section" style="margin-top:var(--space-6); padding-top:var(--space-4); border-top:1px solid var(--color-border);">
+        <h3 class="text-sm" style="margin-bottom:var(--space-3);">Publik beskrivning</h3>
+
+        <?php if (!empty($visit['approved_public_text'])): ?>
+            <div style="background:var(--color-success-light, #f0fdf4); padding:var(--space-3); border-radius:var(--radius-md); margin-bottom:var(--space-3);">
+                <span class="text-sm" style="color:var(--color-success); font-weight:600;">Godkänd text</span>
+                <p style="margin-top:var(--space-2);"><?= nl2br(htmlspecialchars($visit['approved_public_text'])) ?></p>
+            </div>
+        <?php endif; ?>
+
+        <div id="ai-draft-area"
+             data-visit-id="<?= (int)$visit['id'] ?>"
+             data-csrf="<?= htmlspecialchars(CsrfService::token()) ?>">
+            <button type="button" id="ai-generate-btn" class="btn btn-secondary btn--sm">
+                Brodera ut text
+            </button>
+            <div id="ai-draft-loading" style="display:none;" class="text-sm text-muted">Genererar utkast...</div>
+            <div id="ai-draft-result" style="display:none;"></div>
+        </div>
+    </div>
+
     <div class="flex gap-3 mt-6">
-        <a href="/besok/<?= $visit['id'] ?>/redigera" class="btn btn-secondary btn--sm">Redigera</a>
-        <form method="POST" action="/besok/<?= $visit['id'] ?>" style="display:inline;">
+        <a href="/adm/besok/<?= $visit['id'] ?>/redigera" class="btn btn-secondary btn--sm">Redigera</a>
+        <form method="POST" action="/adm/besok/<?= $visit['id'] ?>" style="display:inline;">
             <?php include dirname(__DIR__) . '/partials/csrf-field.php'; ?>
             <input type="hidden" name="_method" value="DELETE">
             <button type="submit" class="btn btn-danger btn--sm" onclick="return confirm('Ta bort besöket?')">Ta bort</button>
         </form>
     </div>
 </div>
+
+<script src="/js/ai.js"></script>
+<script>
+(function () {
+    var area = document.getElementById('ai-draft-area');
+    if (!area) return;
+    var visitId   = parseInt(area.dataset.visitId, 10);
+    var csrfToken = area.dataset.csrf;
+    initAiDraft(visitId, csrfToken);
+}());
+</script>

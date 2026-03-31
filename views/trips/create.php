@@ -1,8 +1,8 @@
 <div class="page-header mb-4">
-    <a href="/resor" class="btn-ghost btn--sm">&larr; Resor</a>
+    <a href="/adm/resor" class="btn-ghost btn--sm">&larr; Resor</a>
 </div>
 
-<form method="POST" action="/resor" style="max-width:var(--form-max-width);">
+<form method="POST" action="/adm/resor" style="max-width:var(--form-max-width);">
     <?php include dirname(__DIR__) . '/partials/csrf-field.php'; ?>
 
     <div class="form-group">

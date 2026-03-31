@@ -2,13 +2,13 @@
 $placeTypes = [
     'breakfast' => 'Frukost', 'lunch' => 'Lunch', 'dinner' => 'Middag',
     'fika' => 'Fika', 'sight' => 'Sevärdhet', 'shopping' => 'Shopping',
-    'stellplatz' => 'Ställplats', 'wild_camping' => 'Vildcamping', 'camping' => 'Camping',
+    'stellplatz' => 'Ställplats', 'wild_camping' => 'Fricamping', 'camping' => 'Camping',
 ];
 $typeLabel = $placeTypes[$place['place_type']] ?? $place['place_type'];
 $rating = $place['avg_rating'] ?? null;
 $visitCount = $place['visit_count'] ?? 0;
 ?>
-<a href="/platser/<?= htmlspecialchars($place['slug']) ?>" class="place-card">
+<a href="/adm/platser/<?= htmlspecialchars($place['slug']) ?>" class="place-card">
     <div class="place-card__icon place-card__icon--<?= htmlspecialchars($place['place_type']) ?>">
         <span class="place-card__type-badge"><?= htmlspecialchars($typeLabel) ?></span>
     </div>

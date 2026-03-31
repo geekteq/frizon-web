@@ -72,7 +72,7 @@ class PlaceController
 
         if ($name === '' || $lat === 0.0 || $lng === 0.0) {
             flash('error', 'Namn och koordinater krävs.');
-            redirect('/platser/ny');
+            redirect('/adm/platser/ny');
         }
 
         $place = new Place($this->pdo);
@@ -88,7 +88,7 @@ class PlaceController
         ]);
 
         flash('success', 'Platsen har sparats!');
-        redirect('/platser');
+        redirect('/adm/platser');
     }
 
     public function edit(array $params): void
@@ -119,7 +119,7 @@ class PlaceController
         ]);
 
         flash('success', 'Platsen har uppdaterats.');
-        redirect('/platser/' . $params['slug']);
+        redirect('/adm/platser/' . $params['slug']);
     }
 
     public function destroy(array $params): void
@@ -129,7 +129,7 @@ class PlaceController
         $place = new Place($this->pdo);
         $p = $place->findBySlug($params['slug']);
         if ($p) { $place->delete((int) $p['id']); flash('success', 'Platsen har tagits bort.'); }
-        redirect('/platser');
+        redirect('/adm/platser');
     }
 
     public function nearby(array $params): void

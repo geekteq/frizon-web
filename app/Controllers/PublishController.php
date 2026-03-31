@@ -54,7 +54,7 @@ class PublishController
             ->execute([$place['id']]);
 
         flash('success', $place['name'] . ' är nu publik!');
-        redirect('/publicera');
+        redirect('/adm/publicera');
     }
 
     public function unpublish(array $params): void
@@ -70,7 +70,7 @@ class PublishController
             ->execute([$place['id']]);
 
         flash('success', $place['name'] . ' är inte längre publik.');
-        redirect('/publicera');
+        redirect('/adm/publicera');
     }
 
     public function toggleToplist(array $params): void
@@ -88,6 +88,6 @@ class PublishController
 
         $msg = $newVal ? 'Tillagd i topplistan!' : 'Borttagen från topplistan.';
         flash('success', $msg);
-        redirect('/publicera');
+        redirect('/adm/publicera');
     }
 }

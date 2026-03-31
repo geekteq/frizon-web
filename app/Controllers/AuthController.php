@@ -19,7 +19,7 @@ class AuthController
     public function showLogin(array $params): void
     {
         if (Auth::check()) {
-            redirect('/');
+            redirect('/adm');
         }
         view('auth/login', [], 'auth');
     }
@@ -33,22 +33,22 @@ class AuthController
 
         if ($username === '' || $password === '') {
             flash('error', 'Fyll i alla fält.');
-            redirect('/login');
+            redirect('/adm/login');
         }
 
         $auth = new Auth($this->pdo);
         if ($auth->attempt($username, $password)) {
-            redirect('/');
+            redirect('/adm');
         }
 
         flash('error', 'Fel användarnamn eller lösenord.');
-        redirect('/login');
+        redirect('/adm/login');
     }
 
     public function logout(array $params): void
     {
         CsrfService::requireValid();
         Auth::logout();
-        redirect('/login');
+        redirect('/adm/login');
     }
 }

@@ -1,6 +1,6 @@
 <div class="flex-between mb-4">
     <h2>Publicera</h2>
-    <a href="/pub" class="btn btn-ghost btn--sm" target="_blank">Visa publik sida</a>
+    <a href="/" class="btn btn-ghost btn--sm" target="_blank">Visa publik sida</a>
 </div>
 
 <!-- Published -->
@@ -12,7 +12,7 @@
         <?php foreach ($published as $p): ?>
             <div class="publish-card publish-card--published">
                 <div class="publish-card__body">
-                    <a href="/platser/<?= htmlspecialchars($p['slug']) ?>" class="publish-card__name"><?= htmlspecialchars($p['name']) ?></a>
+                    <a href="/adm/platser/<?= htmlspecialchars($p['slug']) ?>" class="publish-card__name"><?= htmlspecialchars($p['name']) ?></a>
                     <div class="publish-card__meta text-sm text-muted">
                         <?= $p['visit_count'] ?> besök
                         <?php if ($p['avg_rating']): ?>
@@ -24,11 +24,11 @@
                     </div>
                 </div>
                 <div class="publish-card__actions flex gap-2">
-                    <form method="POST" action="/publicera/<?= htmlspecialchars($p['slug']) ?>/topplista">
+                    <form method="POST" action="/adm/publicera/<?= htmlspecialchars($p['slug']) ?>/topplista">
                         <?php include dirname(__DIR__) . '/partials/csrf-field.php'; ?>
                         <button type="submit" class="btn btn-ghost btn--sm"><?= $p['is_toplisted'] ? 'Ta bort från topp' : '+ Topplista' ?></button>
                     </form>
-                    <form method="POST" action="/publicera/<?= htmlspecialchars($p['slug']) ?>/avpublicera">
+                    <form method="POST" action="/adm/publicera/<?= htmlspecialchars($p['slug']) ?>/avpublicera">
                         <?php include dirname(__DIR__) . '/partials/csrf-field.php'; ?>
                         <button type="submit" class="btn btn-danger btn--sm" onclick="return confirm('Avpublicera?')">Avpublicera</button>
                     </form>
@@ -47,7 +47,7 @@
         <?php foreach ($unpublished as $p): ?>
             <div class="publish-card">
                 <div class="publish-card__body">
-                    <a href="/platser/<?= htmlspecialchars($p['slug']) ?>" class="publish-card__name"><?= htmlspecialchars($p['name']) ?></a>
+                    <a href="/adm/platser/<?= htmlspecialchars($p['slug']) ?>" class="publish-card__name"><?= htmlspecialchars($p['name']) ?></a>
                     <div class="publish-card__meta text-sm text-muted">
                         <?= $p['visit_count'] ?> besök
                         <?php if ($p['avg_rating']): ?>
@@ -56,7 +56,7 @@
                     </div>
                 </div>
                 <div class="publish-card__actions">
-                    <form method="POST" action="/publicera/<?= htmlspecialchars($p['slug']) ?>/godkann">
+                    <form method="POST" action="/adm/publicera/<?= htmlspecialchars($p['slug']) ?>/godkann">
                         <?php include dirname(__DIR__) . '/partials/csrf-field.php'; ?>
                         <button type="submit" class="btn btn-primary btn--sm">Publicera</button>
                     </form>

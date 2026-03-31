@@ -1,5 +1,5 @@
 <div class="page-header mb-4">
-    <a href="/resor" class="btn-ghost btn--sm">&larr; Resor</a>
+    <a href="/adm/resor" class="btn-ghost btn--sm">&larr; Resor</a>
 </div>
 
 <div class="trip-detail">
@@ -23,14 +23,19 @@
     <!-- Route map -->
     <?php if (!empty($stops) && count($stops) >= 2): ?>
         <div id="trip-map" class="trip-detail__map mb-4"
-             data-stops='<?= htmlspecialchars(json_encode(array_map(fn($s) => ['lat' => (float)$s['lat'], 'lng' => (float)$s['lng'], 'name' => $s['place_name']], $stops))) ?>'>
+             data-stops='<?= htmlspecialchars(json_encode(array_map(fn($s) => ['lat' => (float)$s['lat'], 'lng' => (float)$s['lng'], 'name' => $s['place_name']], $stops))) ?>'
+             data-segments='<?= htmlspecialchars(json_encode(array_map(fn($seg) => [
+                 'from_stop_id' => (int)$seg['from_stop_id'],
+                 'to_stop_id' => (int)$seg['to_stop_id'],
+                 'geometry' => $seg['geometry'],
+             ], $segments))) ?>'>
         </div>
     <?php endif; ?>
 
     <!-- Summary -->
     <?php if ($summary['stop_count'] > 0): ?>
         <div class="trip-summary mb-4">
-            <span><?= $summary['stop_count'] ?> hållplatser</span>
+            <span><?= $summary['stop_count'] ?> platser</span>
             <?php if ($summary['total_km'] > 0): ?>
                 <?php
                 $totalMin = (int) $summary['total_eta_95'];
@@ -47,11 +52,11 @@
     <!-- Stops -->
     <div class="trip-detail__section mb-6">
         <div class="flex-between mb-4">
-            <h3>Hållplatser (<?= count($stops) ?>)</h3>
+            <h3>Platser (<?= count($stops) ?>)</h3>
         </div>
 
         <?php if (empty($stops)): ?>
-            <p class="text-muted text-sm">Inga hållplatser ännu.</p>
+            <p class="text-muted text-sm">Inga platser ännu.</p>
         <?php else: ?>
             <div class="stop-list" id="stop-list">
                 <?php foreach ($stops as $i => $stop): ?>
@@ -79,7 +84,7 @@
         <?php endif; ?>
 
         <!-- Add stop form -->
-        <form method="POST" action="/resor/<?= htmlspecialchars($trip['slug']) ?>/hallplatser" class="mt-4">
+        <form method="POST" action="/adm/resor/<?= htmlspecialchars($trip['slug']) ?>/hallplatser" class="mt-4">
             <?php include dirname(__DIR__) . '/partials/csrf-field.php'; ?>
             <div class="flex gap-2">
                 <select name="place_id" class="form-select" required style="flex:1;">
@@ -96,14 +101,24 @@
     <!-- Actions -->
     <div class="trip-detail__actions flex gap-3 mb-4">
         <?php if (count($stops) >= 2): ?>
-            <form method="POST" action="/resor/<?= htmlspecialchars($trip['slug']) ?>/berakna-rutt" style="display:inline;">
+            <form method="POST" action="/adm/resor/<?= htmlspecialchars($trip['slug']) ?>/berakna-rutt" style="display:inline;">
                 <?php include dirname(__DIR__) . '/partials/csrf-field.php'; ?>
                 <button type="submit" class="btn btn-secondary btn--sm">Beräkna rutt</button>
             </form>
-            <a href="/resor/<?= htmlspecialchars($trip['slug']) ?>/export/gpx" class="btn btn-secondary btn--sm">Exportera GPX</a>
         <?php endif; ?>
-        <a href="/resor/<?= htmlspecialchars($trip['slug']) ?>/redigera" class="btn btn-ghost btn--sm">Redigera resa</a>
+        <a href="/adm/resor/<?= htmlspecialchars($trip['slug']) ?>/redigera" class="btn btn-ghost btn--sm">Redigera resa</a>
     </div>
+
+    <!-- Export buttons -->
+    <?php if (count($stops) >= 1): ?>
+    <div style="display:flex; flex-wrap:wrap; align-items:center; gap:var(--space-2); margin-top:var(--space-3);">
+        <span class="text-sm text-muted">Exportera:</span>
+        <a href="/adm/resor/<?= htmlspecialchars($trip['slug']) ?>/export/gpx" class="btn btn-ghost btn--sm">GPX</a>
+        <a href="/adm/resor/<?= htmlspecialchars($trip['slug']) ?>/export/csv" class="btn btn-ghost btn--sm">CSV</a>
+        <a href="/adm/resor/<?= htmlspecialchars($trip['slug']) ?>/export/json" class="btn btn-ghost btn--sm">JSON</a>
+        <a href="/adm/resor/<?= htmlspecialchars($trip['slug']) ?>/export/google-maps" class="btn btn-ghost btn--sm">Maps</a>
+    </div>
+    <?php endif; ?>
 </div>
 
 <script src="/js/trips.js"></script>
@@ -111,7 +126,8 @@
 document.addEventListener('DOMContentLoaded', function() {
     var mapEl = document.getElementById('trip-map');
     if (mapEl && mapEl.dataset.stops) {
-        initTripMap(mapEl, JSON.parse(mapEl.dataset.stops));
+        var segments = mapEl.dataset.segments ? JSON.parse(mapEl.dataset.segments) : [];
+        initTripMap(mapEl, JSON.parse(mapEl.dataset.stops), segments);
     }
 });
 </script>

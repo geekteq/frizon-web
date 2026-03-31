@@ -1,5 +1,5 @@
 <div class="page-header mb-4">
-    <a href="/listor" class="btn-ghost btn--sm">&larr; Listor</a>
+    <a href="/adm/listor" class="btn-ghost btn--sm">&larr; Listor</a>
 </div>
 
 <?php
@@ -10,7 +10,7 @@ $doneCount = count(array_filter($items, fn($i) => $i['is_done']));
 
 <div class="flex-between mb-2">
     <h2><?= htmlspecialchars($list['title']) ?></h2>
-    <a href="/listor/<?= $list['id'] ?>/redigera" class="btn btn-ghost btn--sm">Redigera</a>
+    <a href="/adm/listor/<?= $list['id'] ?>/redigera" class="btn btn-ghost btn--sm">Redigera</a>
 </div>
 
 <div class="text-sm text-muted mb-4">
@@ -33,7 +33,7 @@ $doneCount = count(array_filter($items, fn($i) => $i['is_done']));
                 <?php if ($item['category']): ?>
                     <span class="checklist-item__category"><?= htmlspecialchars($item['category']) ?></span>
                 <?php endif; ?>
-                <form method="POST" action="/listor/punkt/<?= $item['id'] ?>" class="checklist-item__delete">
+                <form method="POST" action="/adm/listor/punkt/<?= $item['id'] ?>" class="checklist-item__delete">
                     <?php include dirname(__DIR__) . '/partials/csrf-field.php'; ?>
                     <input type="hidden" name="_method" value="DELETE">
                     <button type="submit" class="btn-ghost btn--sm" aria-label="Ta bort">×</button>
@@ -44,7 +44,7 @@ $doneCount = count(array_filter($items, fn($i) => $i['is_done']));
 </div>
 
 <!-- Add item form -->
-<form method="POST" action="/listor/<?= $list['id'] ?>/punkt" class="mt-4">
+<form method="POST" action="/adm/listor/<?= $list['id'] ?>/punkt" class="mt-4">
     <?php include dirname(__DIR__) . '/partials/csrf-field.php'; ?>
     <div class="flex gap-2">
         <input type="text" name="text" class="form-input" required placeholder="Ny punkt..." style="flex:1;">

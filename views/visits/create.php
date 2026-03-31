@@ -1,9 +1,9 @@
 <div class="page-header mb-4">
-    <a href="/platser/<?= htmlspecialchars($p['slug']) ?>" class="btn-ghost btn--sm">&larr; <?= htmlspecialchars($p['name']) ?></a>
+    <a href="/adm/platser/<?= htmlspecialchars($p['slug']) ?>" class="btn-ghost btn--sm">&larr; <?= htmlspecialchars($p['name']) ?></a>
     <h2>Nytt besök</h2>
 </div>
 
-<form method="POST" action="/platser/<?= htmlspecialchars($p['slug']) ?>/besok" enctype="multipart/form-data" style="max-width:var(--form-max-width);">
+<form method="POST" action="/adm/platser/<?= htmlspecialchars($p['slug']) ?>/besok" enctype="multipart/form-data" style="max-width:var(--form-max-width);">
     <?php include dirname(__DIR__) . '/partials/csrf-field.php'; ?>
 
     <div class="form-group">

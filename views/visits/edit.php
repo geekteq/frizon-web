@@ -1,9 +1,9 @@
 <div class="page-header mb-4">
-    <a href="/besok/<?= (int) $visit['id'] ?>" class="btn-ghost btn--sm">&larr; Tillbaka till besök</a>
+    <a href="/adm/besok/<?= (int) $visit['id'] ?>" class="btn-ghost btn--sm">&larr; Tillbaka till besök</a>
     <h2>Redigera besök</h2>
 </div>
 
-<form method="POST" action="/besok/<?= (int) $visit['id'] ?>" style="max-width:var(--form-max-width);">
+<form method="POST" action="/adm/besok/<?= (int) $visit['id'] ?>" style="max-width:var(--form-max-width);">
     <?php include dirname(__DIR__) . '/partials/csrf-field.php'; ?>
     <input type="hidden" name="_method" value="PUT">
 

@@ -1,8 +1,8 @@
 <div class="flex-between mb-4">
     <h2>Listor</h2>
     <div class="flex gap-2">
-        <a href="/listor/mallar" class="btn btn-ghost btn--sm">Mallar</a>
-        <a href="/listor/ny" class="btn btn-primary btn--sm">+ Ny lista</a>
+        <a href="/adm/listor/mallar" class="btn btn-ghost btn--sm">Mallar</a>
+        <a href="/adm/listor/ny" class="btn btn-primary btn--sm">+ Ny lista</a>
     </div>
 </div>
 
@@ -14,7 +14,7 @@ $typeLabels = ['checklist' => 'Checklistor', 'shopping' => 'Inköpslistor'];
 <?php if (!$hasLists): ?>
     <div class="empty-state">
         <p class="text-muted">Inga listor ännu.</p>
-        <a href="/listor/ny" class="btn btn-primary mt-4">Skapa din första lista</a>
+        <a href="/adm/listor/ny" class="btn btn-primary mt-4">Skapa din första lista</a>
     </div>
 <?php else: ?>
     <?php foreach (['checklist', 'shopping'] as $type): ?>
@@ -27,7 +27,7 @@ $typeLabels = ['checklist' => 'Checklistor', 'shopping' => 'Inköpslistor'];
                     $doneCount = (int) ($list['done_count'] ?? 0);
                     $pct = $itemCount > 0 ? round($doneCount / $itemCount * 100) : 0;
                     ?>
-                    <a href="/listor/<?= $list['id'] ?>" class="list-card">
+                    <a href="/adm/listor/<?= $list['id'] ?>" class="list-card">
                         <div class="list-card__header">
                             <span class="list-card__title"><?= htmlspecialchars($list['title']) ?></span>
                             <span class="list-card__count"><?= $doneCount ?>/<?= $itemCount ?></span>

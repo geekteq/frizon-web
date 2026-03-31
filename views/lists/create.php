@@ -1,8 +1,8 @@
 <div class="page-header mb-4">
-    <a href="/listor" class="btn-ghost btn--sm">&larr; Listor</a>
+    <a href="/adm/listor" class="btn-ghost btn--sm">&larr; Listor</a>
 </div>
 
-<form method="POST" action="/listor" style="max-width:var(--form-max-width);">
+<form method="POST" action="/adm/listor" style="max-width:var(--form-max-width);">
     <?php include dirname(__DIR__) . '/partials/csrf-field.php'; ?>
 
     <div class="form-group">

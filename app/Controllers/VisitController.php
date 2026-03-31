@@ -95,7 +95,7 @@ class VisitController
         }
 
         flash('success', 'Besöket har sparats!');
-        redirect('/platser/' . $p['slug']);
+        redirect('/adm/platser/' . $p['slug']);
     }
 
     public function show(array $params): void
@@ -162,7 +162,7 @@ class VisitController
         ]);
 
         flash('success', 'Besöket har uppdaterats.');
-        redirect('/besok/' . $params['id']);
+        redirect('/adm/besok/' . $params['id']);
     }
 
     public function destroy(array $params): void
@@ -172,11 +172,11 @@ class VisitController
 
         $visitModel = new Visit($this->pdo);
         $visit = $visitModel->findById((int) $params['id']);
-        if (!$visit) { redirect('/platser'); return; }
+        if (!$visit) { redirect('/adm/platser'); return; }
 
         $visitModel->delete((int) $params['id']);
         flash('success', 'Besöket har tagits bort.');
-        redirect('/platser/' . $visit['place_slug']);
+        redirect('/adm/platser/' . $visit['place_slug']);
     }
 
     public function uploadImage(array $params): void

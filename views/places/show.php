@@ -1,5 +1,5 @@
 <div class="page-header mb-4">
-    <a href="/platser" class="btn-ghost btn--sm">&larr; Platser</a>
+    <a href="/adm/platser" class="btn-ghost btn--sm">&larr; Platser</a>
 </div>
 
 <div class="place-detail">
@@ -8,7 +8,7 @@
     <div class="place-detail__meta flex gap-3 mb-4 text-sm text-muted">
         <span class="place-card__type-badge place-card__type-badge--<?= htmlspecialchars($p['place_type']) ?>">
             <?php
-            $types = ['breakfast'=>'Frukost','lunch'=>'Lunch','dinner'=>'Middag','fika'=>'Fika','sight'=>'Sevärdhet','shopping'=>'Shopping','stellplatz'=>'Ställplats','wild_camping'=>'Vildcamping','camping'=>'Camping'];
+            $types = ['breakfast'=>'Frukost','lunch'=>'Lunch','dinner'=>'Middag','fika'=>'Fika','sight'=>'Sevärdhet','shopping'=>'Shopping','stellplatz'=>'Ställplats','wild_camping'=>'Fricamping','camping'=>'Camping'];
             echo $types[$p['place_type']] ?? $p['place_type'];
             ?>
         </span>
@@ -38,8 +38,8 @@
     <?php endif; ?>
 
     <div class="place-detail__actions flex gap-3 mb-6">
-        <a href="/platser/<?= htmlspecialchars($p['slug']) ?>/besok/nytt" class="btn btn-primary">+ Nytt besök</a>
-        <a href="/platser/<?= htmlspecialchars($p['slug']) ?>/redigera" class="btn btn-secondary">Redigera</a>
+        <a href="/adm/platser/<?= htmlspecialchars($p['slug']) ?>/besok/nytt" class="btn btn-primary">+ Nytt besök</a>
+        <a href="/adm/platser/<?= htmlspecialchars($p['slug']) ?>/redigera" class="btn btn-secondary">Redigera</a>
     </div>
 
     <h3 class="mb-4">Besök (<?= count($visits) ?>)</h3>
@@ -58,7 +58,7 @@
                 <?php if ($visit['raw_note']): ?>
                     <p class="visit-card__note text-sm mt-2"><?= nl2br(htmlspecialchars(mb_strimwidth($visit['raw_note'], 0, 200, '...'))) ?></p>
                 <?php endif; ?>
-                <a href="/besok/<?= $visit['id'] ?>" class="text-sm" style="color:var(--color-accent);">Visa besök &rarr;</a>
+                <a href="/adm/besok/<?= $visit['id'] ?>" class="text-sm" style="color:var(--color-accent);">Visa besök &rarr;</a>
             </div>
         <?php endforeach; ?>
     <?php endif; ?>

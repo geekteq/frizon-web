@@ -1,14 +1,13 @@
 <div class="auth-card">
     <div class="auth-logo">
         <img src="/img/frizon-logo.png" alt="Frizon of Sweden" class="auth-logo__image">
-        <span class="auth-tagline">of Sweden</span>
     </div>
 
     <?php if ($error = flash('error')): ?>
         <div class="alert alert--error"><?= htmlspecialchars($error) ?></div>
     <?php endif; ?>
 
-    <form method="POST" action="/login" class="auth-form">
+    <form method="POST" action="/adm/login" class="auth-form">
         <?php include dirname(__DIR__) . '/partials/csrf-field.php'; ?>
 
         <div class="form-group">

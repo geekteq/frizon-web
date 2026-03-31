@@ -4,7 +4,7 @@ $statusLabel = $statusLabels[$trip['status']] ?? $trip['status'];
 $stopCount = $trip['stop_count'] ?? 0;
 $totalKm = $trip['total_km'] ? number_format((float) $trip['total_km'], 0) : '–';
 ?>
-<a href="/resor/<?= htmlspecialchars($trip['slug']) ?>" class="trip-card">
+<a href="/adm/resor/<?= htmlspecialchars($trip['slug']) ?>" class="trip-card">
     <div class="trip-card__header">
         <span class="trip-card__title"><?= htmlspecialchars($trip['title']) ?></span>
         <span class="trip-card__status trip-card__status--<?= htmlspecialchars($trip['status']) ?>"><?= $statusLabel ?></span>

@@ -2,14 +2,14 @@
 $placeTypes = [
     'breakfast'=>'Frukost','lunch'=>'Lunch','dinner'=>'Middag','fika'=>'Fika',
     'sight'=>'Sevärdhet','shopping'=>'Shopping','stellplatz'=>'Ställplats',
-    'wild_camping'=>'Vildcamping','camping'=>'Camping',
+    'wild_camping'=>'Fricamping','camping'=>'Camping',
 ];
 $typeLabel = $placeTypes[$place['place_type']] ?? $place['place_type'];
 ?>
 
 <article class="pub-detail">
     <div class="pub-detail__header">
-        <a href="/pub" class="pub-detail__back">&larr; Alla platser</a>
+        <a href="/" class="pub-detail__back">&larr; Alla platser</a>
         <h1 class="pub-detail__title"><?= htmlspecialchars($place['name']) ?></h1>
         <div class="pub-detail__meta">
             <span><?= $typeLabel ?></span>

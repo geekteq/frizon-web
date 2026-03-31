@@ -2,24 +2,26 @@
 $placeTypes = [
     'breakfast'=>'Frukost','lunch'=>'Lunch','dinner'=>'Middag','fika'=>'Fika',
     'sight'=>'Sevärdhet','shopping'=>'Shopping','stellplatz'=>'Ställplats',
-    'wild_camping'=>'Vildcamping','camping'=>'Camping',
+    'wild_camping'=>'Fricamping','camping'=>'Camping',
 ];
 ?>
 
-<div class="pub-toplist">
-    <h1 class="mb-2">Topplistan</h1>
-    <p class="text-muted mb-6">Våra bästa platser, handplockade.</p>
+<div style="max-width:720px; margin:0 auto; padding:var(--space-6) var(--space-4);">
+    <div style="text-align:center; margin-bottom:var(--space-6);">
+        <h1 style="font-size:var(--text-2xl); font-weight:var(--weight-bold); margin-bottom:var(--space-2);">Topplistan</h1>
+        <p style="color:var(--color-text-muted);">Våra bästa platser, handplockade.</p>
+    </div>
 
     <?php if (empty($places)): ?>
-        <p class="text-muted">Topplistan är tom just nu.</p>
+        <p style="text-align:center; color:var(--color-text-muted); font-style:italic; padding:var(--space-8) 0;">Topplistan är tom just nu — vi jobbar på det!</p>
     <?php else: ?>
-        <div class="pub-toplist__list">
+        <div style="display:flex; flex-direction:column; gap:var(--space-3);">
             <?php foreach ($places as $i => $p): ?>
-                <a href="/pub/platser/<?= htmlspecialchars($p['slug']) ?>" class="pub-toplist__item">
-                    <span class="pub-toplist__rank"><?= $i + 1 ?></span>
-                    <div class="pub-toplist__body">
-                        <span class="pub-toplist__name"><?= htmlspecialchars($p['name']) ?></span>
-                        <span class="pub-toplist__meta">
+                <a href="/platser/<?= htmlspecialchars($p['slug']) ?>" style="display:flex; align-items:center; gap:var(--space-4); padding:var(--space-4); background:var(--color-white); border:1px solid var(--color-border); border-radius:var(--radius-lg); text-decoration:none; transition:box-shadow 150ms ease-out;">
+                    <span style="width:40px; height:40px; border-radius:50%; background:var(--color-accent); color:var(--color-white); display:flex; align-items:center; justify-content:center; font-weight:var(--weight-bold); font-size:var(--text-lg); flex-shrink:0;"><?= $i + 1 ?></span>
+                    <div style="flex:1; min-width:0;">
+                        <span style="font-weight:var(--weight-semibold); color:var(--color-text); display:block; margin-bottom:2px;"><?= htmlspecialchars($p['name']) ?></span>
+                        <span style="font-size:var(--text-sm); color:var(--color-text-muted);">
                             <?= $placeTypes[$p['place_type']] ?? $p['place_type'] ?>
                             <?php if ($p['country_code']): ?> · <?= strtoupper($p['country_code']) ?><?php endif; ?>
                             <?php if ($p['avg_rating']): ?> · &#9733; <?= number_format((float)$p['avg_rating'], 1) ?><?php endif; ?>

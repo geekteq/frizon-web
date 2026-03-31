@@ -54,7 +54,7 @@ class ListController
         $title = trim($_POST['title'] ?? '');
         if ($title === '') {
             flash('error', 'Listnamn krävs.');
-            redirect('/listor/ny');
+            redirect('/adm/listor/ny');
         }
 
         $listModel = new ItemList($this->pdo);
@@ -75,7 +75,7 @@ class ListController
         }
 
         flash('success', 'Listan har skapats!');
-        redirect('/listor/' . $listId);
+        redirect('/adm/listor/' . $listId);
     }
 
     public function show(array $params): void
@@ -118,7 +118,7 @@ class ListController
         ]);
 
         flash('success', 'Listan har uppdaterats.');
-        redirect('/listor/' . $params['id']);
+        redirect('/adm/listor/' . $params['id']);
     }
 
     public function destroy(array $params): void
@@ -132,7 +132,7 @@ class ListController
             $listModel->delete((int) $list['id']);
             flash('success', 'Listan har tagits bort.');
         }
-        redirect('/listor');
+        redirect('/adm/listor');
     }
 
     // --- Item endpoints ---
@@ -145,7 +145,7 @@ class ListController
         $text = trim($_POST['text'] ?? '');
         if ($text === '') {
             flash('error', 'Ange en text.');
-            redirect('/listor/' . $params['id']);
+            redirect('/adm/listor/' . $params['id']);
         }
 
         $itemModel = new ListItem($this->pdo);
@@ -156,7 +156,7 @@ class ListController
         );
 
         flash('success', 'Punkt tillagd!');
-        redirect('/listor/' . $params['id']);
+        redirect('/adm/listor/' . $params['id']);
     }
 
     public function toggleItem(array $params): void
@@ -182,9 +182,9 @@ class ListController
             $listId = $item['list_id'];
             $itemModel->remove((int) $params['itemId']);
             flash('success', 'Punkten har tagits bort.');
-            redirect('/listor/' . $listId);
+            redirect('/adm/listor/' . $listId);
         } else {
-            redirect('/listor');
+            redirect('/adm/listor');
         }
     }
 
@@ -230,7 +230,7 @@ class ListController
         $title = trim($_POST['title'] ?? '');
         if ($title === '') {
             flash('error', 'Mallnamn krävs.');
-            redirect('/listor/mallar/ny');
+            redirect('/adm/listor/mallar/ny');
         }
 
         // Parse items from textarea (one per line)
@@ -248,7 +248,7 @@ class ListController
         ]);
 
         flash('success', 'Mallen har skapats!');
-        redirect('/listor/mallar');
+        redirect('/adm/listor/mallar');
     }
 
     public function deleteTemplate(array $params): void
@@ -262,6 +262,6 @@ class ListController
             $templateModel->delete((int) $template['id']);
             flash('success', 'Mallen har tagits bort.');
         }
-        redirect('/listor/mallar');
+        redirect('/adm/listor/mallar');
     }
 }

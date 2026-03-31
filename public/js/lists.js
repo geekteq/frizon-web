@@ -11,7 +11,7 @@ document.addEventListener('DOMContentLoaded', function() {
         var item = checkBtn.closest('.checklist-item');
         var itemId = item.dataset.itemId;
 
-        fetch('/listor/punkt/' + itemId + '/toggle', {
+        fetch('/adm/listor/punkt/' + itemId + '/toggle', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -58,10 +58,21 @@ document.addEventListener('DOMContentLoaded', function() {
 
         if (swiping) {
             e.preventDefault();
-            // Clamp movement
             var maxSwipe = 120;
             dx = Math.max(-maxSwipe, Math.min(maxSwipe, dx));
             currentItem.style.transform = 'translateX(' + dx + 'px)';
+
+            var isDone = currentItem.classList.contains('checklist-item--done');
+            var progress = Math.abs(dx) / THRESHOLD;
+            if (dx < 0 && !isDone) {
+                // Swiping left to mark done — green hint
+                currentItem.style.background = 'rgba(74, 140, 111, ' + Math.min(progress * 0.15, 0.15) + ')';
+            } else if (dx > 0 && isDone) {
+                // Swiping right to undo — subtle hint
+                currentItem.style.background = 'rgba(93, 126, 154, ' + Math.min(progress * 0.12, 0.12) + ')';
+            } else {
+                currentItem.style.background = '';
+            }
         }
     }, { passive: false });
 
@@ -72,27 +83,56 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         var dx = e.changedTouches[0].clientX - startX;
+        var isDone = currentItem.classList.contains('checklist-item--done');
+        var theItem = currentItem;
 
-        if (dx > THRESHOLD) {
-            // Swipe right → toggle done
-            var itemId = currentItem.dataset.itemId;
-            fetch('/listor/punkt/' + itemId + '/toggle', {
-                method: 'POST',
-                headers: { 'X-CSRF-Token': getCsrfToken() }
-            })
-            .then(function(res) { return res.json(); })
-            .then(function(data) {
-                if (data.success) {
-                    currentItem.classList.toggle('checklist-item--done');
-                    var cb = currentItem.querySelector('.checklist-item__checkbox');
-                    cb.classList.toggle('checklist-item__checkbox--checked');
-                }
-            });
+        if (dx < -THRESHOLD && !isDone) {
+            // Swipe left → mark as done/picked
+            theItem.style.transform = 'translateX(-100%)';
+            theItem.style.transition = 'transform 200ms ease-out';
+            setTimeout(function() {
+                toggleItem(theItem, true);
+                theItem.style.transform = '';
+                theItem.style.transition = '';
+                theItem.style.background = '';
+            }, 200);
+        } else if (dx > THRESHOLD && isDone) {
+            // Swipe right → mark as undone/unpicked
+            theItem.style.transform = 'translateX(100%)';
+            theItem.style.transition = 'transform 200ms ease-out';
+            setTimeout(function() {
+                toggleItem(theItem, false);
+                theItem.style.transform = '';
+                theItem.style.transition = '';
+                theItem.style.background = '';
+            }, 200);
+        } else {
+            // Snap back
+            currentItem.style.transform = '';
+            currentItem.style.background = '';
         }
 
-        // Snap back
-        currentItem.style.transform = '';
         currentItem = null;
         swiping = false;
     });
+
+    function toggleItem(item, markDone) {
+        var itemId = item.dataset.itemId;
+        fetch('/adm/listor/punkt/' + itemId + '/toggle', {
+            method: 'POST',
+            headers: { 'X-CSRF-Token': getCsrfToken() }
+        })
+        .then(function(res) { return res.json(); })
+        .then(function(data) {
+            if (data.success) {
+                if (markDone) {
+                    item.classList.add('checklist-item--done');
+                    item.querySelector('.checklist-item__checkbox').classList.add('checklist-item__checkbox--checked');
+                } else {
+                    item.classList.remove('checklist-item--done');
+                    item.querySelector('.checklist-item__checkbox').classList.remove('checklist-item__checkbox--checked');
+                }
+            }
+        });
+    }
 });

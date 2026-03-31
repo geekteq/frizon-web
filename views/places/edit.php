@@ -1,9 +1,12 @@
 <div class="page-header mb-4">
-    <a href="/platser/<?= htmlspecialchars($p['slug']) ?>" class="btn-ghost btn--sm">&larr; Tillbaka</a>
+    <a href="/adm/platser/<?= htmlspecialchars($p['slug']) ?>" class="btn-ghost btn--sm">&larr; Tillbaka</a>
     <h2>Redigera <?= htmlspecialchars($p['name']) ?></h2>
 </div>
 
-<form method="POST" action="/platser/<?= htmlspecialchars($p['slug']) ?>" style="max-width:var(--form-max-width);">
+<!-- Live map preview -->
+<div id="edit-map" style="width:100%; height:200px; border-radius:var(--radius-lg); margin-bottom:var(--space-4); background:var(--color-brand-muted);"></div>
+
+<form method="POST" action="/adm/platser/<?= htmlspecialchars($p['slug']) ?>" style="max-width:var(--form-max-width);">
     <?php include dirname(__DIR__) . '/partials/csrf-field.php'; ?>
     <input type="hidden" name="_method" value="PUT">
 
@@ -17,7 +20,7 @@
         <div class="chip-row" style="display:flex; flex-wrap:wrap; gap:var(--space-2);">
             <?php
             $types = [
-                'stellplatz'=>'Ställplats','camping'=>'Camping','wild_camping'=>'Vildcamping',
+                'stellplatz'=>'Ställplats','camping'=>'Camping','wild_camping'=>'Fricamping',
                 'fika'=>'Fika','lunch'=>'Lunch','dinner'=>'Middag','breakfast'=>'Frukost',
                 'sight'=>'Sevärdhet','shopping'=>'Shopping'
             ];
@@ -30,15 +33,17 @@
         </div>
     </div>
 
-    <div class="form-group">
-        <label for="lat" class="form-label">Latitud</label>
-        <input type="number" id="lat" name="lat" class="form-input" step="0.0000001" value="<?= htmlspecialchars((string) $p['lat']) ?>">
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:var(--space-3);">
+        <div class="form-group">
+            <label for="lat" class="form-label">Latitud</label>
+            <input type="text" id="lat" name="lat" class="form-input" inputmode="decimal" value="<?= htmlspecialchars((string) $p['lat']) ?>">
+        </div>
+        <div class="form-group">
+            <label for="lng" class="form-label">Longitud</label>
+            <input type="text" id="lng" name="lng" class="form-input" inputmode="decimal" value="<?= htmlspecialchars((string) $p['lng']) ?>">
+        </div>
     </div>
-
-    <div class="form-group">
-        <label for="lng" class="form-label">Longitud</label>
-        <input type="number" id="lng" name="lng" class="form-input" step="0.0000001" value="<?= htmlspecialchars((string) $p['lng']) ?>">
-    </div>
+    <p style="font-size:var(--text-sm); color:var(--color-text-muted); margin-bottom:var(--space-4);">Klicka på kartan eller dra markören för att flytta positionen.</p>
 
     <div class="form-group">
         <label for="address_text" class="form-label">Adress</label>
@@ -59,12 +64,51 @@
 
     <div class="flex gap-3">
         <button type="submit" class="btn btn-primary">Spara ändringar</button>
-        <a href="/platser/<?= htmlspecialchars($p['slug']) ?>" class="btn btn-ghost">Avbryt</a>
+        <a href="/adm/platser/<?= htmlspecialchars($p['slug']) ?>" class="btn btn-ghost">Avbryt</a>
     </div>
 </form>
 
-<form method="POST" action="/platser/<?= htmlspecialchars($p['slug']) ?>" style="margin-top:var(--space-8); padding-top:var(--space-6); border-top:1px solid var(--color-border);">
+<form method="POST" action="/adm/platser/<?= htmlspecialchars($p['slug']) ?>" style="margin-top:var(--space-8); padding-top:var(--space-6); border-top:1px solid var(--color-border);">
     <?php include dirname(__DIR__) . '/partials/csrf-field.php'; ?>
     <input type="hidden" name="_method" value="DELETE">
     <button type="submit" class="btn btn-danger btn--sm" onclick="return confirm('Är du säker? Alla besök tas också bort.')">Ta bort plats</button>
 </form>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var latInput = document.getElementById('lat');
+    var lngInput = document.getElementById('lng');
+    var mapEl = document.getElementById('edit-map');
+    if (!mapEl || !latInput || !lngInput) return;
+
+    var lat = parseFloat(latInput.value) || 59.33;
+    var lng = parseFloat(lngInput.value) || 18.07;
+
+    var map = L.map(mapEl).setView([lat, lng], 14);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap', maxZoom: 19
+    }).addTo(map);
+
+    var marker = L.marker([lat, lng], { draggable: true }).addTo(map);
+
+    function syncInputs(pos) {
+        latInput.value = pos.lat.toFixed(7);
+        lngInput.value = pos.lng.toFixed(7);
+    }
+
+    function syncMap() {
+        var newLat = parseFloat(latInput.value);
+        var newLng = parseFloat(lngInput.value);
+        if (!isNaN(newLat) && !isNaN(newLng) && newLat !== 0 && newLng !== 0) {
+            var pos = L.latLng(newLat, newLng);
+            marker.setLatLng(pos);
+            map.setView(pos, map.getZoom());
+        }
+    }
+
+    marker.on('dragend', function() { syncInputs(marker.getLatLng()); });
+    map.on('click', function(e) { marker.setLatLng(e.latlng); syncInputs(e.latlng); });
+    latInput.addEventListener('change', syncMap);
+    lngInput.addEventListener('change', syncMap);
+});
+</script>

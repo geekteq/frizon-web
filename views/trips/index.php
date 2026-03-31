@@ -5,13 +5,13 @@ $hasTrips = !empty($grouped['ongoing']) || !empty($grouped['planned']) || !empty
 
 <div class="flex-between mb-4">
     <h2>Resor</h2>
-    <a href="/resor/ny" class="btn btn-primary btn--sm">+ Ny resa</a>
+    <a href="/adm/resor/ny" class="btn btn-primary btn--sm">+ Ny resa</a>
 </div>
 
 <?php if (!$hasTrips): ?>
     <div class="empty-state">
         <p class="text-muted">Inga resor ännu.</p>
-        <a href="/resor/ny" class="btn btn-primary mt-4">Skapa din första resa</a>
+        <a href="/adm/resor/ny" class="btn btn-primary mt-4">Skapa din första resa</a>
     </div>
 <?php else: ?>
     <?php foreach (['ongoing', 'planned', 'finished'] as $status): ?>

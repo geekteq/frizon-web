@@ -29,13 +29,13 @@
     <?php if (empty($recentVisits)): ?>
         <div class="empty-state text-center" style="padding:var(--space-8) 0;">
             <p class="text-muted mb-4">Inga besök ännu.</p>
-            <a href="/platser/ny" class="btn btn-primary">Spara din första plats</a>
+            <a href="/adm/platser/ny" class="btn btn-primary">Spara din första plats</a>
         </div>
     <?php else: ?>
         <?php foreach ($recentVisits as $visit): ?>
             <div class="visit-card mb-3">
                 <div class="flex-between">
-                    <a href="/platser/<?= htmlspecialchars($visit['place_slug']) ?>" style="font-weight:var(--weight-semibold); color:var(--color-brand-dark);">
+                    <a href="/adm/platser/<?= htmlspecialchars($visit['place_slug']) ?>" style="font-weight:var(--weight-semibold); color:var(--color-brand-dark);">
                         <?= htmlspecialchars($visit['place_name']) ?>
                     </a>
                     <span class="text-xs text-muted"><?= htmlspecialchars($visit['visited_at']) ?></span>

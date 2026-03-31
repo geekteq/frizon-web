@@ -1,5 +1,32 @@
+// Decode Google-style encoded polyline to array of [lat, lng]
+function decodePolyline(encoded) {
+    var points = [];
+    var lat = 0, lng = 0;
+    var i = 0;
+    while (i < encoded.length) {
+        var shift = 0, result = 0, byte;
+        do {
+            byte = encoded.charCodeAt(i++) - 63;
+            result |= (byte & 0x1f) << shift;
+            shift += 5;
+        } while (byte >= 0x20);
+        lat += (result & 1) ? ~(result >> 1) : (result >> 1);
+
+        shift = 0; result = 0;
+        do {
+            byte = encoded.charCodeAt(i++) - 63;
+            result |= (byte & 0x1f) << shift;
+            shift += 5;
+        } while (byte >= 0x20);
+        lng += (result & 1) ? ~(result >> 1) : (result >> 1);
+
+        points.push([lat / 1e5, lng / 1e5]);
+    }
+    return points;
+}
+
 // Trip route map
-function initTripMap(el, stops) {
+function initTripMap(el, stops, segments) {
     if (!stops || stops.length === 0) return;
 
     var map = L.map(el);
@@ -16,8 +43,25 @@ function initTripMap(el, stops) {
         bounds.extend([stop.lat, stop.lng]);
     });
 
-    // Draw line between stops
-    if (stops.length >= 2) {
+    // Draw route segments with real geometry if available
+    var hasGeometry = false;
+    if (segments && segments.length > 0) {
+        segments.forEach(function(seg) {
+            if (seg.geometry) {
+                var decoded = decodePolyline(seg.geometry);
+                var line = L.polyline(decoded, {
+                    color: '#2C5F6A',
+                    weight: 4,
+                    opacity: 0.85
+                }).addTo(map);
+                bounds.extend(line.getBounds());
+                hasGeometry = true;
+            }
+        });
+    }
+
+    // Fallback: dashed straight lines if no geometry
+    if (!hasGeometry && stops.length >= 2) {
         var coords = stops.map(function(s) { return [s.lat, s.lng]; });
         L.polyline(coords, {
             color: '#3D7A87',
@@ -82,7 +126,7 @@ document.addEventListener('DOMContentLoaded', function() {
         var slug = window.location.pathname.split('/resor/')[1];
         if (slug) slug = slug.split('/')[0];
 
-        fetch('/resor/' + slug + '/hallplatser/ordning', {
+        fetch('/adm/resor/' + slug + '/hallplatser/ordning', {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',

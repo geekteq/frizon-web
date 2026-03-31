@@ -9,6 +9,9 @@ require_once dirname(__DIR__) . '/Models/TripStop.php';
 require_once dirname(__DIR__) . '/Models/TripRouteSegment.php';
 require_once dirname(__DIR__) . '/Models/Place.php';
 require_once dirname(__DIR__) . '/Services/Export/GpxTripExporter.php';
+require_once dirname(__DIR__) . '/Services/Export/CsvTripExporter.php';
+require_once dirname(__DIR__) . '/Services/Export/JsonTripExporter.php';
+require_once dirname(__DIR__) . '/Services/Export/GoogleMapsLinkExporter.php';
 
 class TripController
 {
@@ -51,7 +54,7 @@ class TripController
         $title = trim($_POST['title'] ?? '');
         if ($title === '') {
             flash('error', 'Resenamn krävs.');
-            redirect('/resor/ny');
+            redirect('/adm/resor/ny');
         }
 
         $tripModel = new Trip($this->pdo);
@@ -66,7 +69,7 @@ class TripController
         ]);
 
         flash('success', 'Resan har skapats!');
-        redirect('/resor');
+        redirect('/adm/resor');
     }
 
     public function show(array $params): void
@@ -121,7 +124,7 @@ class TripController
         ]);
 
         flash('success', 'Resan har uppdaterats.');
-        redirect('/resor/' . $params['slug']);
+        redirect('/adm/resor/' . $params['slug']);
     }
 
     public function destroy(array $params): void
@@ -135,7 +138,7 @@ class TripController
             $tripModel->delete((int) $trip['id']);
             flash('success', 'Resan har tagits bort.');
         }
-        redirect('/resor');
+        redirect('/adm/resor');
     }
 
     public function addStop(array $params): void
@@ -150,7 +153,7 @@ class TripController
         $placeId = (int) ($_POST['place_id'] ?? 0);
         if ($placeId === 0) {
             flash('error', 'Välj en plats.');
-            redirect('/resor/' . $params['slug']);
+            redirect('/adm/resor/' . $params['slug']);
         }
 
         $stopModel = new TripStop($this->pdo);
@@ -162,7 +165,7 @@ class TripController
         );
 
         flash('success', 'Hållplats tillagd!');
-        redirect('/resor/' . $params['slug']);
+        redirect('/adm/resor/' . $params['slug']);
     }
 
     public function removeStop(array $params): void
@@ -172,7 +175,7 @@ class TripController
 
         $stopModel = new TripStop($this->pdo);
         $stop = $stopModel->findById((int) $params['stopId']);
-        if (!$stop) { redirect('/resor'); return; }
+        if (!$stop) { redirect('/adm/resor'); return; }
 
         // Find trip slug for redirect
         $tripModel = new Trip($this->pdo);
@@ -181,7 +184,7 @@ class TripController
         $stopModel->remove((int) $params['stopId']);
 
         flash('success', 'Hållplatsen har tagits bort.');
-        redirect('/resor/' . ($trip['slug'] ?? ''));
+        redirect('/adm/resor/' . ($trip['slug'] ?? ''));
     }
 
     public function reorderStops(array $params): void
@@ -218,7 +221,7 @@ class TripController
 
         if (count($stops) < 2) {
             flash('error', 'Minst två hållplatser krävs för att beräkna rutt.');
-            redirect('/resor/' . $params['slug']);
+            redirect('/adm/resor/' . $params['slug']);
         }
 
         // Get route provider
@@ -245,7 +248,7 @@ class TripController
         }
 
         flash('success', 'Rutten har beräknats!');
-        redirect('/resor/' . $params['slug']);
+        redirect('/adm/resor/' . $params['slug']);
     }
 
     public function exportGpx(array $params): void
@@ -260,6 +263,51 @@ class TripController
         $stops = $stopModel->findByTrip((int) $trip['id']);
 
         $exporter = new GpxTripExporter();
+        $exporter->download($trip, $stops);
+    }
+
+    public function exportCsv(array $params): void
+    {
+        Auth::requireLogin();
+
+        $tripModel = new Trip($this->pdo);
+        $trip = $tripModel->findBySlug($params['slug']);
+        if (!$trip) { http_response_code(404); return; }
+
+        $stopModel = new TripStop($this->pdo);
+        $stops = $stopModel->findByTrip((int) $trip['id']);
+
+        $exporter = new CsvTripExporter();
+        $exporter->download($trip, $stops);
+    }
+
+    public function exportJson(array $params): void
+    {
+        Auth::requireLogin();
+
+        $tripModel = new Trip($this->pdo);
+        $trip = $tripModel->findBySlug($params['slug']);
+        if (!$trip) { http_response_code(404); return; }
+
+        $stopModel = new TripStop($this->pdo);
+        $stops = $stopModel->findByTrip((int) $trip['id']);
+
+        $exporter = new JsonTripExporter();
+        $exporter->download($trip, $stops);
+    }
+
+    public function exportGoogleMaps(array $params): void
+    {
+        Auth::requireLogin();
+
+        $tripModel = new Trip($this->pdo);
+        $trip = $tripModel->findBySlug($params['slug']);
+        if (!$trip) { http_response_code(404); return; }
+
+        $stopModel = new TripStop($this->pdo);
+        $stops = $stopModel->findByTrip((int) $trip['id']);
+
+        $exporter = new GoogleMapsLinkExporter();
         $exporter->download($trip, $stops);
     }
 

@@ -4,7 +4,7 @@ $priceLevels = ['free' => 'Gratis', 'low' => '€', 'medium' => '€€', 'high'
 $rating = $visit['total_rating_cached'] ?? null;
 $date = $visit['visited_at'] ?? '';
 ?>
-<a href="/besok/<?= (int) $visit['id'] ?>" class="visit-card">
+<a href="/adm/besok/<?= (int) $visit['id'] ?>" class="visit-card">
     <div class="visit-card__date text-sm text-muted"><?= htmlspecialchars($date) ?></div>
     <div class="visit-card__body">
         <?php if (!empty($visit['raw_note'])): ?>

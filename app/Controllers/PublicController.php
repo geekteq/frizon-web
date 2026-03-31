@@ -102,6 +102,18 @@ class PublicController
         view('public/place-detail', compact('place', 'visits', 'images', 'tags', 'avgRating', 'pageTitle'), 'public');
     }
 
+    public function privacy(array $params): void
+    {
+        $pageTitle = 'Integritetspolicy — Frizon';
+        view('public/privacy', compact('pageTitle'), 'public');
+    }
+
+    public function cookies(array $params): void
+    {
+        $pageTitle = 'Cookiepolicy — Frizon';
+        view('public/cookies', compact('pageTitle'), 'public');
+    }
+
     public function topList(array $params): void
     {
         $stmt = $this->pdo->query('
