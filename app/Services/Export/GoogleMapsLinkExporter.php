@@ -18,7 +18,7 @@ class GoogleMapsLinkExporter
         $separator = str_repeat('=', 32);
 
         $lines   = [];
-        $lines[] = 'Resans hållplatser: ' . $title;
+        $lines[] = 'Resans platser: ' . $title;
         $lines[] = $separator;
         $lines[] = '';
 

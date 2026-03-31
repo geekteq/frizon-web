@@ -57,6 +57,56 @@ class AuthController
         redirect('/adm/login');
     }
 
+    public function showChangePassword(array $params): void
+    {
+        Auth::requireLogin();
+        $pageTitle = 'Byt lösenord';
+        view('auth/change-password', compact('pageTitle'));
+    }
+
+    public function changePassword(array $params): void
+    {
+        Auth::requireLogin();
+        CsrfService::requireValid();
+
+        $current = $_POST['current_password'] ?? '';
+        $new = $_POST['new_password'] ?? '';
+        $confirm = $_POST['confirm_password'] ?? '';
+
+        if ($current === '' || $new === '' || $confirm === '') {
+            flash('error', 'Fyll i alla fält.');
+            redirect('/adm/byt-losenord');
+        }
+
+        if ($new !== $confirm) {
+            flash('error', 'Nya lösenorden matchar inte.');
+            redirect('/adm/byt-losenord');
+        }
+
+        if (strlen($new) < 8) {
+            flash('error', 'Lösenordet måste vara minst 8 tecken.');
+            redirect('/adm/byt-losenord');
+        }
+
+        // Verify current password
+        $stmt = $this->pdo->prepare('SELECT password_hash FROM users WHERE id = ?');
+        $stmt->execute([Auth::userId()]);
+        $user = $stmt->fetch();
+
+        if (!$user || !password_verify($current, $user['password_hash'])) {
+            flash('error', 'Nuvarande lösenord är fel.');
+            redirect('/adm/byt-losenord');
+        }
+
+        // Update
+        $hash = password_hash($new, PASSWORD_DEFAULT);
+        $stmt = $this->pdo->prepare('UPDATE users SET password_hash = ?, updated_at = NOW() WHERE id = ?');
+        $stmt->execute([$hash, Auth::userId()]);
+
+        flash('success', 'Lösenordet har ändrats.');
+        redirect('/adm');
+    }
+
     public function logout(array $params): void
     {
         CsrfService::requireValid();

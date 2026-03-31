@@ -164,7 +164,7 @@ class TripController
             trim($_POST['note'] ?? '') ?: null
         );
 
-        flash('success', 'Hållplats tillagd!');
+        flash('success', 'Plats tillagd!');
         redirect('/adm/resor/' . $params['slug']);
     }
 
@@ -183,7 +183,7 @@ class TripController
 
         $stopModel->remove((int) $params['stopId']);
 
-        flash('success', 'Hållplatsen har tagits bort.');
+        flash('success', 'Platsen har tagits bort från resan.');
         redirect('/adm/resor/' . ($trip['slug'] ?? ''));
     }
 
@@ -221,7 +221,7 @@ class TripController
         $stops = $stopModel->findByTrip((int) $trip['id']);
 
         if (count($stops) < 2) {
-            flash('error', 'Minst två hållplatser krävs för att beräkna rutt.');
+            flash('error', 'Minst två platser krävs för att beräkna rutt.');
             redirect('/adm/resor/' . $params['slug']);
         }
 

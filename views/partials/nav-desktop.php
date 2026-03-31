@@ -35,6 +35,7 @@
     </nav>
     <div style="margin-top:auto; padding-top:var(--space-4); border-top:1px solid rgba(255,255,255,0.1);">
         <span style="font-size:var(--text-sm); opacity:0.65;"><?= htmlspecialchars(Auth::userName() ?? '') ?></span>
+        <a href="/adm/byt-losenord" style="color:rgba(255,255,255,0.4); font-size:var(--text-xs); margin-left:var(--space-2); text-decoration:none;">Byt lösenord</a>
         <form method="POST" action="/adm/logout" style="display:inline;">
             <?php include dirname(__DIR__) . '/partials/csrf-field.php'; ?>
             <button type="submit" class="btn-ghost" style="color:rgba(255,255,255,0.5); font-size:var(--text-sm);">Logga ut</button>

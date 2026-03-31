@@ -12,6 +12,8 @@ function registerRoutes(Router $router): void
     // Auth
     $router->get('/adm/login', 'AuthController', 'showLogin');
     $router->post('/adm/login', 'AuthController', 'login');
+    $router->get('/adm/byt-losenord', 'AuthController', 'showChangePassword');
+    $router->post('/adm/byt-losenord', 'AuthController', 'changePassword');
     $router->post('/adm/logout', 'AuthController', 'logout');
 
     // Dashboard

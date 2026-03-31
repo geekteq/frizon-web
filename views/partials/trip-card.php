@@ -15,7 +15,7 @@ $totalKm = $trip['total_km'] ? number_format((float) $trip['total_km'], 0) : '�
             <?php if ($trip['end_date']): ?> → <span><?= htmlspecialchars($trip['end_date']) ?></span><?php endif; ?>
             <span class="trip-card__sep">·</span>
         <?php endif; ?>
-        <span><?= $stopCount ?> hållplatser</span>
+        <span><?= $stopCount ?> platser</span>
         <span class="trip-card__sep">·</span>
         <span><?= $totalKm ?> km</span>
     </div>

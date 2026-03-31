@@ -44,11 +44,11 @@ function set_security_headers(): void
         "object-src 'none'",
         "manifest-src 'self'",
         "worker-src 'self'",
-        "img-src 'self' data: blob: https://*.tile.openstreetmap.org https://www.google-analytics.com",
+        "img-src 'self' data: blob: https://*.tile.openstreetmap.org https://unpkg.com https://www.google-analytics.com",
         "font-src 'self' data: https://fonts.gstatic.com",
         "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://unpkg.com",
         "script-src 'self' 'nonce-{$nonce}' https://unpkg.com https://www.googletagmanager.com",
-        "connect-src 'self' https://www.googletagmanager.com https://www.google-analytics.com https://region1.google-analytics.com",
+        "connect-src 'self' https://*.tile.openstreetmap.org https://unpkg.com https://www.googletagmanager.com https://www.google-analytics.com https://region1.google-analytics.com",
     ]);
 
     header('Content-Security-Policy: ' . $csp);

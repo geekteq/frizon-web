@@ -17,7 +17,7 @@ $pageTitle = $pageTitle ?? 'Frizon of Sweden';
     <link rel="apple-touch-icon" href="/apple-touch-icon.png">
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#3D4F5F">
-    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 </head>
 <body class="public-layout" data-ga-id="<?= htmlspecialchars($_ENV['GA_MEASUREMENT_ID'] ?? '') ?>">

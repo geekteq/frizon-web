@@ -124,7 +124,7 @@ class PublicController
             LEFT JOIN visit_ratings vr ON vr.visit_id = v.id
             WHERE p.is_toplisted = 1 AND p.public_allowed = 1
             GROUP BY p.id
-            ORDER BY p.toplist_order ASC, avg_rating DESC
+            ORDER BY avg_rating DESC, p.toplist_order ASC
         ');
         $places = $stmt->fetchAll();
 
