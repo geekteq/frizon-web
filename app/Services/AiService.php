@@ -30,7 +30,8 @@ class ClaudeAiProvider implements AiProviderInterface
     {
         $systemPrompt = 'Du är en reseskribent som skriver levande platsbeskrivningar för en husbilsreselogg. '
             . 'Skriv på svenska. Texten ska vara personlig men informativ, 2-4 stycken. '
-            . 'Basera texten på de anteckningar och betyg som ges.';
+            . 'Basera texten på de anteckningar och betyg som ges. '
+            . 'Skriv ren text utan markdown, inga **, ##, - eller andra formateringstecken. Bara löpande text med styckebrytningar.';
 
         $userPrompt = $this->buildUserPrompt($context);
 
