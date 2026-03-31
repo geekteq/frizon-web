@@ -1,6 +1,17 @@
 <div class="dashboard">
     <h2 class="mb-2">Hej <?= htmlspecialchars(Auth::userName() ?? '') ?>!</h2>
-    <p class="text-muted text-sm mb-6" style="font-family:var(--font-script); font-size:1.1rem;">Frizon of Sweden</p>
+    <p class="text-muted text-sm mb-4" style="font-family:var(--font-script); font-size:1.1rem;">Frizon of Sweden</p>
+
+    <?php if (!empty($places)): ?>
+    <div id="dashboard-map" style="width:100%; height:260px; border-radius:var(--radius-lg); margin-bottom:var(--space-6); background:var(--color-brand-muted);"
+         data-places='<?= htmlspecialchars(json_encode(array_map(fn($p) => [
+             'lat' => (float)$p['lat'],
+             'lng' => (float)$p['lng'],
+             'name' => $p['name'],
+             'slug' => $p['slug'],
+             'type' => $p['place_type'],
+         ], $places))) ?>'></div>
+    <?php endif; ?>
 
     <div class="dashboard-stats mb-6">
         <div class="stat-card">
@@ -50,3 +61,25 @@
         <?php endforeach; ?>
     <?php endif; ?>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var mapEl = document.getElementById('dashboard-map');
+    if (!mapEl) return;
+    var places = JSON.parse(mapEl.dataset.places || '[]');
+    if (places.length === 0) return;
+
+    var map = L.map(mapEl);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap', maxZoom: 19
+    }).addTo(map);
+
+    var bounds = L.latLngBounds();
+    places.forEach(function(p) {
+        var marker = L.marker([p.lat, p.lng]).addTo(map);
+        marker.bindPopup('<strong><a href="/adm/platser/' + p.slug + '">' + p.name + '</a></strong>');
+        bounds.extend([p.lat, p.lng]);
+    });
+    map.fitBounds(bounds, { padding: [30, 30], maxZoom: 12 });
+});
+</script>

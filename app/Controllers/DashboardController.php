@@ -30,7 +30,10 @@ class DashboardController
         $stats['trips'] = (int) $this->pdo->query('SELECT COUNT(*) FROM trips')->fetchColumn();
         $stats['lists'] = (int) $this->pdo->query('SELECT COUNT(*) FROM lists')->fetchColumn();
 
+        // All places for the map
+        $places = $this->pdo->query('SELECT id, slug, name, lat, lng, place_type, country_code FROM places ORDER BY updated_at DESC')->fetchAll();
+
         $pageTitle = 'Dashboard';
-        view('dashboard/index', compact('recentVisits', 'stats', 'pageTitle'));
+        view('dashboard/index', compact('recentVisits', 'stats', 'places', 'pageTitle'));
     }
 }
