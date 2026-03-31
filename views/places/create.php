@@ -106,7 +106,7 @@
 </form>
 
 <script src="/js/gps.js"></script>
-<script>
+<script<?= app_csp_nonce_attr() ?>>
 document.addEventListener('DOMContentLoaded', function() {
     initGpsCapture('gps-map', 'place-lat', 'place-lng');
 });

@@ -78,7 +78,7 @@ $placeTypes = [
     <?php endif; ?>
 </div>
 
-<script>
+<script<?= app_csp_nonce_attr() ?>>
 document.addEventListener('DOMContentLoaded', function() {
     var mapEl = document.getElementById('public-map');
     if (!mapEl) return;
@@ -95,9 +95,20 @@ document.addEventListener('DOMContentLoaded', function() {
     var bounds = L.latLngBounds();
     places.forEach(function(p) {
         var marker = L.marker([p.lat, p.lng]).addTo(map);
-        var popup = '<strong><a href="/platser/' + p.slug + '">' + p.name + '</a></strong>';
-        if (p.rating) popup += '<br>&#9733; ' + p.rating;
-        marker.bindPopup(popup);
+        var popupWrapper = document.createElement('div');
+        var title = document.createElement('strong');
+        var link = document.createElement('a');
+        link.href = '/platser/' + encodeURIComponent(p.slug);
+        link.textContent = p.name;
+        title.appendChild(link);
+        popupWrapper.appendChild(title);
+
+        if (p.rating) {
+            popupWrapper.appendChild(document.createElement('br'));
+            popupWrapper.appendChild(document.createTextNode('\u2605 ' + p.rating));
+        }
+
+        marker.bindPopup(popupWrapper);
         bounds.extend([p.lat, p.lng]);
     });
 

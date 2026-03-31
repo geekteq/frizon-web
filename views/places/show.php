@@ -65,7 +65,7 @@
 </div>
 
 <script src="/js/map.js"></script>
-<script>
+<script<?= app_csp_nonce_attr() ?>>
 document.addEventListener('DOMContentLoaded', function() {
     var el = document.getElementById('place-map');
     if (el) {

@@ -122,7 +122,7 @@
 </div>
 
 <script src="/js/trips.js"></script>
-<script>
+<script<?= app_csp_nonce_attr() ?>>
 document.addEventListener('DOMContentLoaded', function() {
     var mapEl = document.getElementById('trip-map');
     if (mapEl && mapEl.dataset.stops) {

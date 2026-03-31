@@ -39,7 +39,9 @@ function initTripMap(el, stops, segments) {
 
     stops.forEach(function(stop, i) {
         var marker = L.marker([stop.lat, stop.lng]).addTo(map);
-        marker.bindPopup('<strong>' + (i + 1) + '. ' + stop.name + '</strong>');
+        var title = document.createElement('strong');
+        title.textContent = (i + 1) + '. ' + stop.name;
+        marker.bindPopup(title);
         bounds.extend([stop.lat, stop.lng]);
     });
 

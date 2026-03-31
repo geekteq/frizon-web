@@ -57,14 +57,14 @@ $pageTitle = $pageTitle ?? 'Frizon of Sweden';
                 Läs vår <a href="/cookiepolicy" style="color:var(--color-accent-light); text-decoration:underline;">cookiepolicy</a>.
             </p>
             <div style="display:flex; gap:var(--space-2); flex-shrink:0;">
-                <button onclick="acceptCookies()" style="background:var(--color-accent); color:white; border:none; padding:var(--space-2) var(--space-4); border-radius:var(--radius-md); cursor:pointer; font-size:var(--text-sm); font-weight:var(--weight-semibold);">Godkänn</button>
-                <button onclick="declineCookies()" style="background:transparent; color:rgba(255,255,255,0.7); border:1px solid rgba(255,255,255,0.3); padding:var(--space-2) var(--space-4); border-radius:var(--radius-md); cursor:pointer; font-size:var(--text-sm);">Avböj</button>
+                <button id="accept-cookies-btn" style="background:var(--color-accent); color:white; border:none; padding:var(--space-2) var(--space-4); border-radius:var(--radius-md); cursor:pointer; font-size:var(--text-sm); font-weight:var(--weight-semibold);">Godkänn</button>
+                <button id="decline-cookies-btn" style="background:transparent; color:rgba(255,255,255,0.7); border:1px solid rgba(255,255,255,0.3); padding:var(--space-2) var(--space-4); border-radius:var(--radius-md); cursor:pointer; font-size:var(--text-sm);">Avböj</button>
             </div>
         </div>
     </div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script>
+    <script<?= app_csp_nonce_attr() ?>>
     // Cookie consent
     function getCookieConsent() { return localStorage.getItem('cookie_consent'); }
 
@@ -100,6 +100,12 @@ $pageTitle = $pageTitle ?? 'Frizon of Sweden';
             loadGA();
         }
     })();
+
+    var acceptBtn = document.getElementById('accept-cookies-btn');
+    var declineBtn = document.getElementById('decline-cookies-btn');
+    if (acceptBtn) acceptBtn.addEventListener('click', acceptCookies);
+    if (declineBtn) declineBtn.addEventListener('click', declineCookies);
+
     if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js');
     </script>
 </body>

@@ -88,13 +88,13 @@
         <form method="POST" action="/adm/besok/<?= $visit['id'] ?>" style="display:inline;">
             <?php include dirname(__DIR__) . '/partials/csrf-field.php'; ?>
             <input type="hidden" name="_method" value="DELETE">
-            <button type="submit" class="btn btn-danger btn--sm" onclick="return confirm('Ta bort besöket?')">Ta bort</button>
+            <button type="submit" class="btn btn-danger btn--sm" data-confirm="Ta bort besöket?">Ta bort</button>
         </form>
     </div>
 </div>
 
 <script src="/js/ai.js"></script>
-<script>
+<script<?= app_csp_nonce_attr() ?>>
 (function () {
     var area = document.getElementById('ai-draft-area');
     if (!area) return;

@@ -41,7 +41,7 @@ $typeLabel = $placeTypes[$place['place_type']] ?? $place['place_type'];
     <?php if (!empty($images)): ?>
         <div class="pub-detail__gallery">
             <?php foreach ($images as $img): ?>
-                <img src="/uploads/<?= htmlspecialchars($img['filename']) ?>"
+                <img src="/uploads/detail/<?= htmlspecialchars($img['filename']) ?>"
                      alt="<?= htmlspecialchars($img['alt_text'] ?? $place['name']) ?>"
                      class="pub-detail__img"
                      loading="lazy">
@@ -77,7 +77,7 @@ $typeLabel = $placeTypes[$place['place_type']] ?? $place['place_type'];
     <?php endif; ?>
 </article>
 
-<script>
+<script<?= app_csp_nonce_attr() ?>>
 document.addEventListener('DOMContentLoaded', function() {
     var mapEl = document.getElementById('place-map');
     if (!mapEl) return;
@@ -87,6 +87,8 @@ document.addEventListener('DOMContentLoaded', function() {
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; OpenStreetMap', maxZoom: 19
     }).addTo(map);
-    L.marker([lat, lng]).addTo(map).bindPopup('<strong>' + mapEl.dataset.name + '</strong>');
+    var title = document.createElement('strong');
+    title.textContent = mapEl.dataset.name;
+    L.marker([lat, lng]).addTo(map).bindPopup(title);
 });
 </script>

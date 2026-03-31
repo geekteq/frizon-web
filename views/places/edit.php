@@ -80,10 +80,10 @@
 <form method="POST" action="/adm/platser/<?= htmlspecialchars($p['slug']) ?>" style="margin-top:var(--space-8); padding-top:var(--space-6); border-top:1px solid var(--color-border);">
     <?php include dirname(__DIR__) . '/partials/csrf-field.php'; ?>
     <input type="hidden" name="_method" value="DELETE">
-    <button type="submit" class="btn btn-danger btn--sm" onclick="return confirm('Är du säker? Alla besök tas också bort.')">Ta bort plats</button>
+    <button type="submit" class="btn btn-danger btn--sm" data-confirm="Är du säker? Alla besök tas också bort.">Ta bort plats</button>
 </form>
 
-<script>
+<script<?= app_csp_nonce_attr() ?>>
 document.addEventListener('DOMContentLoaded', function() {
     var latInput = document.getElementById('lat');
     var lngInput = document.getElementById('lng');

@@ -22,9 +22,13 @@ document.addEventListener('DOMContentLoaded', function() {
 
         if (matches.length === 0) { dropdown.style.display = 'none'; return; }
 
-        dropdown.innerHTML = matches.map(function(m) {
-            return '<div class="tag-autocomplete__item">' + m + '</div>';
-        }).join('');
+        dropdown.replaceChildren();
+        matches.forEach(function(m) {
+            var item = document.createElement('div');
+            item.className = 'tag-autocomplete__item';
+            item.textContent = m;
+            dropdown.appendChild(item);
+        });
         dropdown.style.display = 'block';
 
         dropdown.querySelectorAll('.tag-autocomplete__item').forEach(function(item) {

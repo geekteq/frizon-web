@@ -162,6 +162,7 @@ class ListController
     public function toggleItem(array $params): void
     {
         Auth::requireLogin();
+        CsrfService::requireValid();
 
         $itemModel = new ListItem($this->pdo);
         $result = $itemModel->toggleDone((int) $params['itemId']);
@@ -191,6 +192,7 @@ class ListController
     public function reorderItems(array $params): void
     {
         Auth::requireLogin();
+        CsrfService::requireValid();
 
         $input = json_decode(file_get_contents('php://input'), true);
         $itemIds = $input['item_ids'] ?? [];

@@ -190,6 +190,7 @@ class TripController
     public function reorderStops(array $params): void
     {
         Auth::requireLogin();
+        CsrfService::requireValid();
 
         $tripModel = new Trip($this->pdo);
         $trip = $tripModel->findBySlug($params['slug']);

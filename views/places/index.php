@@ -1,7 +1,7 @@
 <div class="filter-bar mb-4">
     <form method="GET" action="/adm/platser" class="filter-bar__form">
         <input type="text" name="q" class="form-input filter-bar__search" placeholder="Sök platser..." value="<?= htmlspecialchars($filters['search'] ?? '') ?>">
-        <select name="type" class="form-select filter-bar__select" onchange="this.form.submit()">
+        <select name="type" class="form-select filter-bar__select" data-auto-submit="true">
             <option value="">Alla typer</option>
             <?php
             $types = ['breakfast'=>'Frukost','lunch'=>'Lunch','dinner'=>'Middag','fika'=>'Fika','sight'=>'Sevärdhet','shopping'=>'Shopping','stellplatz'=>'Ställplats','wild_camping'=>'Fricamping','camping'=>'Camping'];

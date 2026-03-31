@@ -35,5 +35,5 @@
 <form method="POST" action="/adm/listor/<?= $list['id'] ?>" style="margin-top:var(--space-8); padding-top:var(--space-6); border-top:1px solid var(--color-border);">
     <?php include dirname(__DIR__) . '/partials/csrf-field.php'; ?>
     <input type="hidden" name="_method" value="DELETE">
-    <button type="submit" class="btn btn-danger btn--sm" onclick="return confirm('Är du säker? Alla punkter tas bort.')">Ta bort lista</button>
+    <button type="submit" class="btn btn-danger btn--sm" data-confirm="Är du säker? Alla punkter tas bort.">Ta bort lista</button>
 </form>

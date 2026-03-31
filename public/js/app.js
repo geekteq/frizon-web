@@ -15,3 +15,24 @@ function getCsrfToken() {
     var el = document.querySelector('input[name="_csrf"]');
     return el ? el.value : '';
 }
+
+document.addEventListener('click', function(event) {
+    var trigger = event.target.closest('[data-confirm]');
+    if (!trigger) return;
+
+    if (!window.confirm(trigger.getAttribute('data-confirm') || 'Är du säker?')) {
+        event.preventDefault();
+    }
+});
+
+document.addEventListener('change', function(event) {
+    var trigger = event.target.closest('[data-auto-submit]');
+    if (!trigger || !trigger.form) return;
+
+    if (typeof trigger.form.requestSubmit === 'function') {
+        trigger.form.requestSubmit();
+        return;
+    }
+
+    trigger.form.submit();
+});

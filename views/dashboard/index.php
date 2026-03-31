@@ -62,7 +62,7 @@
     <?php endif; ?>
 </div>
 
-<script>
+<script<?= app_csp_nonce_attr() ?>>
 document.addEventListener('DOMContentLoaded', function() {
     var mapEl = document.getElementById('dashboard-map');
     if (!mapEl) return;
@@ -77,7 +77,14 @@ document.addEventListener('DOMContentLoaded', function() {
     var bounds = L.latLngBounds();
     places.forEach(function(p) {
         var marker = L.marker([p.lat, p.lng]).addTo(map);
-        marker.bindPopup('<strong><a href="/adm/platser/' + p.slug + '">' + p.name + '</a></strong>');
+        var popupWrapper = document.createElement('div');
+        var title = document.createElement('strong');
+        var link = document.createElement('a');
+        link.href = '/adm/platser/' + encodeURIComponent(p.slug);
+        link.textContent = p.name;
+        title.appendChild(link);
+        popupWrapper.appendChild(title);
+        marker.bindPopup(popupWrapper);
         bounds.extend([p.lat, p.lng]);
     });
     map.fitBounds(bounds, { padding: [30, 30], maxZoom: 12 });

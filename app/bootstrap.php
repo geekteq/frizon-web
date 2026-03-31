@@ -30,13 +30,26 @@ $pdo = new PDO($dsn, $config['db']['user'], $config['db']['pass'], [
     PDO::ATTR_EMULATE_PREPARES   => false,
 ]);
 
-// Session
-session_start();
-
 // Helpers
 require __DIR__ . '/Helpers/view.php';
 require __DIR__ . '/Helpers/redirect.php';
 require __DIR__ . '/Helpers/flash.php';
+require __DIR__ . '/Helpers/security.php';
 
 require __DIR__ . '/Services/CsrfService.php';
 require __DIR__ . '/Services/Auth.php';
+require __DIR__ . '/Services/LoginThrottle.php';
+
+ini_set('session.use_strict_mode', '1');
+ini_set('session.use_only_cookies', '1');
+session_set_cookie_params([
+    'lifetime' => 0,
+    'path'     => '/',
+    'domain'   => '',
+    'secure'   => app_is_https_request(),
+    'httponly' => true,
+    'samesite' => 'Lax',
+]);
+
+// Session
+session_start();

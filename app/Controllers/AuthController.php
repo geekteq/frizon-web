@@ -30,17 +30,29 @@ class AuthController
 
         $username = trim($_POST['username'] ?? '');
         $password = $_POST['password'] ?? '';
+        $ipAddress = trim((string) ($_SERVER['REMOTE_ADDR'] ?? 'unknown'));
 
         if ($username === '' || $password === '') {
             flash('error', 'Fyll i alla fält.');
             redirect('/adm/login');
         }
 
+        $throttle = new LoginThrottle();
+
+        try {
+            $throttle->ensureAllowed($username, $ipAddress);
+        } catch (RuntimeException $e) {
+            flash('error', $e->getMessage());
+            redirect('/adm/login');
+        }
+
         $auth = new Auth($this->pdo);
         if ($auth->attempt($username, $password)) {
+            $throttle->clear($username, $ipAddress);
             redirect('/adm');
         }
 
+        $throttle->recordFailure($username, $ipAddress);
         flash('error', 'Fel användarnamn eller lösenord.');
         redirect('/adm/login');
     }

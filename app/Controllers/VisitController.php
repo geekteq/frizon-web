@@ -182,6 +182,7 @@ class VisitController
     public function uploadImage(array $params): void
     {
         Auth::requireLogin();
+        CsrfService::requireValid();
         header('Content-Type: application/json');
 
         if (empty($_FILES['photo'])) {

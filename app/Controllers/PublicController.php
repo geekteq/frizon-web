@@ -22,7 +22,7 @@ class PublicController
             SELECT p.*, AVG(vr.total_rating_cached) as avg_rating,
                    COUNT(v.id) as visit_count
             FROM places p
-            LEFT JOIN visits v ON v.place_id = p.id
+            LEFT JOIN visits v ON v.place_id = p.id AND v.ready_for_publish = 1
             LEFT JOIN visit_ratings vr ON vr.visit_id = v.id
             WHERE p.public_allowed = 1
             GROUP BY p.id
@@ -93,7 +93,7 @@ class PublicController
             SELECT AVG(vr.total_rating_cached) as avg_rating
             FROM visits v
             JOIN visit_ratings vr ON vr.visit_id = v.id
-            WHERE v.place_id = ?
+            WHERE v.place_id = ? AND v.ready_for_publish = 1
         ');
         $ratingStmt->execute([$place['id']]);
         $avgRating = $ratingStmt->fetchColumn();
@@ -120,7 +120,7 @@ class PublicController
             SELECT p.*, AVG(vr.total_rating_cached) as avg_rating,
                    COUNT(v.id) as visit_count
             FROM places p
-            LEFT JOIN visits v ON v.place_id = p.id
+            LEFT JOIN visits v ON v.place_id = p.id AND v.ready_for_publish = 1
             LEFT JOIN visit_ratings vr ON vr.visit_id = v.id
             WHERE p.is_toplisted = 1 AND p.public_allowed = 1
             GROUP BY p.id

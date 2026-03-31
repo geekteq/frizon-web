@@ -30,7 +30,7 @@
                     </form>
                     <form method="POST" action="/adm/publicera/<?= htmlspecialchars($p['slug']) ?>/avpublicera">
                         <?php include dirname(__DIR__) . '/partials/csrf-field.php'; ?>
-                        <button type="submit" class="btn btn-danger btn--sm" onclick="return confirm('Avpublicera?')">Avpublicera</button>
+                        <button type="submit" class="btn btn-danger btn--sm" data-confirm="Avpublicera?">Avpublicera</button>
                     </form>
                 </div>
             </div>

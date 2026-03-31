@@ -22,6 +22,6 @@ $typeLabel = $stop['stop_type'] ? ($stopTypes[$stop['stop_type']] ?? $stop['stop
     <form method="POST" action="/adm/resor/hallplatser/<?= $stop['id'] ?>" class="stop-card__actions">
         <?php include dirname(__DIR__) . '/partials/csrf-field.php'; ?>
         <input type="hidden" name="_method" value="DELETE">
-        <button type="submit" class="btn-ghost btn--sm" onclick="return confirm('Ta bort platsen från resan?')" aria-label="Ta bort">×</button>
+        <button type="submit" class="btn-ghost btn--sm" data-confirm="Ta bort platsen från resan?" aria-label="Ta bort">×</button>
     </form>
 </div>
