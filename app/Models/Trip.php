@@ -14,12 +14,10 @@ class Trip
     public function all(): array
     {
         $stmt = $this->pdo->query('
-            SELECT t.*, COUNT(ts.id) as stop_count,
-                   SUM(trs.distance_km) as total_km
+            SELECT t.*,
+                   (SELECT COUNT(*) FROM trip_stops WHERE trip_id = t.id) as stop_count,
+                   (SELECT COALESCE(SUM(distance_km), 0) FROM trip_route_segments WHERE trip_id = t.id) as total_km
             FROM trips t
-            LEFT JOIN trip_stops ts ON ts.trip_id = t.id
-            LEFT JOIN trip_route_segments trs ON trs.trip_id = t.id
-            GROUP BY t.id
             ORDER BY FIELD(t.status, "ongoing", "planned", "finished"), t.start_date DESC
         ');
         return $stmt->fetchAll();
@@ -83,16 +81,13 @@ class Trip
     public function summary(int $id): array
     {
         $stmt = $this->pdo->prepare('
-            SELECT COUNT(ts.id) as stop_count,
-                   COALESCE(SUM(trs.distance_km), 0) as total_km,
-                   COALESCE(SUM(trs.provider_eta_minutes), 0) as total_eta_provider,
-                   COALESCE(SUM(trs.eta_95_minutes), 0) as total_eta_95
-            FROM trips t
-            LEFT JOIN trip_stops ts ON ts.trip_id = t.id
-            LEFT JOIN trip_route_segments trs ON trs.trip_id = t.id
-            WHERE t.id = ?
+            SELECT
+                (SELECT COUNT(*) FROM trip_stops WHERE trip_id = ?) as stop_count,
+                (SELECT COALESCE(SUM(distance_km), 0) FROM trip_route_segments WHERE trip_id = ?) as total_km,
+                (SELECT COALESCE(SUM(provider_eta_minutes), 0) FROM trip_route_segments WHERE trip_id = ?) as total_eta_provider,
+                (SELECT COALESCE(SUM(eta_95_minutes), 0) FROM trip_route_segments WHERE trip_id = ?) as total_eta_95
         ');
-        $stmt->execute([$id]);
+        $stmt->execute([$id, $id, $id, $id]);
         return $stmt->fetch();
     }
 
