@@ -77,14 +77,15 @@ class PlaceController
 
         $place = new Place($this->pdo);
         $place->create([
-            'slug'         => Place::generateSlug($name),
-            'name'         => $name,
-            'lat'          => $lat,
-            'lng'          => $lng,
-            'address_text' => trim($_POST['address_text'] ?? '') ?: null,
-            'country_code' => trim($_POST['country_code'] ?? '') ?: null,
-            'place_type'   => $_POST['place_type'] ?? 'stellplatz',
-            'created_by'   => Auth::userId(),
+            'slug'                => Place::generateSlug($name),
+            'name'                => $name,
+            'lat'                 => $lat,
+            'lng'                 => $lng,
+            'address_text'        => trim($_POST['address_text'] ?? '') ?: null,
+            'country_code'        => trim($_POST['country_code'] ?? '') ?: null,
+            'place_type'          => $_POST['place_type'] ?? 'stellplatz',
+            'default_public_text' => trim($_POST['default_public_text'] ?? '') ?: null,
+            'created_by'          => Auth::userId(),
         ]);
 
         flash('success', 'Platsen har sparats!');
@@ -110,12 +111,13 @@ class PlaceController
         if (!$p) { http_response_code(404); return; }
 
         $place->update((int) $p['id'], [
-            'name'         => trim($_POST['name'] ?? $p['name']),
-            'lat'          => (float) ($_POST['lat'] ?? $p['lat']),
-            'lng'          => (float) ($_POST['lng'] ?? $p['lng']),
-            'address_text' => trim($_POST['address_text'] ?? '') ?: null,
-            'country_code' => trim($_POST['country_code'] ?? '') ?: null,
-            'place_type'   => $_POST['place_type'] ?? $p['place_type'],
+            'name'                => trim($_POST['name'] ?? $p['name']),
+            'lat'                 => (float) ($_POST['lat'] ?? $p['lat']),
+            'lng'                 => (float) ($_POST['lng'] ?? $p['lng']),
+            'address_text'        => trim($_POST['address_text'] ?? '') ?: null,
+            'country_code'        => trim($_POST['country_code'] ?? '') ?: null,
+            'place_type'          => $_POST['place_type'] ?? $p['place_type'],
+            'default_public_text' => trim($_POST['default_public_text'] ?? '') ?: null,
         ]);
 
         flash('success', 'Platsen har uppdaterats.');

@@ -131,6 +131,13 @@ class AiController
         ');
         $stmt->execute([$draft['draft_text'], $visitId]);
 
+        // Also copy to the place's default_public_text
+        $stmt = $this->pdo->prepare('
+            UPDATE places SET default_public_text = ?, updated_at = NOW()
+            WHERE id = (SELECT place_id FROM visits WHERE id = ?)
+        ');
+        $stmt->execute([$draft['draft_text'], $visitId]);
+
         echo json_encode(['success' => true]);
     }
 

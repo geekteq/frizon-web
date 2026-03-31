@@ -98,8 +98,8 @@
     </div>
 
     <div class="form-group">
-        <label for="raw_note" class="form-label">Kort anteckning (valfritt)</label>
-        <textarea id="raw_note" name="raw_note" class="form-textarea form-textarea--note" rows="3" placeholder="Valfri anteckning..."></textarea>
+        <label for="default_public_text" class="form-label">Beskrivning (visas publikt)</label>
+        <textarea id="default_public_text" name="default_public_text" class="form-textarea" rows="4" placeholder="Beskriv platsen..."></textarea>
     </div>
 
     <button type="submit" class="btn btn-primary btn--full">Spara plats</button>

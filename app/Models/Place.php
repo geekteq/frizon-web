@@ -61,13 +61,13 @@ class Place
     public function create(array $data): int
     {
         $stmt = $this->pdo->prepare('
-            INSERT INTO places (slug, name, lat, lng, address_text, country_code, place_type, created_by)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO places (slug, name, lat, lng, address_text, country_code, place_type, default_public_text, created_by)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
         ');
         $stmt->execute([
             $data['slug'], $data['name'], $data['lat'], $data['lng'],
             $data['address_text'] ?? null, $data['country_code'] ?? null,
-            $data['place_type'], $data['created_by'],
+            $data['place_type'], $data['default_public_text'] ?? null, $data['created_by'],
         ]);
         return (int) $this->pdo->lastInsertId();
     }
@@ -76,12 +76,12 @@ class Place
     {
         $stmt = $this->pdo->prepare('
             UPDATE places SET name = ?, lat = ?, lng = ?, address_text = ?,
-            country_code = ?, place_type = ?, updated_at = NOW() WHERE id = ?
+            country_code = ?, place_type = ?, default_public_text = ?, updated_at = NOW() WHERE id = ?
         ');
         $stmt->execute([
             $data['name'], $data['lat'], $data['lng'],
             $data['address_text'] ?? null, $data['country_code'] ?? null,
-            $data['place_type'], $id,
+            $data['place_type'], $data['default_public_text'] ?? null, $id,
         ]);
     }
 

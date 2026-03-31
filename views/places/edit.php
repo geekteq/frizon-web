@@ -62,6 +62,11 @@
         </select>
     </div>
 
+    <div class="form-group">
+        <label for="default_public_text" class="form-label">Beskrivning (visas publikt)</label>
+        <textarea id="default_public_text" name="default_public_text" class="form-textarea" rows="4"><?= htmlspecialchars($p['default_public_text'] ?? '') ?></textarea>
+    </div>
+
     <div class="flex gap-3">
         <button type="submit" class="btn btn-primary">Spara ändringar</button>
         <a href="/adm/platser/<?= htmlspecialchars($p['slug']) ?>" class="btn btn-ghost">Avbryt</a>
