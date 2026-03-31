@@ -22,9 +22,6 @@ class OpenRouteServiceProvider implements RouteProviderInterface
                 [$fromLng, $fromLat],  // ORS uses [lng, lat] order
                 [$toLng, $toLat],
             ],
-            'options' => [
-                'maximum_speed' => 95,  // Frizze's max cruising speed
-            ],
         ]);
 
         $ch = curl_init($url);
