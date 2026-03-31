@@ -15,6 +15,10 @@ $pageTitle = $pageTitle ?? 'Frizon of Sweden';
     <link rel="stylesheet" href="/css/pages/public.css">
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
     <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#3D4F5F">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 </head>
 <body class="public-layout" data-ga-id="<?= htmlspecialchars($_ENV['GA_MEASUREMENT_ID'] ?? '') ?>">
     <header class="public-header" style="height:auto; padding:var(--space-4) var(--space-6);">
@@ -94,6 +98,7 @@ $pageTitle = $pageTitle ?? 'Frizon of Sweden';
             loadGA();
         }
     })();
+    if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js');
     </script>
 </body>
 </html>

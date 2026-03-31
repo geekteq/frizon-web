@@ -16,6 +16,10 @@ $pageTitle = $pageTitle ?? 'Frizon';
     <link rel="stylesheet" href="/css/main.css">
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
     <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#3D4F5F">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 </head>
 <body class="app-layout">
     <?php include dirname(__DIR__) . '/partials/nav-desktop.php'; ?>
@@ -33,5 +37,6 @@ $pageTitle = $pageTitle ?? 'Frizon';
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="/js/app.js"></script>
+    <script>if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js');</script>
 </body>
 </html>
