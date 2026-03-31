@@ -28,6 +28,7 @@ class DashboardController
         $stats['visits'] = (int) $this->pdo->query('SELECT COUNT(*) FROM visits')->fetchColumn();
         $stats['countries'] = (int) $this->pdo->query('SELECT COUNT(DISTINCT country_code) FROM places WHERE country_code IS NOT NULL')->fetchColumn();
         $stats['trips'] = (int) $this->pdo->query('SELECT COUNT(*) FROM trips')->fetchColumn();
+        $stats['lists'] = (int) $this->pdo->query('SELECT COUNT(*) FROM lists')->fetchColumn();
 
         $pageTitle = 'Dashboard';
         view('dashboard/index', compact('recentVisits', 'stats', 'pageTitle'));

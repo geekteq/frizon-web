@@ -41,6 +41,8 @@
 @import url('pages/dashboard.css');
 @import url('pages/places.css');
 @import url('pages/trips.css');
+@import url('pages/lists.css');
+@import url('pages/public.css');
 
 /* 5 — Utilities (must be last so helpers override component styles) */
 @import url('utilities.css');

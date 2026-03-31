@@ -45,6 +45,38 @@ function registerRoutes(Router $router): void
     $router->post('/resor/{slug}/berakna-rutt', 'TripController', 'calculateRoute');
     $router->get('/resor/{slug}/export/gpx', 'TripController', 'exportGpx');
 
+    // List templates (must come before /listor/{id})
+    $router->get('/listor/mallar', 'ListController', 'templates');
+    $router->get('/listor/mallar/ny', 'ListController', 'createTemplate');
+    $router->post('/listor/mallar', 'ListController', 'storeTemplate');
+    $router->delete('/listor/mallar/{id}', 'ListController', 'deleteTemplate');
+
+    // Lists
+    $router->get('/listor', 'ListController', 'index');
+    $router->get('/listor/ny', 'ListController', 'create');
+    $router->post('/listor', 'ListController', 'store');
+    $router->get('/listor/{id}', 'ListController', 'show');
+    $router->get('/listor/{id}/redigera', 'ListController', 'edit');
+    $router->put('/listor/{id}', 'ListController', 'update');
+    $router->delete('/listor/{id}', 'ListController', 'destroy');
+
+    // List items
+    $router->post('/listor/{id}/punkt', 'ListController', 'addItem');
+    $router->post('/listor/punkt/{itemId}/toggle', 'ListController', 'toggleItem');
+    $router->delete('/listor/punkt/{itemId}', 'ListController', 'removeItem');
+    $router->put('/listor/{id}/punkt/ordning', 'ListController', 'reorderItems');
+
+    // Public pages (no auth required)
+    $router->get('/pub', 'PublicController', 'homepage');
+    $router->get('/pub/platser/{slug}', 'PublicController', 'placeDetail');
+    $router->get('/pub/topplista', 'PublicController', 'topList');
+
+    // Publish queue (private)
+    $router->get('/publicera', 'PublishController', 'queue');
+    $router->post('/publicera/{slug}/godkann', 'PublishController', 'approve');
+    $router->post('/publicera/{slug}/avpublicera', 'PublishController', 'unpublish');
+    $router->post('/publicera/{slug}/topplista', 'PublishController', 'toggleToplist');
+
     // API endpoints (JSON)
     $router->get('/api/platser/nearby', 'PlaceController', 'nearby');
     $router->post('/api/images/upload', 'VisitController', 'uploadImage');

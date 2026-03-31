@@ -19,6 +19,10 @@
             <div class="stat-card__number"><?= $stats['trips'] ?></div>
             <div class="stat-card__label">Resor</div>
         </div>
+        <div class="stat-card">
+            <div class="stat-card__number"><?= $stats['lists'] ?></div>
+            <div class="stat-card__label">Listor</div>
+        </div>
     </div>
 
     <h3 class="mb-4">Senaste besök</h3>
