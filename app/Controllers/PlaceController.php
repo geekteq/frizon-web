@@ -138,8 +138,8 @@ class PlaceController
 
     private function buildFaqContent(): ?string
     {
-        $questions = $_POST['faq_q'] ?? [];
-        $answers   = $_POST['faq_a'] ?? [];
+        $questions = (array) ($_POST['faq_q'] ?? []);
+        $answers   = (array) ($_POST['faq_a'] ?? []);
         $faq       = [];
         foreach ($questions as $i => $q) {
             $q = trim($q);
