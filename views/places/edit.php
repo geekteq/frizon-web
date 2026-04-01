@@ -82,7 +82,7 @@
             <span id="meta-count" style="color:var(--color-text-muted); font-weight:normal;">(<?= mb_strlen($p['meta_description'] ?? '') ?>/155)</span>
         </label>
         <input type="text" id="meta_description" name="meta_description" class="form-input"
-               maxlength="255" value="<?= htmlspecialchars($p['meta_description'] ?? '') ?>">
+               maxlength="155" value="<?= htmlspecialchars($p['meta_description'] ?? '') ?>">
         <p style="font-size:var(--text-xs); color:var(--color-text-muted); margin-top:var(--space-1);">Visas i sökmotorer. Rekommenderas max 155 tecken.</p>
     </div>
 
