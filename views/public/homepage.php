@@ -14,9 +14,35 @@ $placeTypes = [
         Här delar vi platser vi besökt, vad vi tyckte och om de är värda ett återbesök.
         Allt sett ur en husbilsresandes perspektiv.
     </p>
-    <p style="font-size:var(--text-sm); color:var(--color-text-muted);">
-        Följ oss på <a href="https://www.instagram.com/frizon_of_sweden" target="_blank" rel="noopener" style="color:var(--color-accent); text-decoration:underline;">Instagram @frizon_of_sweden</a>
-    </p>
+    <div style="display:flex; gap:var(--space-3); justify-content:center; margin-top:var(--space-2);">
+        <a href="https://www.instagram.com/frizon_of_sweden" target="_blank" rel="noopener noreferrer"
+           aria-label="Följ oss på Instagram"
+           style="display:flex; flex-direction:column; align-items:center; gap:6px; padding:var(--space-3) var(--space-4); border-radius:var(--radius-lg); text-decoration:none; color:#fff; font-size:var(--text-xs); font-weight:var(--weight-semibold); background:radial-gradient(circle at 30% 107%, #fdf497 0%, #fdf497 5%, #fd5949 45%, #d6249f 60%, #285AEB 90%); box-shadow:0 4px 12px rgba(0,0,0,0.18); transition:transform 150ms ease-out, box-shadow 150ms ease-out;">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <rect x="2" y="2" width="20" height="20" rx="5" ry="5" stroke="white" stroke-width="1.8"/>
+                <circle cx="12" cy="12" r="4.5" stroke="white" stroke-width="1.8"/>
+                <circle cx="17.5" cy="6.5" r="1.1" fill="white"/>
+            </svg>
+            Instagram
+        </a>
+        <a href="https://www.facebook.com/frizonofsweden" target="_blank" rel="noopener noreferrer"
+           aria-label="Följ oss på Facebook"
+           style="display:flex; flex-direction:column; align-items:center; gap:6px; padding:var(--space-3) var(--space-4); border-radius:var(--radius-lg); text-decoration:none; color:#fff; font-size:var(--text-xs); font-weight:var(--weight-semibold); background:#1877F2; box-shadow:0 4px 12px rgba(0,0,0,0.18); transition:transform 150ms ease-out, box-shadow 150ms ease-out;">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            Facebook
+        </a>
+        <a href="https://www.youtube.com/@frizon_of_sweden" target="_blank" rel="noopener noreferrer"
+           aria-label="Titta på oss på YouTube"
+           style="display:flex; flex-direction:column; align-items:center; gap:6px; padding:var(--space-3) var(--space-4); border-radius:var(--radius-lg); text-decoration:none; color:#fff; font-size:var(--text-xs); font-weight:var(--weight-semibold); background:#FF0000; box-shadow:0 4px 12px rgba(0,0,0,0.18); transition:transform 150ms ease-out, box-shadow 150ms ease-out;">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M22.54 6.42a2.78 2.78 0 0 0-1.95-1.96C18.88 4 12 4 12 4s-6.88 0-8.59.46A2.78 2.78 0 0 0 1.46 6.42 29 29 0 0 0 1 12a29 29 0 0 0 .46 5.58 2.78 2.78 0 0 0 1.95 1.96C5.12 20 12 20 12 20s6.88 0 8.59-.46a2.78 2.78 0 0 0 1.95-1.96A29 29 0 0 0 23 12a29 29 0 0 0-.46-5.58z" stroke="white" stroke-width="1.8"/>
+                <polygon points="9.75 15.02 15.5 12 9.75 8.98 9.75 15.02" stroke="white" stroke-width="1.6" stroke-linejoin="round" fill="white"/>
+            </svg>
+            YouTube
+        </a>
+    </div>
 </div>
 
 <?php if (!empty($places)): ?>
