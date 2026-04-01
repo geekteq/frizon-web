@@ -9,6 +9,7 @@ declare(strict_types=1);
 interface AiProviderInterface
 {
     public function generateDraft(array $context): string;
+    public function generatePlaceSeo(array $place, array $visits): array;
 }
 
 // ---------------------------------------------------------------------------
@@ -80,6 +81,92 @@ class ClaudeAiProvider implements AiProviderInterface
         }
 
         return trim($text);
+    }
+
+    public function generatePlaceSeo(array $place, array $visits): array
+    {
+        $placeTypes = [
+            'stellplatz'   => 'ställplats', 'camping'   => 'camping',
+            'wild_camping' => 'fricamping', 'fika'      => 'fika',
+            'lunch'        => 'lunch',      'dinner'    => 'middag',
+            'breakfast'    => 'frukost',    'sight'     => 'sevärdhet',
+            'shopping'     => 'shopping',
+        ];
+        $typeLabel = $placeTypes[$place['place_type']] ?? $place['place_type'];
+
+        $visitInfo = '';
+        foreach ($visits as $v) {
+            if (!empty($v['approved_public_text'])) {
+                $visitInfo .= 'Besöksbeskrivning: ' . $v['approved_public_text'] . "\n";
+            }
+            if (!empty($v['suitable_for'])) {
+                $visitInfo .= 'Passar för: ' . $v['suitable_for'] . "\n";
+            }
+            if (!empty($v['tips_notes'])) {
+                $visitInfo .= 'Tips: ' . $v['tips_notes'] . "\n";
+            }
+            if (!empty($v['price_level'])) {
+                $visitInfo .= 'Prisnivå: ' . $v['price_level'] . "\n";
+            }
+        }
+
+        $userPrompt = "Plats: {$place['name']}\n"
+            . "Typ: {$typeLabel}\n"
+            . ($place['country_code'] ? "Land: " . strtoupper($place['country_code']) . "\n" : '')
+            . ($place['default_public_text'] ? "Beskrivning: {$place['default_public_text']}\n" : '')
+            . ($visitInfo ? "\nBesöksinformation:\n{$visitInfo}" : '')
+            . "\nGenerera:\n"
+            . "1. meta_description: SEO-beskrivning max 155 tecken, på svenska, lockar besökare.\n"
+            . "2. faq: Array med 3-5 frågor och svar om platsen ur ett husbilsperspektiv.\n"
+            . "   Typiska frågor: Passar den för husbilar? Vad finns i närheten? Kostar det något? Är det lugnt?\n\n"
+            . "Svara ENBART med giltig JSON i exakt detta format, inget annat:\n"
+            . '{"meta_description":"...","faq":[{"q":"...","a":"..."},{"q":"...","a":"..."}]}';
+
+        $payload = [
+            'model'      => $this->model,
+            'max_tokens' => 800,
+            'system'     => 'Du är en SEO-expert som skriver på svenska för en husbilsreseblogg. Svara ALLTID med giltig JSON och inget annat.',
+            'messages'   => [['role' => 'user', 'content' => $userPrompt]],
+        ];
+
+        $ch = curl_init('https://api.anthropic.com/v1/messages');
+        curl_setopt_array($ch, [
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_POST           => true,
+            CURLOPT_POSTFIELDS     => json_encode($payload),
+            CURLOPT_HTTPHEADER     => [
+                'Content-Type: application/json',
+                'x-api-key: ' . $this->apiKey,
+                'anthropic-version: 2023-06-01',
+            ],
+            CURLOPT_TIMEOUT => 30,
+        ]);
+
+        $response  = curl_exec($ch);
+        $httpCode  = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $curlError = curl_error($ch);
+        curl_close($ch);
+
+        if ($curlError) {
+            throw new RuntimeException('cURL-fel: ' . $curlError);
+        }
+        if ($httpCode !== 200) {
+            $body = json_decode($response, true);
+            throw new RuntimeException('Claude API-fel: ' . ($body['error']['message'] ?? 'HTTP ' . $httpCode));
+        }
+
+        $data   = json_decode($response, true);
+        $text   = trim($data['content'][0]['text'] ?? '');
+        $result = json_decode($text, true);
+
+        if (!isset($result['meta_description'], $result['faq']) || !is_array($result['faq'])) {
+            throw new RuntimeException('Ogiltigt JSON-svar från Claude vid SEO-generering.');
+        }
+
+        return [
+            'meta_description' => substr((string) $result['meta_description'], 0, 255),
+            'faq_content'      => json_encode($result['faq'], JSON_UNESCAPED_UNICODE),
+        ];
     }
 
     private function buildUserPrompt(array $ctx): string
@@ -170,6 +257,41 @@ class FakeAiProvider implements AiProviderInterface
         $parts = array_filter([$para1, $para2, $para3], fn($p) => trim($p) !== '');
         return implode("\n\n", $parts);
     }
+
+    public function generatePlaceSeo(array $place, array $visits): array
+    {
+        $placeTypes = [
+            'stellplatz'   => 'ställplats', 'camping'   => 'camping',
+            'wild_camping' => 'fricamping', 'fika'      => 'fika',
+            'lunch'        => 'lunch',      'dinner'    => 'middag',
+            'breakfast'    => 'frukost',    'sight'     => 'sevärdhet',
+            'shopping'     => 'shopping',
+        ];
+        $typeLabel = $placeTypes[$place['place_type']] ?? $place['place_type'];
+        $country   = $place['country_code'] ? ' i ' . strtoupper($place['country_code']) : '';
+
+        $meta = "{$place['name']} — en {$typeLabel}{$country}. Recenserad av Mattias och Ulrica på Frizon of Sweden ur ett husbilsperspektiv.";
+
+        $faq = [
+            [
+                'q' => 'Passar ' . $place['name'] . ' för husbilar?',
+                'a' => 'Ja, vi besökte platsen med vår Adria Twin och upplevde den som passande för husbilar.',
+            ],
+            [
+                'q' => 'Vad finns att göra i närheten?',
+                'a' => 'Se platssidan för mer information om aktiviteter och sevärdheter i närheten.',
+            ],
+            [
+                'q' => 'Hur tar man sig dit?',
+                'a' => 'Koordinater och karta finns på platssidan. Vägarna är framkomliga med husbil.',
+            ],
+        ];
+
+        return [
+            'meta_description' => substr($meta, 0, 255),
+            'faq_content'      => json_encode($faq, JSON_UNESCAPED_UNICODE),
+        ];
+    }
 }
 
 // ---------------------------------------------------------------------------
@@ -199,5 +321,10 @@ class AiService
     public function generateDraft(array $context): string
     {
         return $this->provider->generateDraft($context);
+    }
+
+    public function generatePlaceSeo(array $place, array $visits): array
+    {
+        return $this->provider->generatePlaceSeo($place, $visits);
     }
 }
