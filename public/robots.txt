@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+Disallow: /adm/
+
+Sitemap: https://frizon.org/sitemap.xml
