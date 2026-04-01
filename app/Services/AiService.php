@@ -164,8 +164,8 @@ class ClaudeAiProvider implements AiProviderInterface
         }
 
         return [
-            'meta_description' => substr((string) $result['meta_description'], 0, 255),
-            'faq_content'      => json_encode($result['faq'], JSON_UNESCAPED_UNICODE),
+            'meta_description' => mb_substr((string) $result['meta_description'], 0, 155),
+            'faq_content'      => json_encode($result['faq'], JSON_UNESCAPED_UNICODE) ?: '[]',
         ];
     }
 
@@ -288,7 +288,7 @@ class FakeAiProvider implements AiProviderInterface
         ];
 
         return [
-            'meta_description' => substr($meta, 0, 255),
+            'meta_description' => mb_substr($meta, 0, 155),
             'faq_content'      => json_encode($faq, JSON_UNESCAPED_UNICODE),
         ];
     }
