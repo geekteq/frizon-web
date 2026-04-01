@@ -131,4 +131,98 @@ class PublicController
         $pageTitle = 'Topplista — Frizon';
         view('public/toplist', compact('places', 'pageTitle'), 'public');
     }
+
+    public function sitemap(array $params): void
+    {
+        $appUrl = rtrim($_ENV['APP_URL'] ?? 'https://frizon.org', '/');
+
+        $stmt = $this->pdo->query(
+            "SELECT slug, updated_at FROM places WHERE public_allowed = 1 ORDER BY updated_at DESC"
+        );
+        $places = $stmt->fetchAll();
+
+        header('Content-Type: application/xml; charset=utf-8');
+
+        echo '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
+        echo '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' . "\n";
+
+        $staticPages = [
+            [$appUrl . '/',          date('Y-m-d'), '1.0'],
+            [$appUrl . '/topplista', date('Y-m-d'), '0.8'],
+        ];
+
+        foreach ($staticPages as [$loc, $lastmod, $priority]) {
+            echo "  <url>\n";
+            echo "    <loc>" . htmlspecialchars($loc) . "</loc>\n";
+            echo "    <lastmod>" . $lastmod . "</lastmod>\n";
+            echo "    <priority>" . $priority . "</priority>\n";
+            echo "  </url>\n";
+        }
+
+        foreach ($places as $place) {
+            $lastmod = date('Y-m-d', strtotime($place['updated_at']));
+            echo "  <url>\n";
+            echo "    <loc>" . htmlspecialchars($appUrl . '/platser/' . $place['slug']) . "</loc>\n";
+            echo "    <lastmod>" . $lastmod . "</lastmod>\n";
+            echo "    <priority>0.7</priority>\n";
+            echo "  </url>\n";
+        }
+
+        echo '</urlset>';
+    }
+
+    public function llmsTxt(array $params): void
+    {
+        $appUrl = rtrim($_ENV['APP_URL'] ?? 'https://frizon.org', '/');
+
+        $stmt = $this->pdo->query("
+            SELECT name, place_type, country_code, meta_description, slug
+            FROM places
+            WHERE public_allowed = 1
+            ORDER BY is_featured DESC, name ASC
+        ");
+        $places = $stmt->fetchAll();
+
+        $placeTypes = [
+            'stellplatz'   => 'ställplats', 'camping'   => 'camping',
+            'wild_camping' => 'fricamping', 'fika'      => 'fika',
+            'lunch'        => 'lunch',      'dinner'    => 'middag',
+            'breakfast'    => 'frukost',    'sight'     => 'sevärdhet',
+            'shopping'     => 'shopping',
+        ];
+
+        header('Content-Type: text/plain; charset=utf-8');
+
+        echo "# Frizon of Sweden — llms.txt\n\n";
+        echo "## About\n";
+        echo "Frizon of Sweden is a Swedish-language travel log by Mattias and Ulrica.\n";
+        echo "They travel across Europe in Frizze, their Adria Twin SPT 600 Platinum 2017 campervan.\n";
+        echo "This site documents places from a campervan traveller's perspective:\n";
+        echo "stellplatser (motorhome pitches), campings, restaurants, sights, and hidden gems.\n";
+        echo "All ratings and reviews are personal, based on real visits.\n\n";
+
+        echo "## Site\n";
+        echo "URL: " . $appUrl . "\n";
+        echo "Language: Swedish (sv-SE)\n";
+        echo "Topics: campervan travel, motorhome travel, stellplatz, Europe road trips, Adria Twin\n\n";
+
+        echo "## Authors\n";
+        echo "Mattias and Ulrica (also called Ullisen)\n";
+        echo "Vehicle: Adria Twin SPT 600 Platinum 2017, Citroen Jumper base, named Frizze\n\n";
+
+        if (!empty($places)) {
+            echo "## Published Places (" . count($places) . ")\n\n";
+            foreach ($places as $p) {
+                $typeLabel = $placeTypes[$p['place_type']] ?? $p['place_type'];
+                $country   = $p['country_code'] ? ' · ' . strtoupper($p['country_code']) : '';
+                echo "### " . $p['name'] . "\n";
+                echo "Type: " . $typeLabel . $country . "\n";
+                echo "URL: " . $appUrl . "/platser/" . $p['slug'] . "\n";
+                if ($p['meta_description']) {
+                    echo $p['meta_description'] . "\n";
+                }
+                echo "\n";
+            }
+        }
+    }
 }
