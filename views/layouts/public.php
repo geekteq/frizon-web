@@ -1,5 +1,14 @@
 <?php
 $pageTitle = $pageTitle ?? 'Frizon of Sweden';
+$seoMeta   = $seoMeta ?? [];
+$schemas   = $schemas ?? [];
+$appUrl    = rtrim($_ENV['APP_URL'] ?? 'https://frizon.org', '/');
+$reqPath   = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH);
+
+$metaDescription = $seoMeta['description'] ?? 'Platser vi besökt med Frizze, vår Adria Twin. Ställplatser, campingar, restauranger och sevärdheter — sett ur ett husbilsperspektiv.';
+$canonicalUrl    = $seoMeta['og_url']      ?? $appUrl . $reqPath;
+$ogImage         = $seoMeta['og_image']    ?? $appUrl . '/img/frizon-logo.png';
+$ogTitle         = htmlspecialchars($pageTitle);
 ?>
 <!DOCTYPE html>
 <html lang="sv">
@@ -7,6 +16,29 @@ $pageTitle = $pageTitle ?? 'Frizon of Sweden';
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= htmlspecialchars($pageTitle) ?></title>
+    <meta name="description" content="<?= htmlspecialchars($metaDescription) ?>">
+    <link rel="canonical" href="<?= htmlspecialchars($canonicalUrl) ?>">
+
+    <!-- Open Graph -->
+    <meta property="og:type"        content="website">
+    <meta property="og:site_name"   content="Frizon of Sweden">
+    <meta property="og:title"       content="<?= $ogTitle ?>">
+    <meta property="og:description" content="<?= htmlspecialchars($metaDescription) ?>">
+    <meta property="og:url"         content="<?= htmlspecialchars($canonicalUrl) ?>">
+    <meta property="og:image"       content="<?= htmlspecialchars($ogImage) ?>">
+    <meta property="og:locale"      content="sv_SE">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card"        content="summary_large_image">
+    <meta name="twitter:title"       content="<?= $ogTitle ?>">
+    <meta name="twitter:description" content="<?= htmlspecialchars($metaDescription) ?>">
+    <meta name="twitter:image"       content="<?= htmlspecialchars($ogImage) ?>">
+
+    <!-- JSON-LD structured data -->
+    <?php foreach ($schemas as $schemaObj): ?>
+    <script type="application/ld+json"><?= json_encode($schemaObj, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG) ?></script>
+    <?php endforeach; ?>
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=Dancing+Script:wght@700&display=swap" rel="stylesheet">
