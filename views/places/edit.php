@@ -79,7 +79,7 @@
     <div class="form-group">
         <label for="meta_description" class="form-label">
             Meta-beskrivning
-            <span id="meta-count" style="color:var(--color-text-muted); font-weight:normal;">(<?= strlen($p['meta_description'] ?? '') ?>/155)</span>
+            <span id="meta-count" style="color:var(--color-text-muted); font-weight:normal;">(<?= mb_strlen($p['meta_description'] ?? '') ?>/155)</span>
         </label>
         <input type="text" id="meta_description" name="meta_description" class="form-input"
                maxlength="255" value="<?= htmlspecialchars($p['meta_description'] ?? '') ?>">
@@ -94,8 +94,8 @@
             foreach ($faqEditItems as $faqItem):
             ?>
                 <div class="faq-row" style="display:grid; gap:var(--space-2); margin-bottom:var(--space-3); padding:var(--space-3); background:var(--color-bg-muted,var(--color-bg)); border:1px solid var(--color-border); border-radius:var(--radius-md);">
-                    <input type="text" name="faq_q[]" class="form-input" placeholder="Fråga" value="<?= htmlspecialchars($faqItem['q']) ?>">
-                    <textarea name="faq_a[]" class="form-textarea" rows="2" placeholder="Svar"><?= htmlspecialchars($faqItem['a']) ?></textarea>
+                    <input type="text" name="faq_q[]" class="form-input" placeholder="Fråga" value="<?= htmlspecialchars($faqItem['q'] ?? '') ?>">
+                    <textarea name="faq_a[]" class="form-textarea" rows="2" placeholder="Svar"><?= htmlspecialchars($faqItem['a'] ?? '') ?></textarea>
                     <button type="button" class="btn btn-ghost btn--sm faq-remove" style="justify-self:start;">Ta bort</button>
                 </div>
             <?php endforeach; ?>
@@ -205,7 +205,7 @@ document.addEventListener('DOMContentLoaded', function() {
     var faqRows = document.getElementById('faq-rows');
     var faqAdd  = document.getElementById('faq-add');
 
-    function makeFaqRow(q, a) {
+    function makeFaqRow() {
         var row = document.createElement('div');
         row.className = 'faq-row';
         row.style.cssText = 'display:grid; gap:var(--space-2); margin-bottom:var(--space-3); padding:var(--space-3); background:var(--color-bg-muted,var(--color-bg)); border:1px solid var(--color-border); border-radius:var(--radius-md);';
