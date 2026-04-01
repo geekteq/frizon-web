@@ -6,6 +6,8 @@ function registerRoutes(Router $router): void
     $router->get('/', 'PublicController', 'homepage');
     $router->get('/platser/{slug}', 'PublicController', 'placeDetail');
     $router->get('/topplista', 'PublicController', 'topList');
+    $router->get('/sitemap.xml', 'PublicController', 'sitemap');
+    $router->get('/llms.txt', 'PublicController', 'llmsTxt');
     $router->get('/integritetspolicy', 'PublicController', 'privacy');
     $router->get('/cookiepolicy', 'PublicController', 'cookies');
 
