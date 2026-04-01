@@ -5,6 +5,7 @@ declare(strict_types=1);
 require_once dirname(__DIR__) . '/Services/Auth.php';
 require_once dirname(__DIR__) . '/Services/CsrfService.php';
 require_once dirname(__DIR__) . '/Models/Place.php';
+require_once dirname(__DIR__) . '/Services/AiService.php';
 
 class PublishController
 {
@@ -47,13 +48,38 @@ class PublishController
         CsrfService::requireValid();
 
         $placeModel = new Place($this->pdo);
-        $place = $placeModel->findBySlug($params['slug']);
+        $place      = $placeModel->findBySlug($params['slug']);
         if (!$place) { http_response_code(404); return; }
 
+        // Place goes live immediately
         $this->pdo->prepare('UPDATE places SET public_allowed = 1, updated_at = NOW() WHERE id = ?')
-            ->execute([$place['id']]);
+             ->execute([$place['id']]);
 
-        flash('success', $place['name'] . ' är nu publik!');
+        // Fetch published visits for AI context
+        $stmt = $this->pdo->prepare('
+            SELECT v.*, vr.total_rating_cached
+            FROM visits v
+            LEFT JOIN visit_ratings vr ON vr.visit_id = v.id
+            WHERE v.place_id = ? AND v.ready_for_publish = 1
+        ');
+        $stmt->execute([$place['id']]);
+        $visits = $stmt->fetchAll();
+
+        // Generate SEO content and write directly to the places row
+        try {
+            $aiService = new AiService();
+            $seo       = $aiService->generatePlaceSeo($place, $visits);
+
+            $this->pdo->prepare(
+                'UPDATE places SET meta_description = ?, faq_content = ?, updated_at = NOW() WHERE id = ?'
+            )->execute([$seo['meta_description'], $seo['faq_content'], $place['id']]);
+
+            flash('success', $place['name'] . ' är nu publik med SEO-innehåll!');
+        } catch (RuntimeException $e) {
+            // Place is live — only SEO generation failed. Show warning, continue.
+            flash('warning', $place['name'] . ' är publik men SEO-innehåll kunde inte genereras: ' . $e->getMessage());
+        }
+
         redirect('/adm/publicera');
     }
 
