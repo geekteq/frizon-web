@@ -47,7 +47,29 @@ class PublicController
         $allTypes = $this->pdo->query('SELECT DISTINCT place_type FROM places WHERE public_allowed = 1 ORDER BY place_type')->fetchAll(PDO::FETCH_COLUMN);
 
         $pageTitle = 'Frizon of Sweden';
-        view('public/homepage', compact('places', 'filterType', 'filterCountry', 'allPublic', 'allTypes', 'pageTitle'), 'public');
+        $appUrl    = rtrim($_ENV['APP_URL'] ?? 'https://frizon.org', '/');
+
+        $seoMeta = [
+            'description' => 'Platser vi besökt med Frizze, vår Adria Twin. Ställplatser, campingar, restauranger och sevärdheter — sett ur ett husbilsperspektiv.',
+            'og_url'      => $appUrl . '/',
+            'og_image'    => $appUrl . '/img/frizon-logo.png',
+        ];
+
+        $schemas = [[
+            '@context'    => 'https://schema.org',
+            '@type'       => 'WebSite',
+            'name'        => 'Frizon of Sweden',
+            'url'         => $appUrl,
+            'description' => 'Resedagbok med Frizze — platser vi besökt med vår husbil i Europa.',
+            'inLanguage'  => 'sv',
+            'author'      => [
+                '@type' => 'Person',
+                'name'  => 'Mattias & Ulrica',
+                'url'   => $appUrl,
+            ],
+        ]];
+
+        view('public/homepage', compact('places', 'filterType', 'filterCountry', 'allPublic', 'allTypes', 'pageTitle', 'seoMeta', 'schemas'), 'public');
     }
 
     public function placeDetail(array $params): void
@@ -99,7 +121,96 @@ class PublicController
         $avgRating = $ratingStmt->fetchColumn();
 
         $pageTitle = $place['name'];
-        view('public/place-detail', compact('place', 'visits', 'images', 'tags', 'avgRating', 'pageTitle'), 'public');
+        $appUrl    = rtrim($_ENV['APP_URL'] ?? 'https://frizon.org', '/');
+
+        // og:image — first uploaded image or logo fallback
+        $ogImage = $appUrl . '/img/frizon-logo.png';
+        if (!empty($images)) {
+            $ogImage = $appUrl . '/uploads/cards/' . $images[0]['filename'];
+        }
+
+        $metaDesc = $place['meta_description']
+            ?? ($place['default_public_text'] ? mb_strimwidth($place['default_public_text'], 0, 155, '...') : null)
+            ?? $place['name'] . ' — besökt av Mattias och Ulrica på Frizon of Sweden.';
+
+        $seoMeta = [
+            'description' => $metaDesc,
+            'og_url'      => $appUrl . '/platser/' . $place['slug'],
+            'og_image'    => $ogImage,
+        ];
+
+        // TouristAttraction schema
+        $placeSchema = [
+            '@context' => 'https://schema.org',
+            '@type'    => 'TouristAttraction',
+            'name'     => $place['name'],
+            'url'      => $appUrl . '/platser/' . $place['slug'],
+            'geo'      => [
+                '@type'     => 'GeoCoordinates',
+                'latitude'  => (float) $place['lat'],
+                'longitude' => (float) $place['lng'],
+            ],
+        ];
+        if ($place['default_public_text']) {
+            $placeSchema['description'] = $place['default_public_text'];
+        }
+        if ($place['country_code']) {
+            $placeSchema['address'] = [
+                '@type'          => 'PostalAddress',
+                'addressCountry' => strtoupper($place['country_code']),
+            ];
+        }
+
+        // AggregateRating — only when at least one visit has a rating
+        if ($avgRating !== null && count($visits) > 0) {
+            $placeSchema['aggregateRating'] = [
+                '@type'       => 'AggregateRating',
+                'ratingValue' => round((float) $avgRating, 1),
+                'bestRating'  => 5,
+                'worstRating' => 1,
+                'reviewCount' => count($visits),
+            ];
+        }
+
+        // Review — only visits with both approved text AND a rating
+        $reviewItems = [];
+        foreach ($visits as $v) {
+            if (!empty($v['approved_public_text']) && !empty($v['total_rating_cached'])) {
+                $reviewItems[] = [
+                    '@type'        => 'Review',
+                    'author'       => ['@type' => 'Person', 'name' => 'Mattias & Ulrica'],
+                    'datePublished'=> substr((string) $v['visited_at'], 0, 10),
+                    'reviewBody'   => $v['approved_public_text'],
+                    'reviewRating' => [
+                        '@type'       => 'Rating',
+                        'ratingValue' => round((float) $v['total_rating_cached'], 1),
+                        'bestRating'  => 5,
+                        'worstRating' => 1,
+                    ],
+                ];
+            }
+        }
+        if (!empty($reviewItems)) {
+            $placeSchema['review'] = $reviewItems;
+        }
+
+        $schemas = [$placeSchema];
+
+        // FAQPage schema — only when faq_content is populated
+        $faqItems = !empty($place['faq_content']) ? json_decode((string) $place['faq_content'], true) : [];
+        if (!empty($faqItems)) {
+            $schemas[] = [
+                '@context'   => 'https://schema.org',
+                '@type'      => 'FAQPage',
+                'mainEntity' => array_map(fn($item) => [
+                    '@type'          => 'Question',
+                    'name'           => $item['q'],
+                    'acceptedAnswer' => ['@type' => 'Answer', 'text' => $item['a']],
+                ], $faqItems),
+            ];
+        }
+
+        view('public/place-detail', compact('place', 'visits', 'images', 'tags', 'avgRating', 'pageTitle', 'seoMeta', 'schemas', 'faqItems'), 'public');
     }
 
     public function privacy(array $params): void
@@ -129,7 +240,33 @@ class PublicController
         $places = $stmt->fetchAll();
 
         $pageTitle = 'Topplista — Frizon';
-        view('public/toplist', compact('places', 'pageTitle'), 'public');
+        $appUrl    = rtrim($_ENV['APP_URL'] ?? 'https://frizon.org', '/');
+
+        $seoMeta = [
+            'description' => 'Våra bästa platser, handplockade av Mattias och Ulrica. Ställplatser, campingar och sevärdheter för husbilar i Europa.',
+            'og_url'      => $appUrl . '/topplista',
+            'og_image'    => $appUrl . '/img/frizon-logo.png',
+        ];
+
+        $listItems = [];
+        foreach ($places as $i => $p) {
+            $listItems[] = [
+                '@type'    => 'ListItem',
+                'position' => $i + 1,
+                'name'     => $p['name'],
+                'url'      => $appUrl . '/platser/' . $p['slug'],
+            ];
+        }
+
+        $schemas = [[
+            '@context'        => 'https://schema.org',
+            '@type'           => 'ItemList',
+            'name'            => 'Topplista — Frizon of Sweden',
+            'description'     => 'Handplockade toppplatser för husbilar av Mattias och Ulrica.',
+            'itemListElement' => $listItems,
+        ]];
+
+        view('public/toplist', compact('places', 'pageTitle', 'seoMeta', 'schemas'), 'public');
     }
 
     public function sitemap(array $params): void
