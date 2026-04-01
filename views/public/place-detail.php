@@ -58,6 +58,21 @@ $typeLabel = $placeTypes[$place['place_type']] ?? $place['place_type'];
         </div>
     <?php endif; ?>
 
+    <!-- FAQ -->
+    <?php if (!empty($faqItems)): ?>
+        <section class="pub-detail__faq">
+            <h2 style="font-size:var(--text-lg); font-weight:var(--weight-semibold); margin-bottom:var(--space-4);">Vanliga frågor</h2>
+            <dl style="display:flex; flex-direction:column; gap:var(--space-4);">
+                <?php foreach ($faqItems as $item): ?>
+                    <div>
+                        <dt style="font-weight:var(--weight-semibold); color:var(--color-text); margin-bottom:var(--space-1);"><?= htmlspecialchars($item['q']) ?></dt>
+                        <dd style="color:var(--color-text-muted); margin:0; line-height:var(--leading-relaxed);"><?= nl2br(htmlspecialchars($item['a'])) ?></dd>
+                    </div>
+                <?php endforeach; ?>
+            </dl>
+        </section>
+    <?php endif; ?>
+
     <!-- Visit summaries -->
     <?php if (!empty($visits)): ?>
         <div class="pub-detail__visits">
