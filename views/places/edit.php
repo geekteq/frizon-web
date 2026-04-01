@@ -71,6 +71,39 @@
         <p id="ai-place-status" style="font-size:var(--text-sm); color:var(--color-text-muted); margin-top:var(--space-1); display:none;"></p>
     </div>
 
+<!-- SEO section -->
+<div style="margin-top:var(--space-6); padding-top:var(--space-4); border-top:1px solid var(--color-border);">
+    <h3 style="font-size:var(--text-base); font-weight:var(--weight-semibold); margin-bottom:var(--space-2);">SEO-innehåll</h3>
+    <p style="font-size:var(--text-sm); color:var(--color-text-muted); margin-bottom:var(--space-4);">Genereras automatiskt vid publicering. Kan redigeras fritt efteråt.</p>
+
+    <div class="form-group">
+        <label for="meta_description" class="form-label">
+            Meta-beskrivning
+            <span id="meta-count" style="color:var(--color-text-muted); font-weight:normal;">(<?= strlen($p['meta_description'] ?? '') ?>/155)</span>
+        </label>
+        <input type="text" id="meta_description" name="meta_description" class="form-input"
+               maxlength="255" value="<?= htmlspecialchars($p['meta_description'] ?? '') ?>">
+        <p style="font-size:var(--text-xs); color:var(--color-text-muted); margin-top:var(--space-1);">Visas i sökmotorer. Rekommenderas max 155 tecken.</p>
+    </div>
+
+    <div class="form-group">
+        <label class="form-label">FAQ-block</label>
+        <div id="faq-rows">
+            <?php
+            $faqEditItems = !empty($p['faq_content']) ? (json_decode($p['faq_content'], true) ?? []) : [];
+            foreach ($faqEditItems as $faqItem):
+            ?>
+                <div class="faq-row" style="display:grid; gap:var(--space-2); margin-bottom:var(--space-3); padding:var(--space-3); background:var(--color-bg-muted,var(--color-bg)); border:1px solid var(--color-border); border-radius:var(--radius-md);">
+                    <input type="text" name="faq_q[]" class="form-input" placeholder="Fråga" value="<?= htmlspecialchars($faqItem['q']) ?>">
+                    <textarea name="faq_a[]" class="form-textarea" rows="2" placeholder="Svar"><?= htmlspecialchars($faqItem['a']) ?></textarea>
+                    <button type="button" class="btn btn-ghost btn--sm faq-remove" style="justify-self:start;">Ta bort</button>
+                </div>
+            <?php endforeach; ?>
+        </div>
+        <button type="button" id="faq-add" class="btn btn-ghost btn--sm" style="margin-top:var(--space-2);">+ Lägg till fråga</button>
+    </div>
+</div>
+
     <div class="flex gap-3">
         <button type="submit" class="btn btn-primary">Spara ändringar</button>
         <a href="/adm/platser/<?= htmlspecialchars($p['slug']) ?>" class="btn btn-ghost">Avbryt</a>
@@ -156,6 +189,41 @@ document.addEventListener('DOMContentLoaded', function() {
                 aiBtn.disabled = false;
                 aiBtn.textContent = 'Brodera ut text';
             });
+        });
+    }
+
+    // Meta description char counter
+    var metaInput = document.getElementById('meta_description');
+    var metaCount = document.getElementById('meta-count');
+    if (metaInput && metaCount) {
+        metaInput.addEventListener('input', function() {
+            metaCount.textContent = '(' + metaInput.value.length + '/155)';
+        });
+    }
+
+    // FAQ add/remove rows
+    var faqRows = document.getElementById('faq-rows');
+    var faqAdd  = document.getElementById('faq-add');
+
+    function makeFaqRow(q, a) {
+        var row = document.createElement('div');
+        row.className = 'faq-row';
+        row.style.cssText = 'display:grid; gap:var(--space-2); margin-bottom:var(--space-3); padding:var(--space-3); background:var(--color-bg-muted,var(--color-bg)); border:1px solid var(--color-border); border-radius:var(--radius-md);';
+        row.innerHTML = '<input type="text" name="faq_q[]" class="form-input" placeholder="Fråga" value="">'
+            + '<textarea name="faq_a[]" class="form-textarea" rows="2" placeholder="Svar"></textarea>'
+            + '<button type="button" class="btn btn-ghost btn--sm faq-remove" style="justify-self:start;">Ta bort</button>';
+        return row;
+    }
+
+    if (faqAdd && faqRows) {
+        faqAdd.addEventListener('click', function() {
+            faqRows.appendChild(makeFaqRow('', ''));
+        });
+
+        faqRows.addEventListener('click', function(e) {
+            if (e.target.classList.contains('faq-remove')) {
+                e.target.closest('.faq-row').remove();
+            }
         });
     }
 });
