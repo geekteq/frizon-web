@@ -118,6 +118,8 @@ class PlaceController
             'country_code'        => trim($_POST['country_code'] ?? '') ?: null,
             'place_type'          => $_POST['place_type'] ?? $p['place_type'],
             'default_public_text' => trim($_POST['default_public_text'] ?? '') ?: null,
+            'meta_description'    => trim($_POST['meta_description'] ?? '') ?: null,
+            'faq_content'         => $this->buildFaqContent(),
         ]);
 
         flash('success', 'Platsen har uppdaterats.');
@@ -132,6 +134,21 @@ class PlaceController
         $p = $place->findBySlug($params['slug']);
         if ($p) { $place->delete((int) $p['id']); flash('success', 'Platsen har tagits bort.'); }
         redirect('/adm/platser');
+    }
+
+    private function buildFaqContent(): ?string
+    {
+        $questions = $_POST['faq_q'] ?? [];
+        $answers   = $_POST['faq_a'] ?? [];
+        $faq       = [];
+        foreach ($questions as $i => $q) {
+            $q = trim($q);
+            $a = trim($answers[$i] ?? '');
+            if ($q !== '' && $a !== '') {
+                $faq[] = ['q' => $q, 'a' => $a];
+            }
+        }
+        return empty($faq) ? null : json_encode($faq, JSON_UNESCAPED_UNICODE);
     }
 
     public function nearby(array $params): void
