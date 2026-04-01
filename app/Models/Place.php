@@ -76,12 +76,15 @@ class Place
     {
         $stmt = $this->pdo->prepare('
             UPDATE places SET name = ?, lat = ?, lng = ?, address_text = ?,
-            country_code = ?, place_type = ?, default_public_text = ?, updated_at = NOW() WHERE id = ?
+            country_code = ?, place_type = ?, default_public_text = ?,
+            meta_description = ?, faq_content = ?, updated_at = NOW() WHERE id = ?
         ');
         $stmt->execute([
             $data['name'], $data['lat'], $data['lng'],
             $data['address_text'] ?? null, $data['country_code'] ?? null,
-            $data['place_type'], $data['default_public_text'] ?? null, $id,
+            $data['place_type'], $data['default_public_text'] ?? null,
+            $data['meta_description'] ?? null, $data['faq_content'] ?? null,
+            $id,
         ]);
     }
 
