@@ -1,4 +1,4 @@
-var CACHE_NAME = 'frizon-v1';
+var CACHE_NAME = 'frizon-v2';
 var PRECACHE = [
   '/css/main.css',
   '/css/pages/public.css',
@@ -49,8 +49,22 @@ self.addEventListener('fetch', function(e) {
   // API calls — network only
   if (url.pathname.startsWith('/adm/api/')) return;
 
-  // Static assets — cache first
-  if (url.pathname.match(/\.(css|js|png|jpg|webp|woff2?|ico)$/)) {
+  // JS/CSS — network first so code updates are always picked up
+  if (url.pathname.match(/\.(css|js)$/)) {
+    e.respondWith(
+      fetch(e.request).then(function(res) {
+        var clone = res.clone();
+        caches.open(CACHE_NAME).then(function(c) { c.put(e.request, clone); });
+        return res;
+      }).catch(function() {
+        return caches.match(e.request);
+      })
+    );
+    return;
+  }
+
+  // Images/fonts — cache first (ändras sällan)
+  if (url.pathname.match(/\.(png|jpg|webp|woff2?|ico)$/)) {
     e.respondWith(
       caches.match(e.request).then(function(cached) {
         return cached || fetch(e.request).then(function(res) {
