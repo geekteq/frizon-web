@@ -132,6 +132,8 @@
   color: var(--color-white);
   padding: 12px;
   box-shadow: var(--shadow-float);
+  /* Lift above nav bar in regular browser */
+  margin-bottom: 12px;
   transition: background var(--transition-fast), transform var(--transition-spring);
   flex-shrink: 0;
 }
@@ -346,4 +348,21 @@
 .view-toggle__icon {
   width: 18px;
   height: 18px;
+}
+
+/* ----------------------------------------------------------------
+ * PWA standalone mode — taller nav with more breathing room.
+ * Regular Safari keeps 64px + FAB that pops above the bar.
+ * ---------------------------------------------------------------- */
+
+@media (display-mode: standalone) {
+  /* Override nav height for all downstream calculations (layout.css etc.) */
+  :root {
+    --nav-height-mob: 88px;
+  }
+
+  /* FAB sits inside the taller bar instead of popping above it */
+  .bottom-nav__fab > svg {
+    margin-bottom: 0;
+  }
 }
