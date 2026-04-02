@@ -132,8 +132,6 @@
   color: var(--color-white);
   padding: 12px;
   box-shadow: var(--shadow-float);
-  /* Lift above nav bar */
-  margin-bottom: 12px;
   transition: background var(--transition-fast), transform var(--transition-spring);
   flex-shrink: 0;
 }
