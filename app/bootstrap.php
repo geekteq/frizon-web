@@ -40,10 +40,12 @@ require __DIR__ . '/Services/CsrfService.php';
 require __DIR__ . '/Services/Auth.php';
 require __DIR__ . '/Services/LoginThrottle.php';
 
+$sessionLifetime = 7 * 24 * 60 * 60; // 7 dagar
+
 ini_set('session.use_strict_mode', '1');
 ini_set('session.use_only_cookies', '1');
 session_set_cookie_params([
-    'lifetime' => 0,
+    'lifetime' => $sessionLifetime,
     'path'     => '/',
     'domain'   => '',
     'secure'   => app_is_https_request(),
@@ -53,3 +55,15 @@ session_set_cookie_params([
 
 // Session
 session_start();
+
+// Förnya cookiens livslängd vid varje inloggad request
+if (!empty($_SESSION['user_id'])) {
+    setcookie(session_name(), session_id(), [
+        'expires'  => time() + $sessionLifetime,
+        'path'     => '/',
+        'domain'   => '',
+        'secure'   => app_is_https_request(),
+        'httponly' => true,
+        'samesite' => 'Lax',
+    ]);
+}

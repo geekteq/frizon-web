@@ -142,18 +142,31 @@ class ListController
         Auth::requireLogin();
         CsrfService::requireValid();
 
-        $text = trim($_POST['text'] ?? '');
+        $text     = trim($_POST['text'] ?? '');
+        $category = trim($_POST['category'] ?? '') ?: null;
+        $isAjax   = ($_SERVER['HTTP_X_REQUESTED_WITH'] ?? '') === 'XMLHttpRequest';
+
         if ($text === '') {
+            if ($isAjax) {
+                header('Content-Type: application/json');
+                echo json_encode(['success' => false, 'error' => 'Ange en text.']);
+                return;
+            }
             flash('error', 'Ange en text.');
             redirect('/adm/listor/' . $params['id']);
         }
 
         $itemModel = new ListItem($this->pdo);
-        $itemModel->add(
-            (int) $params['id'],
-            $text,
-            trim($_POST['category'] ?? '') ?: null
-        );
+        $itemId = $itemModel->add((int) $params['id'], $text, $category);
+
+        if ($isAjax) {
+            header('Content-Type: application/json');
+            echo json_encode([
+                'success' => true,
+                'item'    => ['id' => $itemId, 'text' => $text, 'category' => $category],
+            ]);
+            return;
+        }
 
         flash('success', 'Punkt tillagd!');
         redirect('/adm/listor/' . $params['id']);
