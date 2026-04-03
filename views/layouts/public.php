@@ -59,7 +59,7 @@ $ogTitle         = htmlspecialchars($pageTitle);
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 </head>
 <body class="public-layout" data-ga-id="<?= htmlspecialchars($_ENV['GA_MEASUREMENT_ID'] ?? '') ?>">
-    <header class="public-header" style="height:auto; padding:var(--space-4) var(--space-6);">
+    <header class="public-header" style="height:auto; padding:var(--space-4) var(--space-6); position:relative; z-index:500;">
         <div class="public-header__inner" style="flex-direction:row; align-items:center; justify-content:center; gap:var(--space-6); max-width:var(--content-max-width); margin:0 auto; width:100%;">
             <a href="/" class="public-header__link" style="font-weight:var(--weight-semibold);">Platser</a>
             <a href="/shop" class="public-header__link <?= str_starts_with($reqPath ?? $_SERVER['REQUEST_URI'], '/shop') ? 'public-header__link--active' : '' ?>" style="font-weight:var(--weight-semibold);">Shop</a>
