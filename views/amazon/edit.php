@@ -3,51 +3,46 @@
     <h2>Redigera: <?= htmlspecialchars($product['title']) ?></h2>
 </div>
 
+<!-- Re-fetch form — must be OUTSIDE the main edit form (no nested forms in HTML) -->
+<form method="POST" action="/adm/amazon-lista/<?= (int) $product['id'] ?>/hamta"
+      style="max-width:var(--form-max-width); margin-bottom:var(--space-4);">
+    <?php include dirname(__DIR__) . '/partials/csrf-field.php'; ?>
+    <div style="display:flex; align-items:center; gap:var(--space-3); padding:var(--space-3) var(--space-4); background:var(--color-bg-muted,#f5f5f4); border-radius:var(--radius-md); border:1px solid var(--color-border);">
+        <span style="font-size:var(--text-sm); color:var(--color-text-muted);">Försök hämta bild &amp; beskrivning från Amazon:</span>
+        <button type="submit" class="btn btn-secondary btn--sm">Hämta från Amazon</button>
+    </div>
+</form>
+
+<!-- Main edit form -->
 <form method="POST" action="/adm/amazon-lista/<?= (int) $product['id'] ?>"
       enctype="multipart/form-data"
       style="max-width:var(--form-max-width);">
     <?php include dirname(__DIR__) . '/partials/csrf-field.php'; ?>
     <input type="hidden" name="_method" value="PUT">
 
-    <!-- Image section -->
+    <!-- Bild -->
     <div class="form-group">
         <label class="form-label">Produktbild</label>
 
         <?php if ($product['image_path']): ?>
             <img src="/uploads/amazon/<?= htmlspecialchars($product['image_path']) ?>"
                  alt="<?= htmlspecialchars($product['title']) ?>"
-                 style="display:block; max-width:200px; max-height:200px; object-fit:contain; border-radius:var(--radius-md); border:1px solid var(--color-border); margin-bottom:var(--space-3);">
+                 style="display:block; max-width:180px; max-height:180px; object-fit:contain; border-radius:var(--radius-md); border:1px solid var(--color-border); margin-bottom:var(--space-3);">
         <?php else: ?>
-            <p style="color:var(--color-warning,#b45309); font-size:var(--text-sm); margin-bottom:var(--space-3);">
-                Ingen bild — Amazon svarade inte automatiskt. Lägg till nedan.
+            <p style="font-size:var(--text-sm); color:var(--color-warning,#b45309); margin-bottom:var(--space-3);">
+                Ingen bild ännu — ladda upp nedan eller klistra in URL.
             </p>
         <?php endif; ?>
 
-        <!-- Re-fetch from Amazon -->
-        <details style="margin-bottom:var(--space-3);">
-            <summary style="font-size:var(--text-sm); color:var(--color-text-muted); cursor:pointer;">Hämta från Amazon igen</summary>
-            <div style="margin-top:var(--space-2);">
-                <form method="POST" action="/adm/amazon-lista/<?= (int) $product['id'] ?>/hamta">
-                    <?php include dirname(__DIR__) . '/partials/csrf-field.php'; ?>
-                    <button type="submit" class="btn btn-secondary btn--sm">Hämta bild &amp; beskrivning från Amazon</button>
-                    <p class="form-hint">Försöker hämta via Amazon-sidan. Fungerar inte alltid.</p>
-                </form>
-            </div>
-        </details>
-
-        <!-- File upload -->
         <div style="margin-bottom:var(--space-3);">
-            <label style="font-size:var(--text-sm); color:var(--color-text-muted); display:block; margin-bottom:var(--space-1);">Ladda upp bild</label>
-            <input type="file" name="product_image" accept="image/jpeg,image/png,image/webp,image/gif"
-                   style="font-size:var(--text-sm);">
+            <label class="form-label" style="font-size:var(--text-sm);">Ladda upp bild (jpg/png/webp)</label>
+            <input type="file" name="product_image" accept="image/jpeg,image/png,image/webp,image/gif">
         </div>
 
-        <!-- Manual image URL -->
         <div>
-            <label style="font-size:var(--text-sm); color:var(--color-text-muted); display:block; margin-bottom:var(--space-1);">Eller klistra in bild-URL (vi laddar ner den)</label>
+            <label class="form-label" style="font-size:var(--text-sm);">Eller klistra in bild-URL (laddas ner och sparas lokalt)</label>
             <input type="url" name="image_url_manual" class="form-input"
-                   placeholder="https://m.media-amazon.com/images/..."
-                   style="font-size:var(--text-sm);">
+                   placeholder="https://m.media-amazon.com/images/...">
         </div>
     </div>
 
@@ -72,7 +67,7 @@
 
     <?php if ($product['amazon_description']): ?>
     <div class="form-group">
-        <label class="form-label">Amazon-beskrivning (hämtad, på svenska)</label>
+        <label class="form-label">Amazon-beskrivning (hämtad)</label>
         <textarea class="form-textarea" rows="3" readonly
                   style="color:var(--color-text-muted); font-size:var(--text-sm);"><?= htmlspecialchars($product['amazon_description']) ?></textarea>
     </div>
@@ -147,6 +142,7 @@
     </div>
 </form>
 
+<!-- Delete form -->
 <form method="POST" action="/adm/amazon-lista/<?= (int) $product['id'] ?>"
       style="margin-top:var(--space-8); padding-top:var(--space-6); border-top:1px solid var(--color-border);">
     <?php include dirname(__DIR__) . '/partials/csrf-field.php'; ?>
@@ -196,7 +192,6 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    // SEO char counters
     var seoTitle = document.getElementById('seo_title');
     var seoTitleCount = document.getElementById('seo-title-count');
     if (seoTitle && seoTitleCount) {

@@ -117,18 +117,33 @@ class AmazonFetcher
      */
     public function saveImageData(string $rawData): ?string
     {
-        $webpData = $this->processToWebp($rawData);
-        if (!$webpData) {
-            return null;
-        }
-
         if (!is_dir($this->uploadDir)) {
             mkdir($this->uploadDir, 0755, true);
         }
 
-        $filename = bin2hex(random_bytes(8)) . '.webp';
-        file_put_contents($this->uploadDir . '/' . $filename, $webpData);
+        $webpData = $this->processToWebp($rawData);
+        if ($webpData) {
+            $filename = bin2hex(random_bytes(8)) . '.webp';
+            file_put_contents($this->uploadDir . '/' . $filename, $webpData);
+            return $filename;
+        }
 
+        // Fallback: GD/WebP not available — save original format
+        $finfo = new finfo(FILEINFO_MIME_TYPE);
+        $mime  = $finfo->buffer($rawData);
+        $ext   = match ($mime) {
+            'image/jpeg' => 'jpg',
+            'image/png'  => 'png',
+            'image/webp' => 'webp',
+            'image/gif'  => 'gif',
+            default      => null,
+        };
+        if (!$ext) {
+            return null;
+        }
+
+        $filename = bin2hex(random_bytes(8)) . '.' . $ext;
+        file_put_contents($this->uploadDir . '/' . $filename, $rawData);
         return $filename;
     }
 
