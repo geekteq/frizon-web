@@ -147,6 +147,29 @@ class AmazonProduct
         return array_column($stmt->fetchAll(), 'category');
     }
 
+    /** Update only the provided columns. Keys must be trusted/whitelisted by caller. */
+    public function updatePartial(int $id, array $data): void
+    {
+        $allowed = ['image_path', 'amazon_description', 'our_description',
+                    'seo_title', 'seo_description', 'is_published', 'is_featured'];
+        $sets = [];
+        $vals = [];
+        foreach ($data as $col => $val) {
+            if (!in_array($col, $allowed, true)) {
+                continue;
+            }
+            $sets[] = $col . ' = ?';
+            $vals[] = $val;
+        }
+        if (!$sets) {
+            return;
+        }
+        $vals[] = $id;
+        $this->pdo->prepare(
+            'UPDATE amazon_products SET ' . implode(', ', $sets) . ', updated_at = NOW() WHERE id = ?'
+        )->execute($vals);
+    }
+
     /** Toggle is_published for one product. */
     public function togglePublished(int $id): void
     {

@@ -89,6 +89,7 @@ function registerRoutes(Router $router): void
     $router->get('/adm/amazon-lista/ny', 'AmazonController', 'adminCreate');
     $router->post('/adm/amazon-lista', 'AmazonController', 'adminStore');
     $router->post('/adm/amazon-lista/{id}/publicera', 'AmazonController', 'adminTogglePublish');
+    $router->post('/adm/amazon-lista/{id}/hamta', 'AmazonController', 'adminRefetch');
     $router->get('/adm/amazon-lista/{id}/redigera', 'AmazonController', 'adminEdit');
     $router->put('/adm/amazon-lista/{id}', 'AmazonController', 'adminUpdate');
     $router->delete('/adm/amazon-lista/{id}', 'AmazonController', 'adminDestroy');

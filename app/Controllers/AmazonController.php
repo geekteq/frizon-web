@@ -179,8 +179,18 @@ class AmazonController
         $imagePath    = $existing['image_path'];
         $amazonDesc   = $existing['amazon_description'];
 
-        // Re-fetch from Amazon if URL changed
-        if ($amazonUrl !== $existing['amazon_url']) {
+        // Image priority: file upload > manual URL > re-fetch (if URL changed or image missing)
+        if (!empty($_FILES['product_image']['name'])) {
+            $uploaded = $this->handleImageUpload($_FILES['product_image']);
+            if ($uploaded) {
+                $imagePath = $uploaded;
+            }
+        } elseif ($manualUrl = trim($_POST['image_url_manual'] ?? '')) {
+            $downloaded = $fetcher->downloadImage($manualUrl);
+            if ($downloaded) {
+                $imagePath = $downloaded;
+            }
+        } elseif ($amazonUrl !== $existing['amazon_url'] || !$existing['image_path']) {
             if (!$fetcher->isAmazonUrl($amazonUrl)) {
                 $_SESSION['flash'] = ['type' => 'error', 'message' => 'URL:en måste vara en Amazon-domän.'];
                 header('Location: /adm/amazon-lista/' . $id . '/redigera');
@@ -263,6 +273,54 @@ class AmazonController
 
         $_SESSION['flash'] = ['type' => 'success', 'message' => 'Produkt borttagen.'];
         header('Location: /adm/amazon-lista');
+    }
+
+    // -------------------------------------------------------------------------
+    // Admin: re-fetch image + description from Amazon (POST)
+    // -------------------------------------------------------------------------
+
+    public function adminRefetch(array $params): void
+    {
+        Auth::requireLogin();
+
+        if (!CsrfService::verify()) {
+            http_response_code(403);
+            return;
+        }
+
+        $id      = (int) ($params['id'] ?? 0);
+        $model   = new AmazonProduct($this->pdo);
+        $product = $model->findById($id);
+
+        if (!$product) {
+            $_SESSION['flash'] = ['type' => 'error', 'message' => 'Produkten hittades inte.'];
+            header('Location: /adm/amazon-lista');
+            return;
+        }
+
+        $fetcher = $this->makeFetcher();
+        $meta    = $fetcher->fetchProductMeta($product['amazon_url']);
+        $updates = [];
+
+        if ($meta['image_url']) {
+            $filename = $fetcher->downloadImage($meta['image_url']);
+            if ($filename) {
+                $updates['image_path'] = $filename;
+            }
+        }
+
+        if ($meta['description']) {
+            $updates['amazon_description'] = $this->ensureSwedish($meta['description']);
+        }
+
+        if ($updates) {
+            $model->updatePartial($id, $updates);
+            $_SESSION['flash'] = ['type' => 'success', 'message' => 'Bild och beskrivning hämtade från Amazon.'];
+        } else {
+            $_SESSION['flash'] = ['type' => 'error', 'message' => 'Amazon svarade inte — lägg till bild manuellt nedan.'];
+        }
+
+        header('Location: /adm/amazon-lista/' . $id . '/redigera');
     }
 
     // -------------------------------------------------------------------------
@@ -437,6 +495,39 @@ class AmazonController
     // -------------------------------------------------------------------------
     // Private helpers
     // -------------------------------------------------------------------------
+
+    private function handleImageUpload(array $file): ?string
+    {
+        if ($file['error'] !== UPLOAD_ERR_OK) {
+            return null;
+        }
+
+        $finfo = new finfo(FILEINFO_MIME_TYPE);
+        $mime  = $finfo->file($file['tmp_name']);
+        $ext   = match ($mime) {
+            'image/jpeg' => 'jpg',
+            'image/png'  => 'png',
+            'image/webp' => 'webp',
+            'image/gif'  => 'gif',
+            default      => null,
+        };
+
+        if (!$ext) {
+            return null;
+        }
+
+        $uploadDir = dirname(__DIR__, 2) . '/storage/uploads/amazon';
+        if (!is_dir($uploadDir)) {
+            mkdir($uploadDir, 0755, true);
+        }
+
+        $filename = bin2hex(random_bytes(8)) . '.' . $ext;
+        if (!move_uploaded_file($file['tmp_name'], $uploadDir . '/' . $filename)) {
+            return null;
+        }
+
+        return $filename;
+    }
 
     private function makeFetcher(): AmazonFetcher
     {

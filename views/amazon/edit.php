@@ -3,18 +3,53 @@
     <h2>Redigera: <?= htmlspecialchars($product['title']) ?></h2>
 </div>
 
-<form method="POST" action="/adm/amazon-lista/<?= (int) $product['id'] ?>" style="max-width:var(--form-max-width);">
+<form method="POST" action="/adm/amazon-lista/<?= (int) $product['id'] ?>"
+      enctype="multipart/form-data"
+      style="max-width:var(--form-max-width);">
     <?php include dirname(__DIR__) . '/partials/csrf-field.php'; ?>
     <input type="hidden" name="_method" value="PUT">
 
-    <?php if ($product['image_path']): ?>
+    <!-- Image section -->
     <div class="form-group">
-        <label class="form-label">Produktbild (hämtad från Amazon)</label>
-        <img src="/uploads/amazon/<?= htmlspecialchars($product['image_path']) ?>"
-             alt="<?= htmlspecialchars($product['title']) ?>"
-             style="max-width:200px; max-height:200px; object-fit:contain; border-radius:var(--radius-md); border:1px solid var(--color-border);">
+        <label class="form-label">Produktbild</label>
+
+        <?php if ($product['image_path']): ?>
+            <img src="/uploads/amazon/<?= htmlspecialchars($product['image_path']) ?>"
+                 alt="<?= htmlspecialchars($product['title']) ?>"
+                 style="display:block; max-width:200px; max-height:200px; object-fit:contain; border-radius:var(--radius-md); border:1px solid var(--color-border); margin-bottom:var(--space-3);">
+        <?php else: ?>
+            <p style="color:var(--color-warning,#b45309); font-size:var(--text-sm); margin-bottom:var(--space-3);">
+                Ingen bild — Amazon svarade inte automatiskt. Lägg till nedan.
+            </p>
+        <?php endif; ?>
+
+        <!-- Re-fetch from Amazon -->
+        <details style="margin-bottom:var(--space-3);">
+            <summary style="font-size:var(--text-sm); color:var(--color-text-muted); cursor:pointer;">Hämta från Amazon igen</summary>
+            <div style="margin-top:var(--space-2);">
+                <form method="POST" action="/adm/amazon-lista/<?= (int) $product['id'] ?>/hamta">
+                    <?php include dirname(__DIR__) . '/partials/csrf-field.php'; ?>
+                    <button type="submit" class="btn btn-secondary btn--sm">Hämta bild &amp; beskrivning från Amazon</button>
+                    <p class="form-hint">Försöker hämta via Amazon-sidan. Fungerar inte alltid.</p>
+                </form>
+            </div>
+        </details>
+
+        <!-- File upload -->
+        <div style="margin-bottom:var(--space-3);">
+            <label style="font-size:var(--text-sm); color:var(--color-text-muted); display:block; margin-bottom:var(--space-1);">Ladda upp bild</label>
+            <input type="file" name="product_image" accept="image/jpeg,image/png,image/webp,image/gif"
+                   style="font-size:var(--text-sm);">
+        </div>
+
+        <!-- Manual image URL -->
+        <div>
+            <label style="font-size:var(--text-sm); color:var(--color-text-muted); display:block; margin-bottom:var(--space-1);">Eller klistra in bild-URL (vi laddar ner den)</label>
+            <input type="url" name="image_url_manual" class="form-input"
+                   placeholder="https://m.media-amazon.com/images/..."
+                   style="font-size:var(--text-sm);">
+        </div>
     </div>
-    <?php endif; ?>
 
     <div class="form-group">
         <label for="title" class="form-label">Titel *</label>
