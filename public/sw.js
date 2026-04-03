@@ -1,8 +1,8 @@
-var CACHE_NAME = 'frizon-v5';
+var CACHE_NAME = 'frizon-v6';
 var PRECACHE = [
   '/css/main.css',
-  '/css/pages/public.css',
   '/img/frizon-logo.png',
+  '/img/frizon-logo.webp',
   '/icon-192.png',
   '/favicon-32.png',
   '/apple-touch-icon.png'

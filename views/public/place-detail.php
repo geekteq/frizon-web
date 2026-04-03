@@ -44,6 +44,7 @@ $typeLabel = $placeTypes[$place['place_type']] ?? $place['place_type'];
                 <img src="/uploads/detail/<?= htmlspecialchars($img['filename']) ?>"
                      alt="<?= htmlspecialchars($img['alt_text'] ?? $place['name']) ?>"
                      class="pub-detail__img"
+                     width="1200" height="900"
                      loading="lazy">
             <?php endforeach; ?>
         </div>

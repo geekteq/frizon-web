@@ -43,14 +43,13 @@ $ogTitle         = htmlspecialchars($pageTitle);
     <script type="application/ld+json"><?= json_encode($schemaObj, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG) ?></script>
     <?php endforeach; ?>
 
+    <link rel="preload" as="image" href="/img/frizon-logo.webp" type="image/webp" fetchpriority="high">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=Dancing+Script:wght@700&display=swap" rel="stylesheet">
     <?php if (!empty($useLeaflet)): ?>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
     <?php endif; ?>
     <link rel="stylesheet" href="/css/main.css">
-    <link rel="stylesheet" href="/css/pages/public.css">
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
     <link rel="apple-touch-icon" href="/apple-touch-icon.png">
     <link rel="manifest" href="/manifest.json">
@@ -80,6 +79,10 @@ $ogTitle         = htmlspecialchars($pageTitle);
     <footer style="background:var(--color-brand-dark); text-align:center; padding:var(--space-8) var(--space-4) var(--space-6);">
         <p style="color:rgba(255,255,255,0.85); font-size:var(--text-sm); margin-bottom:var(--space-3);">Frizon of Sweden — Resedagbok med Frizze</p>
         <p style="font-size:var(--text-xs); margin-bottom:var(--space-3);">
+            <a href="/topplista" style="color:rgba(255,255,255,0.8); text-decoration:underline;">Topplista</a>
+            <span style="color:rgba(255,255,255,0.4);"> &middot; </span>
+            <a href="/shop" style="color:rgba(255,255,255,0.8); text-decoration:underline;">Shop</a>
+            <span style="color:rgba(255,255,255,0.4);"> &middot; </span>
             <a href="/integritetspolicy" style="color:rgba(255,255,255,0.8); text-decoration:underline;">Integritetspolicy</a>
             <span style="color:rgba(255,255,255,0.4);"> &middot; </span>
             <a href="/cookiepolicy" style="color:rgba(255,255,255,0.8); text-decoration:underline;">Cookiepolicy</a>
@@ -106,7 +109,7 @@ $ogTitle         = htmlspecialchars($pageTitle);
     </div>
 
     <?php if (!empty($useLeaflet)): ?>
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" defer></script>
     <?php endif; ?>
     <script<?= app_csp_nonce_attr() ?>>
     // Cookie consent
@@ -150,6 +153,13 @@ $ogTitle         = htmlspecialchars($pageTitle);
     if (acceptBtn) acceptBtn.addEventListener('click', acceptCookies);
     if (declineBtn) declineBtn.addEventListener('click', declineCookies);
 
+    // Non-blocking font load (avoids render-blocking Google Fonts request)
+    (function() {
+        var fl = document.createElement('link');
+        fl.rel = 'stylesheet';
+        fl.href = 'https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&display=swap';
+        document.head.appendChild(fl);
+    })();
     if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js');
     </script>
 </body>

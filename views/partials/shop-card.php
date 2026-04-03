@@ -11,6 +11,7 @@
             <div class="shop-card__img-wrap">
                 <img src="/uploads/amazon/<?= htmlspecialchars($p['image_path']) ?>"
                      alt="<?= htmlspecialchars($p['title']) ?>"
+                     width="300" height="160"
                      loading="<?= ($shopCardIndex ?? 1) === 0 ? 'eager' : 'lazy' ?>"
                      <?php if (($shopCardIndex ?? 1) === 0): ?> fetchpriority="high"<?php endif; ?>
                      style="width:100%; height:160px; object-fit:contain; background:#fff; padding:var(--space-2);">

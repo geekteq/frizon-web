@@ -135,7 +135,7 @@ class PublicController
         $ratingStmt->execute([$place['id']]);
         $avgRating = $ratingStmt->fetchColumn();
 
-        $pageTitle = $place['name'];
+        $pageTitle = $place['name'] . ' — Frizon of Sweden';
         $appUrl    = rtrim($_ENV['APP_URL'] ?? 'https://frizon.org', '/');
 
         // og:image — first uploaded image or logo fallback
