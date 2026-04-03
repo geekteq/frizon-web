@@ -148,16 +148,16 @@ class InstagramService
     {
         $this->ensureJpeg($webpFilename);
         $stem = pathinfo($webpFilename, PATHINFO_FILENAME);
-        return $this->appUrl . '/uploads/instagram/' . $stem . '.jpg';
+        return $this->appUrl . '/ig/' . $stem . '.jpg';
     }
 
     /**
-     * Convert a WebP detail image to JPEG and cache it.
+     * Convert a WebP detail image to JPEG and cache it under public/ig/.
      * Falls back to original file if detail variant is missing.
      */
     private function ensureJpeg(string $webpFilename): void
     {
-        $dir  = $this->uploadPath . '/instagram';
+        $dir  = dirname(__DIR__, 2) . '/public/ig';
         $stem = pathinfo($webpFilename, PATHINFO_FILENAME);
         $dest = $dir . '/' . $stem . '.jpg';
 
