@@ -26,7 +26,7 @@ declare(strict_types=1);
  */
 class InstagramService
 {
-    private const GRAPH_API     = 'https://graph.facebook.com/v21.0';
+    private const GRAPH_API     = 'https://graph.instagram.com/v21.0';
     private const MAX_CAROUSEL  = 10;
     private const MAX_CAPTION   = 2200;
     private const JPEG_QUALITY  = 90;
