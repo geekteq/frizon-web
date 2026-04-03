@@ -87,7 +87,13 @@ class InstagramService
                 $caption
             );
         } else {
-            $childIds    = array_map(fn($f) => $this->createItemContainer($this->getPublicJpegUrl($f)), $files);
+            // Create each child container and wait for it to finish processing
+            $childIds = [];
+            foreach ($files as $f) {
+                $childId    = $this->createItemContainer($this->getPublicJpegUrl($f));
+                $this->waitUntilReady($childId);
+                $childIds[] = $childId;
+            }
             $containerId = $this->createCarouselContainer($childIds, $caption);
         }
 
