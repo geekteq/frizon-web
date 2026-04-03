@@ -13,6 +13,8 @@ class Auth
 
     public function attempt(string $username, string $password): bool
     {
+        app_start_session();
+
         $stmt = $this->pdo->prepare('SELECT id, password_hash, display_name FROM users WHERE username = ?');
         $stmt->execute([$username]);
         $user = $stmt->fetch();
@@ -29,21 +31,25 @@ class Auth
 
     public static function check(): bool
     {
+        app_start_session();
         return isset($_SESSION['user_id']);
     }
 
     public static function userId(): ?int
     {
+        app_start_session();
         return $_SESSION['user_id'] ?? null;
     }
 
     public static function userName(): ?string
     {
+        app_start_session();
         return $_SESSION['user_name'] ?? null;
     }
 
     public static function logout(): void
     {
+        app_start_session();
         $_SESSION = [];
         if (ini_get('session.use_cookies')) {
             $params = session_get_cookie_params();

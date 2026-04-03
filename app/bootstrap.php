@@ -54,17 +54,18 @@ session_set_cookie_params([
     'samesite' => 'Lax',
 ]);
 
-// Session
-session_start();
+if (app_request_uses_session()) {
+    app_start_session();
 
-// Förnya cookiens livslängd vid varje inloggad request
-if (!empty($_SESSION['user_id'])) {
-    setcookie(session_name(), session_id(), [
-        'expires'  => time() + $sessionLifetime,
-        'path'     => '/',
-        'domain'   => '',
-        'secure'   => app_is_https_request(),
-        'httponly' => true,
-        'samesite' => 'Lax',
-    ]);
+    // Förnya cookiens livslängd vid varje inloggad request
+    if (!empty($_SESSION['user_id'])) {
+        setcookie(session_name(), session_id(), [
+            'expires'  => time() + $sessionLifetime,
+            'path'     => '/',
+            'domain'   => '',
+            'secure'   => app_is_https_request(),
+            'httponly' => true,
+            'samesite' => 'Lax',
+        ]);
+    }
 }

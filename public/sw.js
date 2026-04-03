@@ -1,18 +1,23 @@
-var CACHE_NAME = 'frizon-v4';
+var CACHE_NAME = 'frizon-v5';
 var PRECACHE = [
   '/css/main.css',
   '/css/pages/public.css',
-  '/js/app.js',
-  '/js/gps.js',
-  '/js/lists.js',
-  '/js/trips.js',
-  '/js/ratings.js',
-  '/js/ai.js',
   '/img/frizon-logo.png',
   '/icon-192.png',
   '/favicon-32.png',
   '/apple-touch-icon.png'
 ];
+
+function isAdminPath(pathname) {
+  return pathname === '/adm' || pathname.indexOf('/adm/') === 0;
+}
+
+function shouldCacheResponse(response) {
+  if (!response || !response.ok) return false;
+
+  var cacheControl = response.headers.get('Cache-Control') || '';
+  return cacheControl.indexOf('no-store') === -1;
+}
 
 // Install — precache static assets
 self.addEventListener('install', function(e) {
@@ -46,6 +51,9 @@ self.addEventListener('fetch', function(e) {
   // Skip non-GET and cross-origin
   if (e.request.method !== 'GET' || url.origin !== location.origin) return;
 
+  // Never cache admin pages or admin assets.
+  if (isAdminPath(url.pathname)) return;
+
   // API calls — network only
   if (url.pathname.startsWith('/adm/api/')) return;
 
@@ -53,8 +61,10 @@ self.addEventListener('fetch', function(e) {
   if (url.pathname.match(/\.(css|js)$/)) {
     e.respondWith(
       fetch(e.request).then(function(res) {
-        var clone = res.clone();
-        caches.open(CACHE_NAME).then(function(c) { c.put(e.request, clone); });
+        if (shouldCacheResponse(res)) {
+          var clone = res.clone();
+          caches.open(CACHE_NAME).then(function(c) { c.put(e.request, clone); });
+        }
         return res;
       }).catch(function() {
         return caches.match(e.request);
@@ -68,8 +78,10 @@ self.addEventListener('fetch', function(e) {
     e.respondWith(
       caches.match(e.request).then(function(cached) {
         return cached || fetch(e.request).then(function(res) {
-          var clone = res.clone();
-          caches.open(CACHE_NAME).then(function(c) { c.put(e.request, clone); });
+          if (shouldCacheResponse(res)) {
+            var clone = res.clone();
+            caches.open(CACHE_NAME).then(function(c) { c.put(e.request, clone); });
+          }
           return res;
         });
       })
@@ -81,8 +93,10 @@ self.addEventListener('fetch', function(e) {
   if (e.request.headers.get('Accept').includes('text/html')) {
     e.respondWith(
       fetch(e.request).then(function(res) {
-        var clone = res.clone();
-        caches.open(CACHE_NAME).then(function(c) { c.put(e.request, clone); });
+        if (shouldCacheResponse(res)) {
+          var clone = res.clone();
+          caches.open(CACHE_NAME).then(function(c) { c.put(e.request, clone); });
+        }
         return res;
       }).catch(function() {
         return caches.match(e.request);

@@ -102,10 +102,16 @@ class ImageService
 
     public function delete(string $filename): void
     {
-        $dirs = ['originals', 'thumbnails', 'cards', 'detail'];
-        foreach ($dirs as $dir) {
+        foreach (['thumbnails', 'cards', 'detail'] as $dir) {
             $path = $this->basePath . '/' . $dir . '/' . $filename;
             if (file_exists($path)) {
+                unlink($path);
+            }
+        }
+
+        $originalPattern = $this->basePath . '/originals/' . pathinfo($filename, PATHINFO_FILENAME) . '.*';
+        foreach (glob($originalPattern) ?: [] as $path) {
+            if (is_file($path)) {
                 unlink($path);
             }
         }

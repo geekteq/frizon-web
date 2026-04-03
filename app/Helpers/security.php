@@ -15,6 +15,23 @@ function app_is_https_request(): bool
     return strtolower((string) ($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '')) === 'https';
 }
 
+function app_request_path(): string
+{
+    return (string) parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH);
+}
+
+function app_request_uses_session(): bool
+{
+    return str_starts_with(app_request_path(), '/adm');
+}
+
+function app_start_session(): void
+{
+    if (session_status() === PHP_SESSION_NONE) {
+        session_start();
+    }
+}
+
 function app_csp_nonce(): string
 {
     if (empty($_SERVER['app_csp_nonce'])) {

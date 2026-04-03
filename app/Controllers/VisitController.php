@@ -174,7 +174,18 @@ class VisitController
         $visit = $visitModel->findById((int) $params['id']);
         if (!$visit) { redirect('/adm/platser'); return; }
 
+        $imageModel = new VisitImage($this->pdo);
+        $images = $imageModel->findByVisit((int) $params['id']);
+
         $visitModel->delete((int) $params['id']);
+
+        $imageService = new ImageService($this->config);
+        foreach ($images as $image) {
+            if (!empty($image['filename'])) {
+                $imageService->delete((string) $image['filename']);
+            }
+        }
+
         flash('success', 'Besöket har tagits bort.');
         redirect('/adm/platser/' . $visit['place_slug']);
     }

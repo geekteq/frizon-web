@@ -44,6 +44,46 @@ class Place
         return $stmt->fetchAll();
     }
 
+    public function publicListing(array $filters = []): array
+    {
+        $sql = 'SELECT
+                    p.id,
+                    p.slug,
+                    p.name,
+                    p.lat,
+                    p.lng,
+                    p.place_type,
+                    p.country_code,
+                    p.default_public_text,
+                    p.is_featured,
+                    COUNT(v.id) as visit_count,
+                    AVG(vr.total_rating_cached) as avg_rating
+                FROM places p
+                LEFT JOIN visits v ON v.place_id = p.id AND v.ready_for_publish = 1
+                LEFT JOIN visit_ratings vr ON vr.visit_id = v.id
+                WHERE p.public_allowed = 1';
+        $params = [];
+
+        if (!empty($filters['place_type'])) {
+            $sql .= ' AND p.place_type = ?';
+            $params[] = $filters['place_type'];
+        }
+        if (!empty($filters['country_code'])) {
+            $sql .= ' AND p.country_code = ?';
+            $params[] = $filters['country_code'];
+        }
+        if (!empty($filters['search'])) {
+            $sql .= ' AND p.name LIKE ?';
+            $params[] = '%' . $filters['search'] . '%';
+        }
+
+        $sql .= ' GROUP BY p.id ORDER BY p.is_featured DESC, p.updated_at DESC';
+
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute($params);
+        return $stmt->fetchAll();
+    }
+
     public function findBySlug(string $slug): ?array
     {
         $stmt = $this->pdo->prepare('SELECT * FROM places WHERE slug = ?');

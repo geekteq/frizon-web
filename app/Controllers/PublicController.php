@@ -19,30 +19,15 @@ class PublicController
     {
         header('Cache-Control: public, max-age=300, s-maxage=3600');
 
-        // Public places with ratings
-        $stmt = $this->pdo->query('
-            SELECT p.*, AVG(vr.total_rating_cached) as avg_rating,
-                   COUNT(v.id) as visit_count
-            FROM places p
-            LEFT JOIN visits v ON v.place_id = p.id AND v.ready_for_publish = 1
-            LEFT JOIN visit_ratings vr ON vr.visit_id = v.id
-            WHERE p.public_allowed = 1
-            GROUP BY p.id
-            ORDER BY p.is_featured DESC, p.updated_at DESC
-        ');
-        $places = $stmt->fetchAll();
-
-        // Active filters
+        $placeModel = new Place($this->pdo);
         $filterType = $_GET['type'] ?? null;
         $filterCountry = $_GET['country'] ?? null;
-
-        if ($filterType) {
-            $places = array_filter($places, fn($p) => $p['place_type'] === $filterType);
-        }
-        if ($filterCountry) {
-            $places = array_filter($places, fn($p) => $p['country_code'] === $filterCountry);
-        }
-        $places = array_values($places);
+        $search = trim((string) ($_GET['q'] ?? ''));
+        $places = $placeModel->publicListing([
+            'place_type' => $filterType ?: null,
+            'country_code' => $filterCountry ?: null,
+            'search' => $search !== '' ? $search : null,
+        ]);
 
         // Unique countries and types for filters
         $allPublic = $this->pdo->query('SELECT DISTINCT country_code FROM places WHERE public_allowed = 1 AND country_code IS NOT NULL ORDER BY country_code')->fetchAll(PDO::FETCH_COLUMN);
@@ -97,7 +82,7 @@ class PublicController
         $shopTeaser = (new AmazonProduct($this->pdo))->latestPublished(3);
 
         $useLeaflet = true;
-        view('public/homepage', compact('places', 'filterType', 'filterCountry', 'allPublic', 'allTypes', 'pageTitle', 'seoMeta', 'schemas', 'shopTeaser', 'useLeaflet'), 'public');
+        view('public/homepage', compact('places', 'filterType', 'filterCountry', 'allPublic', 'allTypes', 'pageTitle', 'seoMeta', 'schemas', 'shopTeaser', 'useLeaflet', 'search'), 'public');
     }
 
     public function placeDetail(array $params): void

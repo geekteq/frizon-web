@@ -14,6 +14,14 @@ declare(strict_types=1);
 
 class AmazonFetcher
 {
+    private const MAX_DOWNLOAD_BYTES = 10485760;
+    private const ALLOWED_IMAGE_MIME_TYPES = [
+        'image/jpeg',
+        'image/png',
+        'image/webp',
+        'image/gif',
+    ];
+
     private string $associateId;
     private string $uploadDir;
 
@@ -32,17 +40,20 @@ class AmazonFetcher
      */
     public function buildAffiliateUrl(string $amazonUrl): string
     {
-        $host = parse_url($amazonUrl, PHP_URL_HOST) ?: 'www.amazon.se';
+        $parsed = parse_url($amazonUrl);
+        $host = $parsed['host'] ?? 'www.amazon.se';
+        parse_str($parsed['query'] ?? '', $params);
+        unset($params['tag']);
 
         // Extract ASIN (10 uppercase alphanumeric chars after /dp/)
         if (preg_match('~/dp/([A-Z0-9]{10})~i', $amazonUrl, $m)) {
+            $params['tag'] = $this->associateId;
+
             return 'https://' . $host . '/dp/' . strtoupper($m[1])
-                 . '/ref=nosim?tag=' . urlencode($this->associateId);
+                 . '/ref=nosim?' . http_build_query($params);
         }
 
         // Fallback: no ASIN found — inject tag into original URL
-        $parsed = parse_url($amazonUrl);
-        parse_str($parsed['query'] ?? '', $params);
         $params['tag'] = $this->associateId;
 
         return ($parsed['scheme'] ?? 'https') . '://' . ($parsed['host'] ?? '')
@@ -58,12 +69,41 @@ class AmazonFetcher
         return (bool) preg_match('/(?:^|\.)amazon\.[a-z]{2,3}(?:\.[a-z]{2})?$/i', $host);
     }
 
+    public function isAllowedImageUrl(string $url): bool
+    {
+        if (!str_starts_with(strtolower($url), 'https://')) {
+            return false;
+        }
+
+        $host = strtolower((string) (parse_url($url, PHP_URL_HOST) ?? ''));
+        if ($host === '') {
+            return false;
+        }
+
+        if ($this->isAmazonUrl($url)) {
+            return true;
+        }
+
+        return (bool) preg_match(
+            '/(?:^|\.)('
+            . 'media-amazon\.com'
+            . '|images-amazon\.com'
+            . '|ssl-images-amazon\.com'
+            . ')$/i',
+            $host
+        );
+    }
+
     /**
      * Fetch og:image and og:description from an Amazon product page.
      * Returns ['image_url' => string|null, 'description' => string|null].
      */
     public function fetchProductMeta(string $amazonUrl): array
     {
+        if (!$this->isAmazonUrl($amazonUrl)) {
+            return ['image_url' => null, 'description' => null];
+        }
+
         $ch = curl_init($amazonUrl);
         curl_setopt_array($ch, [
             CURLOPT_RETURNTRANSFER => true,
@@ -96,20 +136,42 @@ class AmazonFetcher
      */
     public function downloadImage(string $imageUrl): ?string
     {
+        if (!$this->isAllowedImageUrl($imageUrl)) {
+            return null;
+        }
+
+        $imageData = '';
         $ch = curl_init($imageUrl);
         curl_setopt_array($ch, [
-            CURLOPT_RETURNTRANSFER => true,
             CURLOPT_FOLLOWLOCATION => true,
             CURLOPT_MAXREDIRS      => 3,
             CURLOPT_TIMEOUT        => 15,
             CURLOPT_USERAGENT      => 'Mozilla/5.0',
+            CURLOPT_PROTOCOLS      => CURLPROTO_HTTPS,
+            CURLOPT_REDIR_PROTOCOLS => CURLPROTO_HTTPS,
+            CURLOPT_WRITEFUNCTION  => static function ($ch, string $chunk) use (&$imageData): int {
+                $imageData .= $chunk;
+
+                if (strlen($imageData) > self::MAX_DOWNLOAD_BYTES) {
+                    return 0;
+                }
+
+                return strlen($chunk);
+            },
         ]);
 
-        $imageData = curl_exec($ch);
+        $ok = curl_exec($ch);
         $httpCode  = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $contentType = strtolower(trim((string) curl_getinfo($ch, CURLINFO_CONTENT_TYPE)));
+        $effectiveUrl = (string) curl_getinfo($ch, CURLINFO_EFFECTIVE_URL);
         curl_close($ch);
 
-        if (!$imageData || $httpCode !== 200) {
+        if (
+            $ok === false
+            || $httpCode !== 200
+            || !$this->isAllowedImageUrl($effectiveUrl)
+            || !$this->isAllowedDownloadedImageType($contentType)
+        ) {
             return null;
         }
 
@@ -224,5 +286,20 @@ class AmazonFetcher
         }
 
         return null;
+    }
+
+    private function isAllowedDownloadedImageType(string $contentType): bool
+    {
+        if ($contentType === '') {
+            return false;
+        }
+
+        foreach (self::ALLOWED_IMAGE_MIME_TYPES as $allowedType) {
+            if (str_starts_with($contentType, $allowedType)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

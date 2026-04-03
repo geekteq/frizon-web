@@ -37,6 +37,5 @@ $pageTitle = $pageTitle ?? 'Frizon';
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="/js/app.js"></script>
-    <script<?= app_csp_nonce_attr() ?>>if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js');</script>
 </body>
 </html>

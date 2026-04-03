@@ -174,7 +174,13 @@ class AmazonController
             return;
         }
 
-        $fetcher      = $this->makeFetcher();
+        $fetcher = $this->makeFetcher();
+        if (!$fetcher->isAmazonUrl($amazonUrl)) {
+            $_SESSION['flash'] = ['type' => 'error', 'message' => 'URL:en måste vara en Amazon-domän.'];
+            header('Location: /adm/amazon-lista/' . $id . '/redigera');
+            return;
+        }
+
         $affiliateUrl = $fetcher->buildAffiliateUrl($amazonUrl);
         $imagePath    = $existing['image_path'];
         $amazonDesc   = $existing['amazon_description'];
@@ -186,6 +192,12 @@ class AmazonController
                 $imagePath = $uploaded;
             }
         } elseif ($manualUrl = trim($_POST['image_url_manual'] ?? '')) {
+            if (!$fetcher->isAllowedImageUrl($manualUrl)) {
+                $_SESSION['flash'] = ['type' => 'error', 'message' => 'Bild-URL måste peka på en Amazon-bild över HTTPS.'];
+                header('Location: /adm/amazon-lista/' . $id . '/redigera');
+                return;
+            }
+
             $downloaded = $fetcher->downloadImage($manualUrl);
             if ($downloaded) {
                 $imagePath = $downloaded;
@@ -299,6 +311,12 @@ class AmazonController
         }
 
         $fetcher = $this->makeFetcher();
+        if (!$fetcher->isAmazonUrl($product['amazon_url'])) {
+            $_SESSION['flash'] = ['type' => 'error', 'message' => 'Produktens Amazon-URL är ogiltig.'];
+            header('Location: /adm/amazon-lista/' . $id . '/redigera');
+            return;
+        }
+
         $meta    = $fetcher->fetchProductMeta($product['amazon_url']);
         $updates = [];
 

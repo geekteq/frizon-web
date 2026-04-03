@@ -6,6 +6,8 @@ class CsrfService
 {
     public static function token(): string
     {
+        app_start_session();
+
         if (empty($_SESSION['csrf_token'])) {
             $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
         }
@@ -19,6 +21,7 @@ class CsrfService
 
     public static function verify(): bool
     {
+        app_start_session();
         $token = $_POST['_csrf'] ?? $_SERVER['HTTP_X_CSRF_TOKEN'] ?? '';
         return hash_equals(self::token(), $token);
     }
