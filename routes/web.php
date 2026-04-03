@@ -11,6 +11,10 @@ function registerRoutes(Router $router): void
     $router->get('/integritetspolicy', 'PublicController', 'privacy');
     $router->get('/cookiepolicy', 'PublicController', 'cookies');
 
+    // Shop (public)
+    $router->get('/shop', 'AmazonController', 'shopIndex');
+    $router->get('/shop/{slug}', 'AmazonController', 'shopProduct');
+
     // Auth
     $router->get('/adm/login', 'AuthController', 'showLogin');
     $router->post('/adm/login', 'AuthController', 'login');
@@ -79,6 +83,17 @@ function registerRoutes(Router $router): void
     $router->post('/adm/listor/punkt/{itemId}/toggle', 'ListController', 'toggleItem');
     $router->delete('/adm/listor/punkt/{itemId}', 'ListController', 'removeItem');
     $router->put('/adm/listor/{id}/punkt/ordning', 'ListController', 'reorderItems');
+
+    // Shop admin
+    $router->get('/adm/amazon-lista', 'AmazonController', 'adminIndex');
+    $router->get('/adm/amazon-lista/ny', 'AmazonController', 'adminCreate');
+    $router->post('/adm/amazon-lista', 'AmazonController', 'adminStore');
+    $router->post('/adm/amazon-lista/{id}/publicera', 'AmazonController', 'adminTogglePublish');
+    $router->get('/adm/amazon-lista/{id}/redigera', 'AmazonController', 'adminEdit');
+    $router->put('/adm/amazon-lista/{id}', 'AmazonController', 'adminUpdate');
+    $router->delete('/adm/amazon-lista/{id}', 'AmazonController', 'adminDestroy');
+    $router->post('/adm/amazon-lista/{id}/ai/generera', 'AmazonController', 'generateDraft');
+    $router->get('/adm/api/amazon/kategorier', 'AmazonController', 'categoriesApi');
 
     // Publish queue (private)
     $router->get('/adm/publicera', 'PublishController', 'queue');
