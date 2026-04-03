@@ -53,6 +53,11 @@ class ImageService
             return null;
         }
 
+        // Auto-correct EXIF orientation for JPEG (fixes rotated phone photos)
+        if ($mimeType === 'image/jpeg') {
+            $this->correctExifOrientation($originalDest);
+        }
+
         // Generate WebP variants for all sizes
         foreach (self::VARIANTS as $dir => [$maxW, $maxH]) {
             $this->resize($originalDest, $this->basePath . '/' . $dir . '/' . $filename, $maxW, $maxH, $mimeType);
@@ -98,6 +103,82 @@ class ImageService
 
         imagedestroy($img);
         imagedestroy($resized);
+    }
+
+    /**
+     * Rotate an image by 90° left or right, regenerating all variants.
+     */
+    public function rotate(string $filename, string $direction): bool
+    {
+        $stem    = pathinfo($filename, PATHINFO_FILENAME);
+        $matches = glob($this->basePath . '/originals/' . $stem . '.*') ?: [];
+        if (empty($matches)) return false;
+
+        $originalPath = $matches[0];
+        $ext          = strtolower(pathinfo($originalPath, PATHINFO_EXTENSION));
+        $mimeType     = match ($ext) {
+            'jpg', 'jpeg' => 'image/jpeg',
+            'png'         => 'image/png',
+            'webp'        => 'image/webp',
+            default       => null,
+        };
+        if (!$mimeType) return false;
+
+        $img = match ($mimeType) {
+            'image/jpeg' => imagecreatefromjpeg($originalPath),
+            'image/png'  => imagecreatefrompng($originalPath),
+            'image/webp' => imagecreatefromwebp($originalPath),
+            default      => null,
+        };
+        if (!$img) return false;
+
+        // imagerotate() is counter-clockwise; right (CW) = 270°, left (CCW) = 90°
+        $degrees = ($direction === 'right') ? 270 : 90;
+        $rotated = imagerotate($img, $degrees, 0);
+        imagedestroy($img);
+        if (!$rotated) return false;
+
+        match ($mimeType) {
+            'image/jpeg' => imagejpeg($rotated, $originalPath, 90),
+            'image/png'  => imagepng($rotated, $originalPath),
+            'image/webp' => imagewebp($rotated, $originalPath, 82),
+        };
+
+        // Regenerate all WebP variants from rotated original
+        foreach (self::VARIANTS as $dir => [$maxW, $maxH]) {
+            $this->resize($originalPath, $this->basePath . '/' . $dir . '/' . $filename, $maxW, $maxH, $mimeType);
+        }
+
+        imagedestroy($rotated);
+        return true;
+    }
+
+    /**
+     * Correct EXIF orientation for JPEG files (fixes sideways phone photos).
+     */
+    private function correctExifOrientation(string $path): void
+    {
+        if (!function_exists('exif_read_data')) return;
+
+        $exif        = @exif_read_data($path);
+        $orientation = $exif['Orientation'] ?? 1;
+        if ($orientation === 1) return;
+
+        $img = @imagecreatefromjpeg($path);
+        if (!$img) return;
+
+        $rotated = match ((int) $orientation) {
+            3 => imagerotate($img, 180, 0),
+            6 => imagerotate($img, 270, 0), // 90° CW
+            8 => imagerotate($img, 90, 0),  // 90° CCW
+            default => null,
+        };
+
+        if ($rotated) {
+            imagejpeg($rotated, $path, 90);
+            imagedestroy($rotated);
+        }
+        imagedestroy($img);
     }
 
     public function delete(string $filename): void

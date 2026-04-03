@@ -92,11 +92,46 @@
 
     <div class="form-group">
         <label class="form-label">Foton (max 8)</label>
-        <input type="file" name="photos[]" multiple accept="image/jpeg,image/png,image/webp" class="form-input">
+        <input type="file" id="photos-input" name="photos[]" multiple accept="image/jpeg,image/png,image/webp" class="form-input">
     </div>
 
-    <button type="submit" class="btn btn-primary btn--full">Spara besök</button>
+    <button type="submit" id="save-btn" class="btn btn-primary btn--full">Spara besök</button>
+
+    <!-- Shown while uploading + AI-processing images -->
+    <div id="save-loading" style="display:none; margin-top:var(--space-4); text-align:center;">
+        <div style="display:inline-flex; align-items:center; gap:var(--space-3); background:var(--color-bg); border:1px solid var(--color-border); border-radius:var(--radius-lg); padding:var(--space-3) var(--space-5);">
+            <span style="display:inline-block; width:20px; height:20px; border:3px solid var(--color-border); border-top-color:var(--color-accent); border-radius:50%; animation:spin 0.8s linear infinite;" aria-hidden="true"></span>
+            <span id="save-loading-msg" class="text-sm text-muted">Sparar besöket…</span>
+        </div>
+    </div>
 </form>
 
 <script src="/js/ratings.js"></script>
 <script src="/js/tags.js"></script>
+<script<?= app_csp_nonce_attr() ?>>
+(function () {
+    var form    = document.querySelector('form[action*="/besok"]');
+    var btn     = document.getElementById('save-btn');
+    var loading = document.getElementById('save-loading');
+    var msg     = document.getElementById('save-loading-msg');
+    var photos  = document.getElementById('photos-input');
+    if (!form || !btn) return;
+
+    // Add spinner keyframe once
+    if (!document.getElementById('spin-kf')) {
+        var s = document.createElement('style');
+        s.id  = 'spin-kf';
+        s.textContent = '@keyframes spin{to{transform:rotate(360deg)}}';
+        document.head.appendChild(s);
+    }
+
+    form.addEventListener('submit', function () {
+        btn.disabled = true;
+        if (loading) loading.style.display = 'block';
+        var hasPhotos = photos && photos.files && photos.files.length > 0;
+        if (msg) msg.textContent = hasPhotos
+            ? 'Sparar besöket och analyserar ' + photos.files.length + ' bild' + (photos.files.length > 1 ? 'er' : '') + ' med AI…'
+            : 'Sparar besöket…';
+    });
+}());
+</script>

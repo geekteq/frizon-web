@@ -13,6 +13,7 @@ interface AiProviderInterface
     public function generateShopDescription(array $context): string;
     public function generateShopSeo(array $product): array;
     public function translateToSwedish(string $text): string;
+    public function describeImage(string $imagePath): string;
 }
 
 // ---------------------------------------------------------------------------
@@ -230,6 +231,43 @@ class ClaudeAiProvider implements AiProviderInterface
         return $this->callClaude($payload);
     }
 
+    public function describeImage(string $imagePath): string
+    {
+        if (!file_exists($imagePath)) return '';
+
+        $data = base64_encode((string) file_get_contents($imagePath));
+        if (!$data) return '';
+
+        // WebP variants are always used for AI description (smaller file, faster)
+        $payload = [
+            'model'      => self::MODEL_STRUCTURED,
+            'max_tokens' => 120,
+            'system'     => 'Du beskriver bilder kort och sakligt på svenska. Skriv 1-2 meningar med ren text, inga formateringstecken.' . $this->sw(),
+            'messages'   => [
+                [
+                    'role'    => 'user',
+                    'content' => [
+                        [
+                            'type'   => 'image',
+                            'source' => [
+                                'type'       => 'base64',
+                                'media_type' => 'image/webp',
+                                'data'       => $data,
+                            ],
+                        ],
+                        ['type' => 'text', 'text' => 'Beskriv kort vad som syns på bilden.'],
+                    ],
+                ],
+            ],
+        ];
+
+        try {
+            return $this->callClaude($payload);
+        } catch (RuntimeException) {
+            return '';
+        }
+    }
+
     private function buildUserPrompt(array $ctx): string
     {
         $lines = [];
@@ -377,6 +415,11 @@ class FakeAiProvider implements AiProviderInterface
         // Fake provider: return unchanged (assume already Swedish in dev)
         return $text;
     }
+
+    public function describeImage(string $imagePath): string
+    {
+        return '';
+    }
 }
 
 // ---------------------------------------------------------------------------
@@ -426,5 +469,10 @@ class AiService
     public function translateToSwedish(string $text): string
     {
         return $this->provider->translateToSwedish($text);
+    }
+
+    public function describeImage(string $imagePath): string
+    {
+        return $this->provider->describeImage($imagePath);
     }
 }

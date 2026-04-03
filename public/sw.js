@@ -1,4 +1,4 @@
-var CACHE_NAME = 'frizon-v8';
+var CACHE_NAME = 'frizon-v9';
 var PRECACHE = [
   '/css/main.css',
   '/img/frizon-logo.png',

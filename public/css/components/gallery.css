@@ -335,6 +335,199 @@
 }
 
 /* ----------------------------------------------------------------
+ * Lightbox (fullscreen image viewer)
+ * ---------------------------------------------------------------- */
+
+.lightbox {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.93);
+  z-index: 9500;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-4);
+}
+
+.lightbox.is-open {
+  display: flex;
+}
+
+body.lightbox-open {
+  overflow: hidden;
+}
+
+.lightbox__inner {
+  position: relative;
+  max-width: min(90vw, 1200px);
+  max-height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.lightbox__img {
+  max-width: 100%;
+  max-height: calc(100dvh - 120px);
+  object-fit: contain;
+  border-radius: var(--radius-md);
+  display: block;
+}
+
+.lightbox__caption {
+  color: rgba(255, 255, 255, 0.85);
+  font-size: var(--text-sm);
+  text-align: center;
+  max-width: 600px;
+  line-height: var(--leading-relaxed);
+  margin: 0;
+}
+
+.lightbox__close {
+  position: fixed;
+  top: var(--space-4);
+  right: var(--space-4);
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-full);
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+  border: none;
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background var(--transition-fast);
+  z-index: 1;
+}
+
+.lightbox__close:hover,
+.lightbox__close:focus-visible {
+  background: rgba(255, 255, 255, 0.30);
+}
+
+.lightbox__nav {
+  position: fixed;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-full);
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+  border: none;
+  font-size: 2rem;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background var(--transition-fast);
+  z-index: 1;
+}
+
+.lightbox__nav:hover,
+.lightbox__nav:focus-visible {
+  background: rgba(255, 255, 255, 0.30);
+}
+
+.lightbox__nav--prev { left: var(--space-2); }
+.lightbox__nav--next { right: var(--space-2); }
+
+/* ----------------------------------------------------------------
+ * Image management (admin visit detail)
+ * ---------------------------------------------------------------- */
+
+.img-manage {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.img-manage__item {
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-3);
+}
+
+.img-manage__row {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+}
+
+.img-manage__thumb {
+  border: none;
+  background: none;
+  padding: 0;
+  cursor: zoom-in;
+  flex-shrink: 0;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  display: block;
+  transition: opacity var(--transition-fast);
+}
+
+.img-manage__thumb:hover { opacity: 0.85; }
+
+.img-manage__thumb img {
+  display: block;
+  width: 120px;
+  height: 90px;
+  object-fit: cover;
+}
+
+.img-manage__tools {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.img-rotate-btn {
+  font-size: 1.25rem;
+  min-width: 44px;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+.img-manage__caption {
+  margin-top: var(--space-2);
+}
+
+.img-caption-status {
+  font-size: var(--text-caption);
+  color: var(--color-text-subtle);
+  margin-top: 2px;
+  min-height: 1em;
+}
+
+/* ----------------------------------------------------------------
+ * Public gallery image buttons (lightbox trigger)
+ * ---------------------------------------------------------------- */
+
+.pub-detail__img-btn {
+  display: block;
+  border: none;
+  padding: 0;
+  background: none;
+  cursor: zoom-in;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  width: 100%;
+}
+
+.pub-detail__img-btn:hover .pub-detail__img {
+  opacity: 0.90;
+}
+
+/* ----------------------------------------------------------------
  * Mini gallery (3 thumbnails + count badge in visit cards)
  * ---------------------------------------------------------------- */
 

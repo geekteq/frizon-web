@@ -41,13 +41,19 @@ $typeLabel = $placeTypes[$place['place_type']] ?? $place['place_type'];
     <?php if (!empty($images)): ?>
         <div class="pub-detail__gallery">
             <?php foreach ($images as $img): ?>
-                <img src="/uploads/detail/<?= htmlspecialchars($img['filename']) ?>"
-                     alt="<?= htmlspecialchars($img['alt_text'] ?? $place['name']) ?>"
-                     class="pub-detail__img"
-                     width="1200" height="900"
-                     loading="lazy">
+                <button type="button" class="pub-detail__img-btn"
+                        data-lightbox
+                        data-lightbox-src="/uploads/detail/<?= htmlspecialchars($img['filename']) ?>"
+                        data-lightbox-caption="<?= htmlspecialchars($img['alt_text'] ?? '') ?>">
+                    <img src="/uploads/detail/<?= htmlspecialchars($img['filename']) ?>"
+                         alt="<?= htmlspecialchars($img['alt_text'] ?? $place['name']) ?>"
+                         class="pub-detail__img"
+                         width="1200" height="900"
+                         loading="lazy">
+                </button>
             <?php endforeach; ?>
         </div>
+        <script src="/js/lightbox.js" defer></script>
     <?php endif; ?>
 
     <!-- Tags -->

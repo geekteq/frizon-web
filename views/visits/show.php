@@ -52,13 +52,151 @@
     <?php endif; ?>
 
     <?php if (!empty($images)): ?>
-        <div class="visit-detail__gallery mb-4" style="display:flex; flex-wrap:wrap; gap:var(--space-2);">
+        <div class="img-manage mb-4">
             <?php foreach ($images as $img): ?>
-                <img src="/uploads/cards/<?= htmlspecialchars($img['filename']) ?>"
-                     alt="<?= htmlspecialchars($img['alt_text'] ?? '') ?>"
-                     style="width:120px; height:90px; object-fit:cover; border-radius:var(--radius-md);">
+            <div class="img-manage__item" data-image-id="<?= (int)$img['id'] ?>">
+                <div class="img-manage__row">
+                    <button type="button" class="img-manage__thumb"
+                            data-lightbox
+                            data-lightbox-src="/uploads/detail/<?= htmlspecialchars($img['filename']) ?>"
+                            data-lightbox-caption="<?= htmlspecialchars($img['alt_text'] ?? '') ?>">
+                        <img src="/uploads/cards/<?= htmlspecialchars($img['filename']) ?>"
+                             alt="<?= htmlspecialchars($img['alt_text'] ?? '') ?>"
+                             width="120" height="90"
+                             loading="lazy">
+                    </button>
+                    <div class="img-manage__tools">
+                        <button type="button" class="btn btn-ghost btn--sm img-rotate-btn"
+                                data-direction="left" title="Rotera vänster" aria-label="Rotera vänster">↺</button>
+                        <button type="button" class="btn btn-ghost btn--sm img-rotate-btn"
+                                data-direction="right" title="Rotera höger" aria-label="Rotera höger">↻</button>
+                    </div>
+                </div>
+                <div class="img-manage__caption">
+                    <div style="display:flex; gap:var(--space-2); align-items:center;">
+                        <input type="text"
+                               class="form-input img-caption-input"
+                               value="<?= htmlspecialchars($img['alt_text'] ?? '') ?>"
+                               placeholder="Bildtext (visas i lightbox)..."
+                               maxlength="500"
+                               style="flex:1;">
+                        <button type="button"
+                                class="btn btn-ghost btn--sm img-ai-btn"
+                                title="Generera bildtext med AI"
+                                aria-label="Generera bildtext med AI"
+                                style="flex-shrink:0; white-space:nowrap;">✦ AI</button>
+                    </div>
+                    <div class="img-caption-status" aria-live="polite"></div>
+                </div>
+            </div>
             <?php endforeach; ?>
         </div>
+
+        <script src="/js/lightbox.js"></script>
+        <script<?= app_csp_nonce_attr() ?>>
+        (function () {
+            var csrf = '<?= htmlspecialchars(CsrfService::token()) ?>';
+
+            function setStatus(item, msg, ms) {
+                var el = item.querySelector('.img-caption-status');
+                if (!el) return;
+                el.textContent = msg;
+                if (ms) setTimeout(function () { el.textContent = ''; }, ms);
+            }
+
+            function syncLightbox(item, caption) {
+                var thumb = item.querySelector('[data-lightbox]');
+                if (thumb) thumb.dataset.lightboxCaption = caption;
+                if (typeof window.initLightbox === 'function') window.initLightbox();
+            }
+
+            // Rotate buttons
+            document.querySelectorAll('.img-rotate-btn').forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    var item      = btn.closest('[data-image-id]');
+                    var id        = item.dataset.imageId;
+                    var direction = btn.dataset.direction;
+                    btn.disabled  = true;
+                    setStatus(item, '↻ Roterar…');
+
+                    fetch('/adm/api/images/' + id + '/rotate', {
+                        method:  'POST',
+                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                        body:    '_csrf=' + encodeURIComponent(csrf) + '&direction=' + direction,
+                    })
+                    .then(function (r) { return r.json(); })
+                    .then(function (data) {
+                        if (data.success) {
+                            var ts    = '?t=' + Date.now();
+                            var img   = item.querySelector('.img-manage__thumb img');
+                            var thumb = item.querySelector('[data-lightbox]');
+                            if (img)   img.src                  = img.src.replace(/\?.*$/, '') + ts;
+                            if (thumb) thumb.dataset.lightboxSrc = thumb.dataset.lightboxSrc.replace(/\?.*$/, '') + ts;
+                            if (typeof window.initLightbox === 'function') window.initLightbox();
+                            setStatus(item, '✓ Roterad', 2500);
+                        } else {
+                            setStatus(item, data.error || 'Fel', 3000);
+                        }
+                        btn.disabled = false;
+                    })
+                    .catch(function () { btn.disabled = false; setStatus(item, 'Nätverksfel', 3000); });
+                });
+            });
+
+            // AI caption buttons
+            document.querySelectorAll('.img-ai-btn').forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    var item  = btn.closest('[data-image-id]');
+                    var id    = item.dataset.imageId;
+                    var input = item.querySelector('.img-caption-input');
+                    btn.disabled = true;
+                    setStatus(item, '✦ Analyserar bild med AI…');
+
+                    fetch('/adm/api/images/' + id + '/ai-caption', {
+                        method:  'POST',
+                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                        body:    '_csrf=' + encodeURIComponent(csrf),
+                    })
+                    .then(function (r) { return r.json(); })
+                    .then(function (data) {
+                        if (data.success && data.caption) {
+                            input.value = data.caption;
+                            syncLightbox(item, data.caption);
+                            setStatus(item, '✓ Bildtext genererad', 3000);
+                        } else {
+                            setStatus(item, data.error || 'AI misslyckades', 4000);
+                        }
+                        btn.disabled = false;
+                    })
+                    .catch(function () { btn.disabled = false; setStatus(item, 'Nätverksfel', 3000); });
+                });
+            });
+
+            // Caption auto-save on input (debounced) and on blur
+            document.querySelectorAll('.img-caption-input').forEach(function (input) {
+                var item  = input.closest('[data-image-id]');
+                var id    = item.dataset.imageId;
+                var timer;
+
+                function save() {
+                    fetch('/adm/api/images/' + id + '/caption', {
+                        method:  'POST',
+                        headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrf },
+                        body:    JSON.stringify({ caption: input.value }),
+                    })
+                    .then(function (r) { return r.json(); })
+                    .then(function (data) {
+                        setStatus(item, data.success ? '✓ Sparad' : 'Fel', 2500);
+                        syncLightbox(item, input.value);
+                    })
+                    .catch(function () { setStatus(item, 'Nätverksfel', 3000); });
+                }
+
+                input.addEventListener('input', function () { clearTimeout(timer); timer = setTimeout(save, 900); });
+                input.addEventListener('blur',  function () { clearTimeout(timer); save(); });
+            });
+        }());
+        </script>
     <?php endif; ?>
 
     <!-- AI-utkast -->

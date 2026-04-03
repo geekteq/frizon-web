@@ -5,6 +5,7 @@ declare(strict_types=1);
 require_once dirname(__DIR__) . '/Services/Auth.php';
 require_once dirname(__DIR__) . '/Services/CsrfService.php';
 require_once dirname(__DIR__) . '/Services/ImageService.php';
+require_once dirname(__DIR__) . '/Services/AiService.php';
 require_once dirname(__DIR__) . '/Models/Place.php';
 require_once dirname(__DIR__) . '/Models/Visit.php';
 require_once dirname(__DIR__) . '/Models/VisitRating.php';
@@ -76,8 +77,9 @@ class VisitController
         // Handle image uploads
         if (!empty($_FILES['photos']['name'][0])) {
             $imageService = new ImageService($this->config);
-            $imageModel = new VisitImage($this->pdo);
-            $files = $_FILES['photos'];
+            $imageModel   = new VisitImage($this->pdo);
+            $aiService    = new AiService();
+            $files        = $_FILES['photos'];
 
             for ($i = 0; $i < min(count($files['name']), 8); $i++) {
                 if ($files['error'][$i] !== UPLOAD_ERR_OK) continue;
@@ -89,7 +91,10 @@ class VisitController
                     $files['size'][$i]
                 );
                 if ($result) {
-                    $imageModel->create($visitId, $result['filename'], $files['name'][$i], $files['type'][$i], $files['size'][$i], $i);
+                    // Generate AI caption from the cards variant (smaller/faster)
+                    $cardsPath = dirname(__DIR__, 2) . '/storage/uploads/cards/' . $result['filename'];
+                    $caption   = $aiService->describeImage($cardsPath);
+                    $imageModel->create($visitId, $result['filename'], $files['name'][$i], $files['type'][$i], $files['size'][$i], $i, $caption);
                 }
             }
         }
@@ -219,5 +224,109 @@ class VisitController
         header('Content-Type: application/json');
         $visitModel = new Visit($this->pdo);
         echo json_encode($visitModel->suitableForValues());
+    }
+
+    /**
+     * POST /adm/api/images/{id}/rotate
+     * Rotate an image 90° left or right and regenerate all variants.
+     */
+    public function rotateImage(array $params): void
+    {
+        Auth::requireLogin();
+        CsrfService::requireValid();
+        header('Content-Type: application/json');
+
+        $id        = (int) ($params['id'] ?? 0);
+        $direction = $_POST['direction'] ?? '';
+
+        if (!in_array($direction, ['left', 'right'], true)) {
+            http_response_code(400);
+            echo json_encode(['error' => 'Ogiltig riktning']);
+            return;
+        }
+
+        $imageModel = new VisitImage($this->pdo);
+        $image      = $imageModel->findById($id);
+
+        if (!$image) {
+            http_response_code(404);
+            echo json_encode(['error' => 'Bilden hittades inte']);
+            return;
+        }
+
+        $imageService = new ImageService($this->config);
+        if ($imageService->rotate($image['filename'], $direction)) {
+            echo json_encode(['success' => true]);
+        } else {
+            http_response_code(500);
+            echo json_encode(['error' => 'Rotering misslyckades']);
+        }
+    }
+
+    /**
+     * POST /adm/api/images/{id}/ai-caption
+     * (Re-)generate AI caption for a single image using Claude vision.
+     */
+    public function generateCaption(array $params): void
+    {
+        Auth::requireLogin();
+        CsrfService::requireValid();
+        header('Content-Type: application/json');
+
+        $id         = (int) ($params['id'] ?? 0);
+        $imageModel = new VisitImage($this->pdo);
+        $image      = $imageModel->findById($id);
+
+        if (!$image) {
+            http_response_code(404);
+            echo json_encode(['error' => 'Bilden hittades inte']);
+            return;
+        }
+
+        $cardsPath = dirname(__DIR__, 2) . '/storage/uploads/cards/' . $image['filename'];
+        try {
+            $aiService = new AiService();
+            $caption   = $aiService->describeImage($cardsPath);
+        } catch (RuntimeException $e) {
+            http_response_code(500);
+            echo json_encode(['error' => $e->getMessage()]);
+            return;
+        }
+
+        if ($caption === '') {
+            http_response_code(500);
+            echo json_encode(['error' => 'AI returnerade ingen text. Kontrollera att ANTHROPIC_API_KEY är konfigurerad.']);
+            return;
+        }
+
+        $imageModel->updateCaption($id, $caption);
+        echo json_encode(['success' => true, 'caption' => $caption]);
+    }
+
+    /**
+     * POST /adm/api/images/{id}/caption
+     * Update the alt_text / caption for an image.
+     */
+    public function updateCaption(array $params): void
+    {
+        Auth::requireLogin();
+        CsrfService::requireValid();
+        header('Content-Type: application/json');
+
+        $id    = (int) ($params['id'] ?? 0);
+        $input = json_decode(file_get_contents('php://input'), true);
+        $caption = mb_substr(trim($input['caption'] ?? ''), 0, 500);
+
+        $imageModel = new VisitImage($this->pdo);
+        $image      = $imageModel->findById($id);
+
+        if (!$image) {
+            http_response_code(404);
+            echo json_encode(['error' => 'Bilden hittades inte']);
+            return;
+        }
+
+        $imageModel->updateCaption($id, $caption);
+        echo json_encode(['success' => true]);
     }
 }

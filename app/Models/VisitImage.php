@@ -18,14 +18,28 @@ class VisitImage
         return $stmt->fetchAll();
     }
 
-    public function create(int $visitId, string $filename, string $originalName, string $mimeType, int $fileSize, int $order): int
+    public function create(int $visitId, string $filename, string $originalName, string $mimeType, int $fileSize, int $order, string $altText = ''): int
     {
         $stmt = $this->pdo->prepare('
-            INSERT INTO visit_images (visit_id, filename, original_name, mime_type, file_size, image_order)
-            VALUES (?, ?, ?, ?, ?, ?)
+            INSERT INTO visit_images (visit_id, filename, original_name, mime_type, file_size, image_order, alt_text)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
         ');
-        $stmt->execute([$visitId, $filename, $originalName, $mimeType, $fileSize, $order]);
+        $stmt->execute([$visitId, $filename, $originalName, $mimeType, $fileSize, $order, $altText ?: null]);
         return (int) $this->pdo->lastInsertId();
+    }
+
+    public function findById(int $id): ?array
+    {
+        $stmt = $this->pdo->prepare('SELECT * FROM visit_images WHERE id = ?');
+        $stmt->execute([$id]);
+        $row = $stmt->fetch();
+        return $row ?: null;
+    }
+
+    public function updateCaption(int $id, string $caption): void
+    {
+        $stmt = $this->pdo->prepare('UPDATE visit_images SET alt_text = ? WHERE id = ?');
+        $stmt->execute([$caption ?: null, $id]);
     }
 
     public function delete(int $id): ?string

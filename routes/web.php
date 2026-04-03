@@ -111,5 +111,8 @@ function registerRoutes(Router $router): void
     // API endpoints (JSON)
     $router->get('/adm/api/platser/nearby', 'PlaceController', 'nearby');
     $router->post('/adm/api/images/upload', 'VisitController', 'uploadImage');
+    $router->post('/adm/api/images/{id}/rotate', 'VisitController', 'rotateImage');
+    $router->post('/adm/api/images/{id}/ai-caption', 'VisitController', 'generateCaption');
+    $router->post('/adm/api/images/{id}/caption', 'VisitController', 'updateCaption');
     $router->get('/adm/api/tags/suitable-for', 'VisitController', 'suitableForSuggestions');
 }
