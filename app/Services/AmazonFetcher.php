@@ -2,6 +2,16 @@
 
 declare(strict_types=1);
 
+// TODO: Replace og:meta scraping with a proper Amazon API once access is approved.
+// Two options to evaluate:
+//   1. PA-API (Product Advertising API) — structured product data (title, images, price).
+//      Requires: AWS account + Associate approval + 3 qualified sales in 180 days.
+//      See: https://webservices.amazon.com/paapi5/documentation/
+//   2. Amazon Creator API (Influencer/Creator program) — may offer simpler access.
+//      Evaluate which fits best when applying.
+// When migrating: inject API credentials into this class, replace fetchProductMeta()
+// with an API call, keep downloadImage() and buildAffiliateUrl() as-is.
+
 class AmazonFetcher
 {
     private string $associateId;
