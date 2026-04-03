@@ -35,6 +35,7 @@ class InstagramService
     private string $accessToken;
     private string $appUrl;
     private string $uploadPath;
+    private string $envPath;
 
     public function __construct(array $config)
     {
@@ -42,6 +43,7 @@ class InstagramService
         $this->accessToken = $config['instagram']['access_token'] ?? '';
         $this->appUrl      = rtrim($config['url'], '/');
         $this->uploadPath  = dirname(__DIR__, 2) . '/storage/uploads';
+        $this->envPath     = dirname(__DIR__, 2) . '/.env';
     }
 
     public function isConfigured(): bool
@@ -77,6 +79,8 @@ class InstagramService
         if (empty($imageFilenames)) {
             throw new RuntimeException('Inga bilder att publicera.');
         }
+
+        $this->refreshTokenIfNeeded();
 
         $caption = mb_substr(trim($caption), 0, self::MAX_CAPTION);
         $files   = array_slice($imageFilenames, 0, self::MAX_CAROUSEL);
@@ -258,6 +262,66 @@ class InstagramService
             sleep(3);
         }
         throw new RuntimeException('Instagram tog för lång tid att processa bilderna.');
+    }
+
+    /**
+     * Refresh the long-lived token if it expires within 7 days.
+     * Writes the new token and expiry back to .env automatically.
+     * Instagram tokens can be refreshed any time after they are at least 24h old.
+     */
+    private function refreshTokenIfNeeded(): void
+    {
+        $expiresEnv = $_ENV['INSTAGRAM_TOKEN_EXPIRES'] ?? '';
+        $expires    = $expiresEnv ? (int) $expiresEnv : 0;
+
+        // Refresh if expiry unknown or less than 7 days away
+        if ($expires > 0 && $expires > time() + (7 * 86400)) {
+            return;
+        }
+
+        $url = self::GRAPH_API . '/refresh_access_token'
+             . '?grant_type=ig_refresh_token'
+             . '&access_token=' . urlencode($this->accessToken);
+
+        $ch = curl_init($url);
+        curl_setopt_array($ch, [CURLOPT_RETURNTRANSFER => true, CURLOPT_TIMEOUT => 15]);
+        $body = curl_exec($ch);
+        curl_close($ch);
+
+        if (!$body) return; // fail silently — old token still works until it expires
+
+        $json = json_decode((string) $body, true);
+        if (empty($json['access_token'])) return;
+
+        $newToken  = $json['access_token'];
+        $newExpiry = time() + (int) ($json['expires_in'] ?? 5184000);
+
+        // Update in-memory token
+        $this->accessToken = $newToken;
+
+        // Write back to .env
+        $this->updateEnv('INSTAGRAM_ACCESS_TOKEN', $newToken);
+        $this->updateEnv('INSTAGRAM_TOKEN_EXPIRES', (string) $newExpiry);
+        $_ENV['INSTAGRAM_TOKEN_EXPIRES'] = (string) $newExpiry;
+    }
+
+    /**
+     * Update or append a key=value line in .env.
+     */
+    private function updateEnv(string $key, string $value): void
+    {
+        if (!file_exists($this->envPath)) return;
+
+        $content = file_get_contents($this->envPath);
+        $line    = $key . '=' . $value;
+
+        if (preg_match('/^' . preg_quote($key, '/') . '=.*/m', $content)) {
+            $content = preg_replace('/^' . preg_quote($key, '/') . '=.*/m', $line, $content);
+        } else {
+            $content = rtrim($content) . "\n" . $line . "\n";
+        }
+
+        file_put_contents($this->envPath, $content);
     }
 
     /** @throws RuntimeException */
