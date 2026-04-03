@@ -227,10 +227,61 @@ class InstagramService
 
     private function publishContainer(string $containerId): string
     {
+        // Wait for Instagram to finish processing (max 30s)
+        $this->waitUntilReady($containerId);
+
         $data = $this->apiPost("/{$this->userId}/media_publish", [
             'creation_id' => $containerId,
         ]);
         return $data['id'];
+    }
+
+    /**
+     * Poll container status until FINISHED or throw after timeout.
+     */
+    private function waitUntilReady(string $containerId, int $maxAttempts = 10): void
+    {
+        for ($i = 0; $i < $maxAttempts; $i++) {
+            $data   = $this->apiGet("/{$containerId}?fields=status_code");
+            $status = $data['status_code'] ?? 'IN_PROGRESS';
+
+            if ($status === 'FINISHED') return;
+            if ($status === 'ERROR')    throw new RuntimeException('Instagram kunde inte processa bilden (status: ERROR).');
+            if ($status === 'EXPIRED')  throw new RuntimeException('Instagram container har gått ut.');
+
+            sleep(3);
+        }
+        throw new RuntimeException('Instagram tog för lång tid att processa bilderna.');
+    }
+
+    /** @throws RuntimeException */
+    private function apiGet(string $endpoint): array
+    {
+        $url = self::GRAPH_API . $endpoint
+             . (str_contains($endpoint, '?') ? '&' : '?')
+             . 'access_token=' . urlencode($this->accessToken);
+
+        $ch = curl_init($url);
+        curl_setopt_array($ch, [
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_TIMEOUT        => 15,
+        ]);
+        $body   = curl_exec($ch);
+        $status = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close($ch);
+
+        if ($body === false) {
+            throw new RuntimeException('Nätverksfel vid Instagram API-anrop.');
+        }
+
+        $json = json_decode((string) $body, true);
+
+        if ($status >= 400 || isset($json['error'])) {
+            $msg = $json['error']['message'] ?? $body;
+            throw new RuntimeException('Instagram API fel: ' . $msg);
+        }
+
+        return (array) $json;
     }
 
     /** @throws RuntimeException */
