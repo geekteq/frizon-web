@@ -24,23 +24,29 @@ class AmazonFetcher
     }
 
     /**
-     * Build an affiliate URL by injecting the associate tag into an Amazon URL.
-     * Replaces any existing tag= parameter, or appends it.
+     * Build a canonical affiliate URL in the format Amazon requires:
+     *   https://www.amazon.se/dp/{ASIN}/ref=nosim?tag={associateId}
+     *
+     * This format qualifies for the direct-link bonus per Amazon's program rules.
+     * Falls back to injecting tag= into the original URL if no ASIN is found.
      */
     public function buildAffiliateUrl(string $amazonUrl): string
     {
-        $parsed = parse_url($amazonUrl);
-        if (!$parsed) {
-            return $amazonUrl;
+        $host = parse_url($amazonUrl, PHP_URL_HOST) ?: 'www.amazon.se';
+
+        // Extract ASIN (10 uppercase alphanumeric chars after /dp/)
+        if (preg_match('~/dp/([A-Z0-9]{10})~i', $amazonUrl, $m)) {
+            return 'https://' . $host . '/dp/' . strtoupper($m[1])
+                 . '/ref=nosim?tag=' . urlencode($this->associateId);
         }
 
+        // Fallback: no ASIN found — inject tag into original URL
+        $parsed = parse_url($amazonUrl);
         parse_str($parsed['query'] ?? '', $params);
         $params['tag'] = $this->associateId;
 
-        $base = ($parsed['scheme'] ?? 'https') . '://' . ($parsed['host'] ?? '')
-              . ($parsed['path'] ?? '');
-
-        return $base . '?' . http_build_query($params);
+        return ($parsed['scheme'] ?? 'https') . '://' . ($parsed['host'] ?? '')
+             . ($parsed['path'] ?? '') . '?' . http_build_query($params);
     }
 
     /**

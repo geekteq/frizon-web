@@ -22,7 +22,9 @@ interface AiProviderInterface
 class ClaudeAiProvider implements AiProviderInterface
 {
     private string $apiKey;
-    private string $model = 'claude-sonnet-4-20250514';
+    // Opus for creative descriptions, Sonnet for structured JSON tasks
+    private const MODEL_DESCRIPTIONS = 'claude-opus-4-6';
+    private const MODEL_STRUCTURED   = 'claude-sonnet-4-6';
     private int $maxTokens = 1000;
 
     public function __construct(string $apiKey)
@@ -41,7 +43,7 @@ class ClaudeAiProvider implements AiProviderInterface
         $userPrompt = $this->buildUserPrompt($context);
 
         $payload = [
-            'model'      => $this->model,
+            'model'      => self::MODEL_DESCRIPTIONS,
             'max_tokens' => $this->maxTokens,
             'system'     => $systemPrompt,
             'messages'   => [
@@ -92,7 +94,7 @@ class ClaudeAiProvider implements AiProviderInterface
             . '{"meta_description":"...","faq":[{"q":"...","a":"..."},{"q":"...","a":"..."}]}';
 
         $payload = [
-            'model'      => $this->model,
+            'model'      => self::MODEL_STRUCTURED,
             'max_tokens' => 800,
             'system'     => 'Du är en SEO-expert som skriver på svenska för en husbilsreseblogg. Svara ALLTID med giltig JSON och inget annat.' . $this->sw(),
             'messages'   => [['role' => 'user', 'content' => $userPrompt]],
@@ -168,7 +170,7 @@ class ClaudeAiProvider implements AiProviderInterface
             . "Skriv ren löpande text utan markdown, inga **, ## eller liknande.";
 
         $payload = [
-            'model'      => $this->model,
+            'model'      => self::MODEL_DESCRIPTIONS,
             'max_tokens' => 600,
             'system'     => 'Du är en entusiastisk husbilsresenär som skriver produktrekommendationer på svenska. Skriv personligt, varmt och övertygande.' . $this->sw(),
             'messages'   => [['role' => 'user', 'content' => $prompt]],
@@ -193,7 +195,7 @@ class ClaudeAiProvider implements AiProviderInterface
             . '{"seo_title":"...","seo_description":"..."}';
 
         $payload = [
-            'model'      => $this->model,
+            'model'      => self::MODEL_STRUCTURED,
             'max_tokens' => 300,
             'system'     => 'Du är en SEO-expert som skriver säljande produkttitlar och beskrivningar på svenska. Svara ALLTID med giltig JSON och inget annat.' . $this->sw(),
             'messages'   => [['role' => 'user', 'content' => $prompt]],
@@ -219,7 +221,7 @@ class ClaudeAiProvider implements AiProviderInterface
         }
 
         $payload = [
-            'model'      => $this->model,
+            'model'      => self::MODEL_STRUCTURED,
             'max_tokens' => 500,
             'system'     => 'Du är en professionell översättare. Översätt texten till korrekt, naturlig svenska. Svara ENBART med den översatta texten, inget annat.' . $this->sw(),
             'messages'   => [['role' => 'user', 'content' => $text]],
