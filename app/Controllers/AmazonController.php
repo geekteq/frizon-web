@@ -458,7 +458,7 @@ class AmazonController
         }
 
         $appUrl    = rtrim($_ENV['APP_URL'] ?? 'https://frizon.org', '/');
-        $pageTitle = ($product['seo_title'] ?: $product['title']) . ' — Frizon';
+        $pageTitle = ($product['seo_title'] ?: $product['title']) . ' — Frizon of Sweden';
 
         $metaDesc = $product['seo_description']
             ?: ($product['our_description'] ? mb_strimwidth($product['our_description'], 0, 155, '...') : null)
@@ -468,28 +468,84 @@ class AmazonController
             ? $appUrl . '/uploads/amazon/' . $product['image_path']
             : $appUrl . '/img/frizon-logo.png';
 
+        $productUrl = $appUrl . '/shop/' . $product['slug'];
+
         $seoMeta = [
             'description' => $metaDesc,
-            'og_url'      => $appUrl . '/shop/' . $product['slug'],
+            'og_url'      => $productUrl,
             'og_image'    => $ogImage,
+            'og_type'     => 'product',
         ];
 
-        $schemas = [[
+        // Extract Amazon ASIN from URL (e.g. /dp/B08XYZ1234)
+        preg_match('~/dp/([A-Z0-9]{10})~i', $product['amazon_url'], $asinMatch);
+        $asin = $asinMatch[1] ?? null;
+
+        // Build BreadcrumbList
+        $breadcrumbItems = [
+            ['@type' => 'ListItem', 'position' => 1, 'name' => 'Hem',  'item' => $appUrl . '/'],
+            ['@type' => 'ListItem', 'position' => 2, 'name' => 'Shop', 'item' => $appUrl . '/shop'],
+        ];
+        $pos = 3;
+        if ($product['category']) {
+            $breadcrumbItems[] = [
+                '@type'    => 'ListItem',
+                'position' => $pos++,
+                'name'     => $product['category'],
+                'item'     => $appUrl . '/shop?kategori=' . urlencode($product['category']),
+            ];
+        }
+        $breadcrumbItems[] = ['@type' => 'ListItem', 'position' => $pos, 'name' => $product['title'], 'item' => $productUrl];
+
+        // Build Product schema
+        $productSchema = [
             '@context'    => 'https://schema.org',
             '@type'       => 'Product',
             'name'        => $product['title'],
-            'description' => $product['amazon_description'] ?? $product['our_description'] ?? '',
-            'url'         => $appUrl . '/shop/' . $product['slug'],
+            'description' => $product['amazon_description'] ?: ($product['our_description'] ?? ''),
+            'url'         => $productUrl,
             'image'       => $ogImage,
             'offers'      => [
-                '@type'       => 'Offer',
-                'url'         => $product['affiliate_url'],
-                'seller'      => ['@type' => 'Organization', 'name' => 'Amazon'],
-                'availability'=> 'https://schema.org/InStock',
+                '@type'           => 'Offer',
+                'url'             => $product['affiliate_url'],
+                'priceCurrency'   => 'SEK',
+                'seller'          => ['@type' => 'Organization', 'name' => 'Amazon'],
+                'availability'    => 'https://schema.org/InStock',
+                'itemCondition'   => 'https://schema.org/NewCondition',
             ],
-        ]];
+        ];
+        if ($asin) {
+            $productSchema['sku'] = $asin;
+            $productSchema['mpn'] = $asin;
+        }
+        // Add our recommendation as a Review
+        if ($product['our_description']) {
+            $productSchema['review'] = [
+                '@type'        => 'Review',
+                'reviewBody'   => $product['our_description'],
+                'author'       => ['@type' => 'Person', 'name' => 'Frizon of Sweden'],
+                'publisher'    => ['@type' => 'Organization', 'name' => 'Frizon of Sweden', 'url' => $appUrl],
+                'reviewRating' => ['@type' => 'Rating', 'ratingValue' => '5', 'bestRating' => '5'],
+            ];
+        }
 
-        view('public/shop-product', compact('product', 'pageTitle', 'seoMeta', 'schemas', 'ogImage'), 'public');
+        $schemas = [
+            $productSchema,
+            [
+                '@context'        => 'https://schema.org',
+                '@type'           => 'BreadcrumbList',
+                'itemListElement' => $breadcrumbItems,
+            ],
+        ];
+
+        // Related products (same category)
+        $related = $product['category']
+            ? $model->relatedPublished($product['category'], (int) $product['id'], 3)
+            : [];
+
+        view('public/shop-product', compact(
+            'product', 'pageTitle', 'seoMeta', 'schemas', 'ogImage', 'related'
+        ), 'public');
     }
 
     // -------------------------------------------------------------------------

@@ -191,6 +191,19 @@ class AmazonProduct
         return array_column($stmt->fetchAll(), 'category');
     }
 
+    /** Published products in the same category, excluding the given id. */
+    public function relatedPublished(string $category, int $excludeId, int $limit = 3): array
+    {
+        $stmt = $this->pdo->prepare('
+            SELECT * FROM amazon_products
+            WHERE is_published = 1 AND category = ? AND id != ?
+            ORDER BY is_featured DESC, sort_order ASC
+            LIMIT ?
+        ');
+        $stmt->execute([$category, $excludeId, $limit]);
+        return $stmt->fetchAll();
+    }
+
     /** Generate a URL-safe slug from a title. */
     public static function generateSlug(string $title): string
     {

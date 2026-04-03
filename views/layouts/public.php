@@ -8,6 +8,7 @@ $reqPath   = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH);
 $metaDescription = $seoMeta['description'] ?? 'Platser vi besökt med Frizze, vår Adria Twin. Ställplatser, campingar, restauranger och sevärdheter — sett ur ett husbilsperspektiv.';
 $canonicalUrl    = $seoMeta['og_url']      ?? $appUrl . $reqPath;
 $ogImage         = $seoMeta['og_image']    ?? $appUrl . '/img/frizon-logo.png';
+$ogType          = $seoMeta['og_type']     ?? 'website';
 $ogTitle         = htmlspecialchars($pageTitle);
 ?>
 <!DOCTYPE html>
@@ -20,7 +21,7 @@ $ogTitle         = htmlspecialchars($pageTitle);
     <link rel="canonical" href="<?= htmlspecialchars($canonicalUrl) ?>">
 
     <!-- Open Graph -->
-    <meta property="og:type"        content="website">
+    <meta property="og:type"        content="<?= htmlspecialchars($ogType) ?>">
     <meta property="og:site_name"   content="Frizon of Sweden">
     <meta property="og:title"       content="<?= $ogTitle ?>">
     <meta property="og:description" content="<?= htmlspecialchars($metaDescription) ?>">
