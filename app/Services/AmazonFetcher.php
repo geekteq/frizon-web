@@ -85,7 +85,7 @@ class AmazonFetcher
     }
 
     /**
-     * Download an image from a URL and save it to the upload directory.
+     * Download an image from a URL, process it to WebP, and save it.
      * Returns the saved filename, or null on failure.
      */
     public function downloadImage(string $imageUrl): ?string
@@ -107,18 +107,18 @@ class AmazonFetcher
             return null;
         }
 
-        // Detect extension from content
-        $finfo = new finfo(FILEINFO_MIME_TYPE);
-        $mime  = $finfo->buffer($imageData);
-        $ext   = match ($mime) {
-            'image/jpeg' => 'jpg',
-            'image/png'  => 'png',
-            'image/webp' => 'webp',
-            'image/gif'  => 'gif',
-            default      => null,
-        };
+        return $this->saveImageData($imageData);
+    }
 
-        if (!$ext) {
+    /**
+     * Process raw image bytes (any format) → WebP 800px max, and save.
+     * Use this for both downloaded images and uploaded files.
+     * Returns the saved filename, or null on failure.
+     */
+    public function saveImageData(string $rawData): ?string
+    {
+        $webpData = $this->processToWebp($rawData);
+        if (!$webpData) {
             return null;
         }
 
@@ -126,11 +126,61 @@ class AmazonFetcher
             mkdir($this->uploadDir, 0755, true);
         }
 
-        $filename = bin2hex(random_bytes(8)) . '.' . $ext;
-        $path     = $this->uploadDir . '/' . $filename;
-        file_put_contents($path, $imageData);
+        $filename = bin2hex(random_bytes(8)) . '.webp';
+        file_put_contents($this->uploadDir . '/' . $filename, $webpData);
 
         return $filename;
+    }
+
+    /**
+     * Resize image to max 800px on longest side and convert to WebP (quality 82).
+     * Returns WebP bytes, or null if GD unavailable or source unreadable.
+     */
+    private function processToWebp(string $rawData, int $maxSize = 800, int $quality = 82): ?string
+    {
+        if (!function_exists('imagewebp')) {
+            // GD WebP not available — save original as-is with original extension
+            return null;
+        }
+
+        $src = @imagecreatefromstring($rawData);
+        if (!$src) {
+            return null;
+        }
+
+        $srcW = imagesx($src);
+        $srcH = imagesy($src);
+
+        if ($srcW > $maxSize || $srcH > $maxSize) {
+            if ($srcW >= $srcH) {
+                $newW = $maxSize;
+                $newH = (int) round($srcH * $maxSize / $srcW);
+            } else {
+                $newH = $maxSize;
+                $newW = (int) round($srcW * $maxSize / $srcH);
+            }
+        } else {
+            $newW = $srcW;
+            $newH = $srcH;
+        }
+
+        $dst = imagecreatetruecolor($newW, $newH);
+
+        // Preserve transparency
+        imagealphablending($dst, false);
+        imagesavealpha($dst, true);
+        imagefilledrectangle($dst, 0, 0, $newW, $newH,
+            imagecolorallocatealpha($dst, 255, 255, 255, 127));
+
+        imagecopyresampled($dst, $src, 0, 0, 0, 0, $newW, $newH, $srcW, $srcH);
+        imagedestroy($src);
+
+        ob_start();
+        imagewebp($dst, null, $quality);
+        imagedestroy($dst);
+        $out = ob_get_clean();
+
+        return $out ?: null;
     }
 
     private function extractOgTag(string $html, string $property): ?string

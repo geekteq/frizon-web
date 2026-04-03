@@ -181,7 +181,7 @@ class AmazonController
 
         // Image priority: file upload > manual URL > re-fetch (if URL changed or image missing)
         if (!empty($_FILES['product_image']['name'])) {
-            $uploaded = $this->handleImageUpload($_FILES['product_image']);
+            $uploaded = $this->handleImageUpload($_FILES['product_image'], $fetcher);
             if ($uploaded) {
                 $imagePath = $uploaded;
             }
@@ -496,7 +496,7 @@ class AmazonController
     // Private helpers
     // -------------------------------------------------------------------------
 
-    private function handleImageUpload(array $file): ?string
+    private function handleImageUpload(array $file, AmazonFetcher $fetcher): ?string
     {
         if ($file['error'] !== UPLOAD_ERR_OK) {
             return null;
@@ -504,29 +504,14 @@ class AmazonController
 
         $finfo = new finfo(FILEINFO_MIME_TYPE);
         $mime  = $finfo->file($file['tmp_name']);
-        $ext   = match ($mime) {
-            'image/jpeg' => 'jpg',
-            'image/png'  => 'png',
-            'image/webp' => 'webp',
-            'image/gif'  => 'gif',
-            default      => null,
-        };
+        $allowed = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
 
-        if (!$ext) {
+        if (!in_array($mime, $allowed, true)) {
             return null;
         }
 
-        $uploadDir = dirname(__DIR__, 2) . '/storage/uploads/amazon';
-        if (!is_dir($uploadDir)) {
-            mkdir($uploadDir, 0755, true);
-        }
-
-        $filename = bin2hex(random_bytes(8)) . '.' . $ext;
-        if (!move_uploaded_file($file['tmp_name'], $uploadDir . '/' . $filename)) {
-            return null;
-        }
-
-        return $filename;
+        $rawData = file_get_contents($file['tmp_name']);
+        return $rawData ? $fetcher->saveImageData($rawData) : null;
     }
 
     private function makeFetcher(): AmazonFetcher
