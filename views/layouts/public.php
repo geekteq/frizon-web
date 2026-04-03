@@ -47,7 +47,7 @@ $ogTitle         = htmlspecialchars($pageTitle);
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <?php if (!empty($useLeaflet)): ?>
-    <link rel="preconnect" href="https://unpkg.com">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
     <?php endif; ?>
     <link rel="stylesheet" href="/css/main.css">
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
@@ -160,15 +160,6 @@ $ogTitle         = htmlspecialchars($pageTitle);
         fl.href = 'https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&display=swap';
         document.head.appendChild(fl);
     })();
-    <?php if (!empty($useLeaflet)): ?>
-    // Non-blocking Leaflet CSS load (connection already warmed by preconnect in <head>)
-    (function() {
-        var lc = document.createElement('link');
-        lc.rel = 'stylesheet';
-        lc.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
-        document.head.appendChild(lc);
-    })();
-    <?php endif; ?>
     if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js');
     </script>
 </body>
