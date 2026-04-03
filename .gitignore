@@ -10,3 +10,4 @@ vendor/
 Skärmavbild*
 claude.md
 test-results/
+.worktrees/
