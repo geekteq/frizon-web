@@ -35,7 +35,8 @@ class ClaudeAiProvider implements AiProviderInterface
         $systemPrompt = 'Du är en reseskribent som skriver levande platsbeskrivningar för en husbilsreselogg. '
             . 'Skriv på svenska. Texten ska vara personlig men informativ, 2-4 stycken. '
             . 'Basera texten på de anteckningar och betyg som ges. '
-            . 'Skriv ren text utan markdown, inga **, ##, - eller andra formateringstecken. Bara löpande text med styckebrytningar.';
+            . 'Skriv ren text utan markdown, inga **, ##, - eller andra formateringstecken. Bara löpande text med styckebrytningar.'
+            . $this->sw();
 
         $userPrompt = $this->buildUserPrompt($context);
 
@@ -93,7 +94,7 @@ class ClaudeAiProvider implements AiProviderInterface
         $payload = [
             'model'      => $this->model,
             'max_tokens' => 800,
-            'system'     => 'Du är en SEO-expert som skriver på svenska för en husbilsreseblogg. Svara ALLTID med giltig JSON och inget annat.',
+            'system'     => 'Du är en SEO-expert som skriver på svenska för en husbilsreseblogg. Svara ALLTID med giltig JSON och inget annat.' . $this->sw(),
             'messages'   => [['role' => 'user', 'content' => $userPrompt]],
         ];
 
@@ -108,6 +109,12 @@ class ClaudeAiProvider implements AiProviderInterface
             'meta_description' => mb_substr((string) $result['meta_description'], 0, 155),
             'faq_content'      => json_encode($result['faq'], JSON_UNESCAPED_UNICODE) ?: '[]',
         ];
+    }
+
+    /** Appended to every Swedish system prompt. */
+    private function sw(): string
+    {
+        return ' Skriv alltid "ställplats" — använd ALDRIG "Stellplatz", "Stellplats" eller "stellplats".';
     }
 
     private function callClaude(array $payload): string
@@ -162,7 +169,7 @@ class ClaudeAiProvider implements AiProviderInterface
         $payload = [
             'model'      => $this->model,
             'max_tokens' => 600,
-            'system'     => 'Du är en entusiastisk husbilsresenär som skriver produktrekommendationer på svenska. Skriv personligt, varmt och övertygande.',
+            'system'     => 'Du är en entusiastisk husbilsresenär som skriver produktrekommendationer på svenska. Skriv personligt, varmt och övertygande.' . $this->sw(),
             'messages'   => [['role' => 'user', 'content' => $prompt]],
         ];
 
@@ -187,7 +194,7 @@ class ClaudeAiProvider implements AiProviderInterface
         $payload = [
             'model'      => $this->model,
             'max_tokens' => 300,
-            'system'     => 'Du är en SEO-expert som skriver säljande produkttitlar och beskrivningar på svenska. Svara ALLTID med giltig JSON och inget annat.',
+            'system'     => 'Du är en SEO-expert som skriver säljande produkttitlar och beskrivningar på svenska. Svara ALLTID med giltig JSON och inget annat.' . $this->sw(),
             'messages'   => [['role' => 'user', 'content' => $prompt]],
         ];
 
@@ -213,7 +220,7 @@ class ClaudeAiProvider implements AiProviderInterface
         $payload = [
             'model'      => $this->model,
             'max_tokens' => 500,
-            'system'     => 'Du är en professionell översättare. Översätt texten till korrekt, naturlig svenska. Svara ENBART med den översatta texten, inget annat.',
+            'system'     => 'Du är en professionell översättare. Översätt texten till korrekt, naturlig svenska. Svara ENBART med den översatta texten, inget annat.' . $this->sw(),
             'messages'   => [['role' => 'user', 'content' => $text]],
         ];
 
