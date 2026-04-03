@@ -80,6 +80,7 @@ class PublishController
             flash('warning', $place['name'] . ' är publik men SEO-innehåll kunde inte genereras: ' . $e->getMessage());
         }
 
+        ping_search_engines();
         redirect('/adm/publicera');
     }
 
@@ -96,6 +97,7 @@ class PublishController
             ->execute([$place['id']]);
 
         flash('success', $place['name'] . ' är inte längre publik.');
+        ping_search_engines();
         redirect('/adm/publicera');
     }
 
@@ -114,6 +116,7 @@ class PublishController
 
         $msg = $newVal ? 'Tillagd i topplistan!' : 'Borttagen från topplistan.';
         flash('success', $msg);
+        ping_search_engines();
         redirect('/adm/publicera');
     }
 }

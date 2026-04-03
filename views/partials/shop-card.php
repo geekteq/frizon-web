@@ -11,7 +11,8 @@
             <div class="shop-card__img-wrap">
                 <img src="/uploads/amazon/<?= htmlspecialchars($p['image_path']) ?>"
                      alt="<?= htmlspecialchars($p['title']) ?>"
-                     loading="lazy"
+                     loading="<?= ($shopCardIndex ?? 1) === 0 ? 'eager' : 'lazy' ?>"
+                     <?php if (($shopCardIndex ?? 1) === 0): ?> fetchpriority="high"<?php endif; ?>
                      style="width:100%; height:160px; object-fit:contain; background:#fff; padding:var(--space-2);">
             </div>
         </a>
@@ -35,7 +36,8 @@
         <div style="display:flex; gap:var(--space-2); margin-top:var(--space-3);">
             <a href="/shop/<?= htmlspecialchars($p['slug']) ?>"
                class="btn btn-secondary btn--sm"
-               style="flex:1; text-align:center;">Läs mer</a>
+               style="flex:1; text-align:center;"
+               aria-label="Läs mer om <?= htmlspecialchars($p['title']) ?>">Läs mer</a>
             <a href="<?= htmlspecialchars($p['affiliate_url']) ?>"
                target="_blank" rel="noopener sponsored"
                class="btn btn--sm"

@@ -43,8 +43,8 @@ $regular  = array_values(array_filter($products, fn($p) => !$p['is_featured']));
 <section style="max-width:var(--content-max-width); margin:0 auto var(--space-6); padding:0 var(--space-4);">
     <h2 style="font-size:var(--text-lg); font-weight:var(--weight-semibold); margin-bottom:var(--space-4); color:var(--color-text);">★ Utvalda favoriter</h2>
     <div class="place-grid">
-        <?php foreach ($featured as $p): ?>
-            <?php include dirname(__DIR__) . '/partials/shop-card.php'; ?>
+        <?php $shopCardIndex = 0; foreach ($featured as $p): ?>
+            <?php include dirname(__DIR__) . '/partials/shop-card.php'; $shopCardIndex++; ?>
         <?php endforeach; ?>
     </div>
 </section>
@@ -59,8 +59,8 @@ $regular  = array_values(array_filter($products, fn($p) => !$p['is_featured']));
 
     <?php $allVisible = $filterCategory ? $products : $regular; ?>
     <div class="place-grid" id="shop-grid">
-        <?php foreach ($allVisible as $p): ?>
-            <?php include dirname(__DIR__) . '/partials/shop-card.php'; ?>
+        <?php if (!isset($shopCardIndex)) $shopCardIndex = 0; foreach ($allVisible as $p): ?>
+            <?php include dirname(__DIR__) . '/partials/shop-card.php'; $shopCardIndex++; ?>
         <?php endforeach; ?>
     </div>
     <p id="no-results" style="display:none; color:var(--color-text-muted); font-style:italic; padding:var(--space-4) 0;">Inga produkter matchar sökningen.</p>

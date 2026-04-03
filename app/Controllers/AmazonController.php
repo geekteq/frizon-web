@@ -339,6 +339,7 @@ class AmazonController
         $id = (int) ($params['id'] ?? 0);
         (new AmazonProduct($this->pdo))->togglePublished($id);
 
+        ping_search_engines();
         header('Location: /adm/amazon-lista');
     }
 

@@ -7,7 +7,7 @@
 
     <h2 style="font-size:var(--text-lg); margin-bottom:var(--space-3);">Vem ansvarar?</h2>
     <p style="margin-bottom:var(--space-6); line-height:var(--leading-relaxed);">
-        Frizon.org drivs av <a href="https://mobileminds.se" target="_blank" rel="noopener" style="color:var(--color-accent);">Mobile Minds AB</a>.
+        Frizon.org drivs av <a href="https://mobileminds.se" target="_blank" rel="noopener" style="color:var(--color-accent);text-decoration:underline;">Mobile Minds AB</a>.
         Vi tar din integritet på allvar och samlar bara in den information som behövs för att webbplatsen ska fungera.
     </p>
 
@@ -45,6 +45,6 @@
     <h2 style="font-size:var(--text-lg); margin-bottom:var(--space-3);">Kontakt</h2>
     <p style="margin-bottom:var(--space-6); line-height:var(--leading-relaxed);">
         Har du frågor om vår integritetspolicy? Kontakta oss via
-        <a href="https://www.instagram.com/frizon_of_sweden" target="_blank" rel="noopener" style="color:var(--color-accent);">Instagram @frizon_of_sweden</a>.
+        <a href="https://www.instagram.com/frizon_of_sweden" target="_blank" rel="noopener" style="color:var(--color-accent);text-decoration:underline;">Instagram @frizon_of_sweden</a>.
     </p>
 </article>

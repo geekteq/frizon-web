@@ -60,13 +60,13 @@
     <p style="margin-bottom:var(--space-6); line-height:var(--leading-relaxed);">
         Google Analytics sätter cookies via <code>googletagmanager.com</code>.
         Google behandlar data enligt sin egen
-        <a href="https://policies.google.com/privacy" target="_blank" rel="noopener" style="color:var(--color-accent);">integritetspolicy</a>.
+        <a href="https://policies.google.com/privacy" target="_blank" rel="noopener" style="color:var(--color-accent);text-decoration:underline;">integritetspolicy</a>.
         Vi har aktiverat IP-anonymisering så att din fullständiga IP-adress aldrig lagras.
     </p>
 
     <h2 style="font-size:var(--text-lg); margin-bottom:var(--space-3);">Kontakt</h2>
     <p style="line-height:var(--leading-relaxed);">
         Frågor? Kontakta oss via
-        <a href="https://www.instagram.com/frizon_of_sweden" target="_blank" rel="noopener" style="color:var(--color-accent);">Instagram @frizon_of_sweden</a>.
+        <a href="https://www.instagram.com/frizon_of_sweden" target="_blank" rel="noopener" style="color:var(--color-accent);text-decoration:underline;">Instagram @frizon_of_sweden</a>.
     </p>
 </article>

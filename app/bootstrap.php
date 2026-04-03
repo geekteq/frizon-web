@@ -35,6 +35,7 @@ require __DIR__ . '/Helpers/view.php';
 require __DIR__ . '/Helpers/redirect.php';
 require __DIR__ . '/Helpers/flash.php';
 require __DIR__ . '/Helpers/security.php';
+require __DIR__ . '/Helpers/seo.php';
 
 require __DIR__ . '/Services/CsrfService.php';
 require __DIR__ . '/Services/Auth.php';

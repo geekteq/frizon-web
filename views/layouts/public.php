@@ -19,6 +19,9 @@ $ogTitle         = htmlspecialchars($pageTitle);
     <title><?= htmlspecialchars($pageTitle) ?></title>
     <meta name="description" content="<?= htmlspecialchars($metaDescription) ?>">
     <link rel="canonical" href="<?= htmlspecialchars($canonicalUrl) ?>">
+    <?php if (!empty($seoMeta['noindex'])): ?>
+    <meta name="robots" content="noindex,follow">
+    <?php endif; ?>
 
     <!-- Open Graph -->
     <meta property="og:type"        content="<?= htmlspecialchars($ogType) ?>">
@@ -43,7 +46,8 @@ $ogTitle         = htmlspecialchars($pageTitle);
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=Dancing+Script:wght@700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" media="print" onload="this.media='all'">
+    <noscript><link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"></noscript>
     <link rel="stylesheet" href="/css/main.css">
     <link rel="stylesheet" href="/css/pages/public.css">
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
@@ -59,7 +63,10 @@ $ogTitle         = htmlspecialchars($pageTitle);
             <a href="/" class="public-header__link" style="font-weight:var(--weight-semibold);">Platser</a>
             <a href="/shop" class="public-header__link <?= str_starts_with($reqPath ?? $_SERVER['REQUEST_URI'], '/shop') ? 'public-header__link--active' : '' ?>" style="font-weight:var(--weight-semibold);">Shop</a>
             <a href="/" style="text-decoration:none; flex-shrink:0;">
-                <img src="/img/frizon-logo.png" alt="Frizon of Sweden" style="width:64px; height:64px; border-radius:50%; display:block;">
+                <picture>
+                    <source srcset="/img/frizon-logo.webp" type="image/webp">
+                    <img src="/img/frizon-logo.png" alt="Frizon of Sweden" width="64" height="64" fetchpriority="high" style="width:64px; height:64px; border-radius:50%; display:block;">
+                </picture>
             </a>
             <a href="/topplista" class="public-header__link" style="font-weight:var(--weight-semibold);">Topplista</a>
         </div>
@@ -72,11 +79,11 @@ $ogTitle         = htmlspecialchars($pageTitle);
     <footer style="background:var(--color-brand-dark); text-align:center; padding:var(--space-8) var(--space-4) var(--space-6);">
         <p style="color:rgba(255,255,255,0.85); font-size:var(--text-sm); margin-bottom:var(--space-3);">Frizon of Sweden — Resedagbok med Frizze</p>
         <p style="font-size:var(--text-xs); margin-bottom:var(--space-3);">
-            <a href="/integritetspolicy" style="color:rgba(255,255,255,0.6); text-decoration:underline;">Integritetspolicy</a>
+            <a href="/integritetspolicy" style="color:rgba(255,255,255,0.8); text-decoration:underline;">Integritetspolicy</a>
             <span style="color:rgba(255,255,255,0.4);"> &middot; </span>
-            <a href="/cookiepolicy" style="color:rgba(255,255,255,0.6); text-decoration:underline;">Cookiepolicy</a>
+            <a href="/cookiepolicy" style="color:rgba(255,255,255,0.8); text-decoration:underline;">Cookiepolicy</a>
             <span style="color:rgba(255,255,255,0.4);"> &middot; </span>
-            <a href="/adm" style="color:rgba(255,255,255,0.4); text-decoration:none;">Admin</a>
+            <a href="/adm" style="color:rgba(255,255,255,0.65); text-decoration:underline;">Admin</a>
         </p>
         <p style="font-size:var(--text-xs); color:rgba(255,255,255,0.45);">
             &copy; <?= date('Y') ?> <a href="https://mobileminds.se" target="_blank" rel="noopener" style="color:rgba(255,255,255,0.55); text-decoration:underline;">Mobile Minds AB</a>
@@ -97,7 +104,7 @@ $ogTitle         = htmlspecialchars($pageTitle);
         </div>
     </div>
 
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" defer></script>
     <script<?= app_csp_nonce_attr() ?>>
     // Cookie consent
     function getCookieConsent() { return localStorage.getItem('cookie_consent'); }

@@ -17,6 +17,8 @@ class PublicController
 
     public function homepage(array $params): void
     {
+        header('Cache-Control: public, max-age=300, s-maxage=3600');
+
         // Public places with ratings
         $stmt = $this->pdo->query('
             SELECT p.*, AVG(vr.total_rating_cached) as avg_rating,
@@ -46,28 +48,49 @@ class PublicController
         $allPublic = $this->pdo->query('SELECT DISTINCT country_code FROM places WHERE public_allowed = 1 AND country_code IS NOT NULL ORDER BY country_code')->fetchAll(PDO::FETCH_COLUMN);
         $allTypes = $this->pdo->query('SELECT DISTINCT place_type FROM places WHERE public_allowed = 1 ORDER BY place_type')->fetchAll(PDO::FETCH_COLUMN);
 
-        $pageTitle = 'Frizon of Sweden';
+        $pageTitle = 'Frizon of Sweden — Husbilsresor i Europa';
         $appUrl    = rtrim($_ENV['APP_URL'] ?? 'https://frizon.org', '/');
 
         $seoMeta = [
-            'description' => 'Platser vi besökt med Frizze, vår Adria Twin. Ställplatser, campingar, restauranger och sevärdheter — sett ur ett husbilsperspektiv.',
+            'description' => 'Platser vi besökt med Frizze, vår Adria Twin husbil. Ställplatser, campingar, restauranger och sevärdheter i Europa — sett ur ett husbilsperspektiv av Mattias och Ulrica.',
             'og_url'      => $appUrl . '/',
             'og_image'    => $appUrl . '/img/frizon-logo.png',
         ];
 
         $schemas = [[
-            '@context'    => 'https://schema.org',
-            '@type'       => 'WebSite',
-            'name'        => 'Frizon of Sweden',
-            'url'         => $appUrl,
-            'description' => 'Resedagbok med Frizze — platser vi besökt med vår husbil i Europa.',
-            'inLanguage'  => 'sv',
-            'author'      => [
+            '@context'       => 'https://schema.org',
+            '@type'          => 'WebSite',
+            'name'           => 'Frizon of Sweden',
+            'url'            => $appUrl,
+            'description'    => 'Resedagbok med Frizze — platser vi besökt med vår husbil i Europa.',
+            'inLanguage'     => 'sv',
+            'author'         => [
                 '@type' => 'Person',
                 'name'  => 'Mattias & Ulrica',
                 'url'   => $appUrl,
             ],
+            'potentialAction' => [
+                '@type'       => 'SearchAction',
+                'target'      => [
+                    '@type'       => 'EntryPoint',
+                    'urlTemplate' => $appUrl . '/?q={search_term_string}',
+                ],
+                'query-input' => 'required name=search_term_string',
+            ],
         ]];
+
+        $schemas[] = [
+            '@context' => 'https://schema.org',
+            '@type'    => 'Organization',
+            'name'     => 'Frizon of Sweden',
+            'url'      => $appUrl . '/',
+            'logo'     => $appUrl . '/img/frizon-logo.png',
+            'sameAs'   => [
+                'https://www.instagram.com/frizon_of_sweden',
+                'https://www.facebook.com/frizonofsweden',
+                'https://www.youtube.com/@frizon_of_sweden',
+            ],
+        ];
 
         // Shop teaser: 3 latest published products
         require_once dirname(__DIR__) . '/Models/AmazonProduct.php';
@@ -78,6 +101,8 @@ class PublicController
 
     public function placeDetail(array $params): void
     {
+        header('Cache-Control: public, max-age=300, s-maxage=3600');
+
         $placeModel = new Place($this->pdo);
         $place = $placeModel->findBySlug($params['slug']);
         if (!$place || !$place['public_allowed']) {
@@ -219,18 +244,32 @@ class PublicController
 
     public function privacy(array $params): void
     {
-        $pageTitle = 'Integritetspolicy — Frizon';
-        view('public/privacy', compact('pageTitle'), 'public');
+        header('Cache-Control: public, max-age=300, s-maxage=3600');
+
+        $pageTitle = 'Integritetspolicy — Frizon of Sweden';
+        $seoMeta = [
+            'description' => 'Hur Frizon of Sweden (Mobile Minds AB) hanterar personuppgifter och cookies enligt GDPR. Vi samlar inte in personuppgifter utan ditt samtycke.',
+            'noindex'     => true,
+        ];
+        view('public/privacy', compact('pageTitle', 'seoMeta'), 'public');
     }
 
     public function cookies(array $params): void
     {
-        $pageTitle = 'Cookiepolicy — Frizon';
-        view('public/cookies', compact('pageTitle'), 'public');
+        header('Cache-Control: public, max-age=300, s-maxage=3600');
+
+        $pageTitle = 'Cookiepolicy — Frizon of Sweden';
+        $seoMeta = [
+            'description' => 'Vilka cookies Frizon of Sweden använder, varför och hur länge de sparas. Google Analytics används enbart med ditt samtycke.',
+            'noindex'     => true,
+        ];
+        view('public/cookies', compact('pageTitle', 'seoMeta'), 'public');
     }
 
     public function topList(array $params): void
     {
+        header('Cache-Control: public, max-age=300, s-maxage=3600');
+
         $stmt = $this->pdo->query('
             SELECT p.*, AVG(vr.total_rating_cached) as avg_rating,
                    COUNT(v.id) as visit_count
@@ -243,11 +282,11 @@ class PublicController
         ');
         $places = $stmt->fetchAll();
 
-        $pageTitle = 'Topplista — Frizon';
+        $pageTitle = 'Topplista — Bästa ställplatser för husbil | Frizon';
         $appUrl    = rtrim($_ENV['APP_URL'] ?? 'https://frizon.org', '/');
 
         $seoMeta = [
-            'description' => 'Våra bästa platser, handplockade av Mattias och Ulrica. Ställplatser, campingar och sevärdheter för husbilar i Europa.',
+            'description' => 'Handplockade topplatser för husbilar av Mattias och Ulrica — ställplatser, campingar och sevärdheter i Europa som är värda ett återbesök med Frizze.',
             'og_url'      => $appUrl . '/topplista',
             'og_image'    => $appUrl . '/img/frizon-logo.png',
         ];
@@ -275,6 +314,7 @@ class PublicController
 
     public function sitemap(array $params): void
     {
+        header('Cache-Control: public, max-age=3600, s-maxage=3600');
         $appUrl = rtrim($_ENV['APP_URL'] ?? 'https://frizon.org', '/');
 
         $stmt = $this->pdo->query(
@@ -334,6 +374,7 @@ class PublicController
 
     public function llmsTxt(array $params): void
     {
+        header('Cache-Control: public, max-age=3600, s-maxage=3600');
         $appUrl = rtrim($_ENV['APP_URL'] ?? 'https://frizon.org', '/');
 
         $stmt = $this->pdo->query("
