@@ -47,7 +47,7 @@ $ogTitle         = htmlspecialchars($pageTitle);
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <?php if (!empty($useLeaflet)): ?>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+    <link rel="preconnect" href="https://unpkg.com">
     <?php endif; ?>
     <link rel="stylesheet" href="/css/main.css">
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
@@ -102,8 +102,8 @@ $ogTitle         = htmlspecialchars($pageTitle);
                 Läs vår <a href="/cookiepolicy" style="color:var(--color-accent-light); text-decoration:underline;">cookiepolicy</a>.
             </p>
             <div style="display:flex; gap:var(--space-2); flex-shrink:0;">
-                <button id="accept-cookies-btn" style="background:var(--color-accent); color:white; border:none; padding:var(--space-2) var(--space-4); border-radius:var(--radius-md); cursor:pointer; font-size:var(--text-sm); font-weight:var(--weight-semibold);">Godkänn</button>
-                <button id="decline-cookies-btn" style="background:transparent; color:rgba(255,255,255,0.7); border:1px solid rgba(255,255,255,0.3); padding:var(--space-2) var(--space-4); border-radius:var(--radius-md); cursor:pointer; font-size:var(--text-sm);">Avböj</button>
+                <button id="accept-cookies-btn" style="background:var(--color-accent); color:white; border:none; padding:var(--space-2) var(--space-4); border-radius:var(--radius-md); cursor:pointer; font-size:var(--text-sm); font-weight:var(--weight-semibold); min-height:44px;">Godkänn</button>
+                <button id="decline-cookies-btn" style="background:transparent; color:rgba(255,255,255,0.7); border:1px solid rgba(255,255,255,0.3); padding:var(--space-2) var(--space-4); border-radius:var(--radius-md); cursor:pointer; font-size:var(--text-sm); min-height:44px;">Avböj</button>
             </div>
         </div>
     </div>
@@ -160,6 +160,15 @@ $ogTitle         = htmlspecialchars($pageTitle);
         fl.href = 'https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&display=swap';
         document.head.appendChild(fl);
     })();
+    <?php if (!empty($useLeaflet)): ?>
+    // Non-blocking Leaflet CSS load (connection already warmed by preconnect in <head>)
+    (function() {
+        var lc = document.createElement('link');
+        lc.rel = 'stylesheet';
+        lc.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+        document.head.appendChild(lc);
+    })();
+    <?php endif; ?>
     if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js');
     </script>
 </body>

@@ -18,13 +18,13 @@
 <div style="max-width:var(--content-max-width); margin:0 auto; padding:0 var(--space-4) var(--space-4);">
     <div style="display:flex; flex-wrap:wrap; gap:var(--space-2);">
         <a href="/shop"
-           style="display:inline-block; padding:var(--space-1) var(--space-3); border-radius:var(--radius-full,9999px); border:1px solid var(--color-border); font-size:var(--text-sm); text-decoration:none; color:<?= !$filterCategory ? 'var(--color-bg)' : 'var(--color-text)' ?>; background:<?= !$filterCategory ? 'var(--color-text)' : 'transparent' ?>;">
+           style="display:inline-flex; align-items:center; min-height:44px; padding:var(--space-1) var(--space-3); border-radius:var(--radius-full,9999px); border:1px solid var(--color-border); font-size:var(--text-sm); text-decoration:none; color:<?= !$filterCategory ? 'var(--color-bg)' : 'var(--color-text)' ?>; background:<?= !$filterCategory ? 'var(--color-text)' : 'transparent' ?>;">
             Alla
         </a>
         <?php foreach ($categories as $cat): ?>
             <?php $isActive = $filterCategory === $cat; ?>
             <a href="/shop?kategori=<?= urlencode($cat) ?>"
-               style="display:inline-block; padding:var(--space-1) var(--space-3); border-radius:var(--radius-full,9999px); border:1px solid var(--color-border); font-size:var(--text-sm); text-decoration:none; color:<?= $isActive ? 'var(--color-bg)' : 'var(--color-text)' ?>; background:<?= $isActive ? 'var(--color-text)' : 'transparent' ?>;">
+               style="display:inline-flex; align-items:center; min-height:44px; padding:var(--space-1) var(--space-3); border-radius:var(--radius-full,9999px); border:1px solid var(--color-border); font-size:var(--text-sm); text-decoration:none; color:<?= $isActive ? 'var(--color-bg)' : 'var(--color-text)' ?>; background:<?= $isActive ? 'var(--color-text)' : 'transparent' ?>;">
                 <?= htmlspecialchars($cat) ?>
             </a>
         <?php endforeach; ?>

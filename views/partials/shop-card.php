@@ -26,7 +26,7 @@
             </div>
         <?php endif; ?>
 
-        <a href="/shop/<?= htmlspecialchars($p['slug']) ?>" style="text-decoration:none; color:inherit;">
+        <a href="/shop/<?= htmlspecialchars($p['slug']) ?>" style="text-decoration:none; color:inherit; display:block; padding:var(--space-2) 0;">
             <h3 class="pub-place-card__name"><?= htmlspecialchars($p['title']) ?></h3>
         </a>
 
