@@ -27,6 +27,7 @@ function check(string $name, bool $ok, string $got = ''): void
 check('amazon.se is valid',     $fetcher->isAmazonUrl('https://www.amazon.se/dp/B08N5WRWNW'));
 check('amazon.com is valid',    $fetcher->isAmazonUrl('https://amazon.com/dp/B00TEST'));
 check('amazon.co.uk is valid',  $fetcher->isAmazonUrl('https://www.amazon.co.uk/dp/B00TEST'));
+check('http amazon is not valid', !$fetcher->isAmazonUrl('http://www.amazon.se/dp/B08N5WRWNW'));
 check('evil.com not valid',     !$fetcher->isAmazonUrl('https://evil.com/amazon.se'));
 check('notamazon.se not valid', !$fetcher->isAmazonUrl('https://notamazon.se/product'));
 

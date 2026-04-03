@@ -1,11 +1,16 @@
-var CACHE_NAME = 'frizon-v9';
+var CACHE_NAME = 'frizon-v10';
 var PRECACHE = [
   '/css/main.css',
   '/img/frizon-logo.png',
   '/img/frizon-logo.webp',
   '/icon-192.png',
   '/favicon-32.png',
-  '/apple-touch-icon.png'
+  '/apple-touch-icon.png',
+  '/leaflet/leaflet.css',
+  '/leaflet/leaflet.js',
+  '/leaflet/images/marker-icon.png',
+  '/leaflet/images/marker-icon-2x.png',
+  '/leaflet/images/marker-shadow.png'
 ];
 
 function isAdminPath(pathname) {

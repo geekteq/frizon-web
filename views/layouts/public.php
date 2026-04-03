@@ -47,7 +47,7 @@ $ogTitle         = htmlspecialchars($pageTitle);
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <?php if (!empty($useLeaflet)): ?>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+    <link rel="stylesheet" href="/leaflet/leaflet.css">
     <?php endif; ?>
     <link rel="stylesheet" href="/css/main.css">
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
@@ -109,7 +109,7 @@ $ogTitle         = htmlspecialchars($pageTitle);
     </div>
 
     <?php if (!empty($useLeaflet)): ?>
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="/leaflet/leaflet.js"></script>
     <?php endif; ?>
     <script<?= app_csp_nonce_attr() ?>>
     // Cookie consent

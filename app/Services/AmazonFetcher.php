@@ -65,7 +65,13 @@ class AmazonFetcher
      */
     public function isAmazonUrl(string $url): bool
     {
-        $host = parse_url($url, PHP_URL_HOST) ?? '';
+        $scheme = strtolower((string) (parse_url($url, PHP_URL_SCHEME) ?? ''));
+        $host = (string) (parse_url($url, PHP_URL_HOST) ?? '');
+
+        if ($scheme !== 'https' || $host === '') {
+            return false;
+        }
+
         return (bool) preg_match('/(?:^|\.)amazon\.[a-z]{2,3}(?:\.[a-z]{2})?$/i', $host);
     }
 
@@ -110,6 +116,8 @@ class AmazonFetcher
             CURLOPT_FOLLOWLOCATION => true,
             CURLOPT_MAXREDIRS      => 3,
             CURLOPT_TIMEOUT        => 15,
+            CURLOPT_PROTOCOLS      => CURLPROTO_HTTPS,
+            CURLOPT_REDIR_PROTOCOLS => CURLPROTO_HTTPS,
             CURLOPT_USERAGENT      => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
             CURLOPT_HTTPHEADER     => [
                 'Accept-Language: sv-SE,sv;q=0.9',
@@ -118,9 +126,17 @@ class AmazonFetcher
         ]);
 
         $html = curl_exec($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $effectiveUrl = (string) curl_getinfo($ch, CURLINFO_EFFECTIVE_URL);
+        $responseContentType = strtolower(trim((string) curl_getinfo($ch, CURLINFO_CONTENT_TYPE)));
         curl_close($ch);
 
-        if (!$html) {
+        if (
+            !$html
+            || $httpCode !== 200
+            || !$this->isAmazonUrl($effectiveUrl ?: $amazonUrl)
+            || ($responseContentType !== '' && !str_contains($responseContentType, 'text/html'))
+        ) {
             return ['image_url' => null, 'description' => null];
         }
 
