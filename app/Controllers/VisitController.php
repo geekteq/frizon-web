@@ -6,6 +6,7 @@ require_once dirname(__DIR__) . '/Services/Auth.php';
 require_once dirname(__DIR__) . '/Services/CsrfService.php';
 require_once dirname(__DIR__) . '/Services/ImageService.php';
 require_once dirname(__DIR__) . '/Services/AiService.php';
+require_once dirname(__DIR__) . '/Services/InstagramService.php';
 require_once dirname(__DIR__) . '/Models/Place.php';
 require_once dirname(__DIR__) . '/Models/Visit.php';
 require_once dirname(__DIR__) . '/Models/VisitRating.php';
@@ -320,6 +321,88 @@ class VisitController
 
         $imageModel->updateCaption($id, $caption);
         echo json_encode(['success' => true, 'caption' => $caption]);
+    }
+
+    /**
+     * GET /adm/api/besok/{id}/instagram/preview
+     * Returns caption draft + image list for the Instagram publish modal.
+     */
+    public function instagramPreview(array $params): void
+    {
+        Auth::requireLogin();
+        header('Content-Type: application/json');
+
+        $id = (int) ($params['id'] ?? 0);
+
+        $visitModel = new Visit($this->pdo);
+        $visit      = $visitModel->findById($id);
+        if (!$visit) { http_response_code(404); echo json_encode(['error' => 'Besöket hittades inte']); return; }
+
+        $placeModel = new Place($this->pdo);
+        $place      = $placeModel->findById($visit['place_id']);
+        if (!$place) { http_response_code(404); echo json_encode(['error' => 'Platsen hittades inte']); return; }
+
+        $imageModel = new VisitImage($this->pdo);
+        $images     = $imageModel->findByVisit($id);
+
+        if (empty($images)) {
+            http_response_code(400);
+            echo json_encode(['error' => 'Besöket har inga bilder att publicera.']);
+            return;
+        }
+
+        $ig = new InstagramService($this->config);
+        echo json_encode($ig->buildPreview($visit, $place, $images));
+    }
+
+    /**
+     * POST /adm/api/besok/{id}/instagram
+     * Publish visit images + caption to Instagram.
+     */
+    public function publishToInstagram(array $params): void
+    {
+        Auth::requireLogin();
+        CsrfService::requireValid();
+        header('Content-Type: application/json');
+
+        $id = (int) ($params['id'] ?? 0);
+
+        $visitModel = new Visit($this->pdo);
+        $visit      = $visitModel->findById($id);
+        if (!$visit) { http_response_code(404); echo json_encode(['error' => 'Besöket hittades inte']); return; }
+
+        $placeModel = new Place($this->pdo);
+        $place      = $placeModel->findById($visit['place_id']);
+        if (!$place) { http_response_code(404); echo json_encode(['error' => 'Platsen hittades inte']); return; }
+
+        $imageModel = new VisitImage($this->pdo);
+        $images     = $imageModel->findByVisit($id);
+
+        if (empty($images)) {
+            http_response_code(400);
+            echo json_encode(['error' => 'Inga bilder att publicera.']);
+            return;
+        }
+
+        $ig = new InstagramService($this->config);
+
+        if (!$ig->isConfigured()) {
+            http_response_code(400);
+            echo json_encode(['error' => 'Instagram är inte konfigurerat. Lägg till INSTAGRAM_USER_ID och INSTAGRAM_ACCESS_TOKEN i .env']);
+            return;
+        }
+
+        $input     = json_decode(file_get_contents('php://input'), true) ?? [];
+        $caption   = trim($input['caption'] ?? '');
+        $filenames = array_column($images, 'filename');
+
+        try {
+            $postId = $ig->publish($filenames, $caption);
+            echo json_encode(['success' => true, 'post_id' => $postId]);
+        } catch (RuntimeException $e) {
+            http_response_code(500);
+            echo json_encode(['success' => false, 'error' => $e->getMessage()]);
+        }
     }
 
     /**

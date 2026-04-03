@@ -221,14 +221,167 @@
         </div>
     </div>
 
-    <div class="flex gap-3 mt-6">
+    <div class="flex gap-3 mt-6" style="flex-wrap:wrap;">
         <a href="/adm/besok/<?= $visit['id'] ?>/redigera" class="btn btn-secondary btn--sm">Redigera</a>
+        <?php if (!empty($images)): ?>
+        <button type="button" id="ig-open-btn" class="btn btn-secondary btn--sm" style="background:#e1306c;color:#fff;border-color:#e1306c;">
+            Publicera på Instagram
+        </button>
+        <?php endif; ?>
         <form method="POST" action="/adm/besok/<?= $visit['id'] ?>" style="display:inline;">
             <?php include dirname(__DIR__) . '/partials/csrf-field.php'; ?>
             <input type="hidden" name="_method" value="DELETE">
             <button type="submit" class="btn btn-danger btn--sm" data-confirm="Ta bort besöket?">Ta bort</button>
         </form>
     </div>
+
+    <!-- Instagram publish modal -->
+    <div id="ig-modal" role="dialog" aria-modal="true" aria-labelledby="ig-modal-title"
+         style="display:none; position:fixed; inset:0; z-index:1000; background:rgba(0,0,0,.6); padding:var(--space-4); overflow-y:auto;">
+        <div style="background:#fff; border-radius:var(--radius-lg); max-width:560px; margin:auto; padding:var(--space-6);">
+            <h3 id="ig-modal-title" style="margin:0 0 var(--space-4);">Publicera på Instagram</h3>
+
+            <div id="ig-loading" class="text-sm text-muted" style="display:none;">Laddar förhandsgranskning...</div>
+            <div id="ig-error"   class="text-sm" style="display:none; color:var(--color-danger);"></div>
+
+            <div id="ig-preview" style="display:none;">
+                <p class="text-sm text-muted" style="margin-bottom:var(--space-2);">
+                    <span id="ig-img-count"></span> bild(er) skickas.
+                    Instagram beskär alla bilder till samma bildförhållande som den första.
+                </p>
+
+                <div id="ig-thumbs" style="display:flex; gap:var(--space-2); flex-wrap:wrap; margin-bottom:var(--space-4);"></div>
+
+                <label for="ig-caption" class="text-sm" style="display:block; font-weight:600; margin-bottom:var(--space-1);">
+                    Beskrivning
+                </label>
+                <textarea id="ig-caption"
+                          rows="10"
+                          maxlength="2200"
+                          style="width:100%; box-sizing:border-box; font-family:inherit; font-size:0.85rem;
+                                 border:1px solid var(--color-border); border-radius:var(--radius-md);
+                                 padding:var(--space-3); resize:vertical;"></textarea>
+                <p id="ig-char-count" class="text-sm text-muted" style="text-align:right; margin-top:var(--space-1);"></p>
+
+                <div class="flex gap-3 mt-4" style="justify-content:flex-end;">
+                    <button type="button" id="ig-cancel-btn" class="btn btn-ghost btn--sm">Avbryt</button>
+                    <button type="button" id="ig-publish-btn" class="btn btn--sm" style="background:#e1306c;color:#fff;border-color:#e1306c;">
+                        Publicera
+                    </button>
+                </div>
+            </div>
+
+            <div id="ig-success" style="display:none; text-align:center; padding:var(--space-4) 0;">
+                <p style="font-size:1.5rem; margin-bottom:var(--space-2);">Publicerat!</p>
+                <p class="text-sm text-muted">Inlägget ligger nu på Instagram.</p>
+                <button type="button" id="ig-done-btn" class="btn btn-secondary btn--sm" style="margin-top:var(--space-4);">Stäng</button>
+            </div>
+        </div>
+    </div>
+
+    <script<?= app_csp_nonce_attr() ?>>
+    (function () {
+        var visitId = <?= (int) $visit['id'] ?>;
+        var csrf    = '<?= htmlspecialchars(CsrfService::token()) ?>';
+
+        var modal      = document.getElementById('ig-modal');
+        var loading    = document.getElementById('ig-loading');
+        var errorBox   = document.getElementById('ig-error');
+        var preview    = document.getElementById('ig-preview');
+        var successBox = document.getElementById('ig-success');
+        var thumbs     = document.getElementById('ig-thumbs');
+        var caption    = document.getElementById('ig-caption');
+        var charCount  = document.getElementById('ig-char-count');
+        var imgCount   = document.getElementById('ig-img-count');
+
+        function showOnly(el) {
+            [loading, errorBox, preview, successBox].forEach(function (e) { e.style.display = 'none'; });
+            el.style.display = '';
+        }
+
+        function updateCharCount() {
+            var n = caption.value.length;
+            charCount.textContent = n + ' / 2200';
+            charCount.style.color = n > 2100 ? 'var(--color-danger)' : '';
+        }
+        caption.addEventListener('input', updateCharCount);
+
+        // Open modal
+        document.getElementById('ig-open-btn').addEventListener('click', function () {
+            modal.style.display = '';
+            showOnly(loading);
+            thumbs.innerHTML = '';
+
+            fetch('/adm/api/besok/' + visitId + '/instagram/preview')
+                .then(function (r) { return r.json(); })
+                .then(function (data) {
+                    if (data.error) {
+                        errorBox.textContent = data.error;
+                        showOnly(errorBox);
+                        return;
+                    }
+                    imgCount.textContent = data.count;
+                    data.images.forEach(function (img) {
+                        var el = document.createElement('img');
+                        el.src    = img.url;
+                        el.width  = 80;
+                        el.height = 60;
+                        el.style.cssText = 'object-fit:cover; border-radius:var(--radius-sm); border:1px solid var(--color-border);';
+                        thumbs.appendChild(el);
+                    });
+                    caption.value = data.caption;
+                    updateCharCount();
+                    showOnly(preview);
+                })
+                .catch(function () {
+                    errorBox.textContent = 'Nätverksfel. Försök igen.';
+                    showOnly(errorBox);
+                });
+        });
+
+        // Cancel / close
+        ['ig-cancel-btn', 'ig-done-btn'].forEach(function (id) {
+            document.getElementById(id).addEventListener('click', function () {
+                modal.style.display = 'none';
+            });
+        });
+
+        // Close on backdrop click
+        modal.addEventListener('click', function (e) {
+            if (e.target === modal) modal.style.display = 'none';
+        });
+
+        // Publish
+        document.getElementById('ig-publish-btn').addEventListener('click', function () {
+            var btn = this;
+            btn.disabled = true;
+            btn.textContent = 'Publicerar...';
+
+            fetch('/adm/api/besok/' + visitId + '/instagram', {
+                method:  'POST',
+                headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrf },
+                body:    JSON.stringify({ caption: caption.value }),
+            })
+            .then(function (r) { return r.json(); })
+            .then(function (data) {
+                if (data.success) {
+                    showOnly(successBox);
+                } else {
+                    errorBox.textContent = data.error || 'Okänt fel.';
+                    showOnly(errorBox);
+                    btn.disabled    = false;
+                    btn.textContent = 'Publicera';
+                }
+            })
+            .catch(function () {
+                errorBox.textContent = 'Nätverksfel. Försök igen.';
+                showOnly(errorBox);
+                btn.disabled    = false;
+                btn.textContent = 'Publicera';
+            });
+        });
+    }());
+    </script>
 </div>
 
 <script src="/js/ai.js"></script>

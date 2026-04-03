@@ -115,4 +115,8 @@ function registerRoutes(Router $router): void
     $router->post('/adm/api/images/{id}/ai-caption', 'VisitController', 'generateCaption');
     $router->post('/adm/api/images/{id}/caption', 'VisitController', 'updateCaption');
     $router->get('/adm/api/tags/suitable-for', 'VisitController', 'suitableForSuggestions');
+
+    // Instagram publishing
+    $router->get('/adm/api/besok/{id}/instagram/preview', 'VisitController', 'instagramPreview');
+    $router->post('/adm/api/besok/{id}/instagram', 'VisitController', 'publishToInstagram');
 }
