@@ -331,3 +331,11 @@
   display: flex;
   gap: var(--space-2);
 }
+
+/* ── Shop ─────────────────────────────────────────────────── */
+.shop-card__img-wrap {
+    border-bottom: 1px solid var(--color-border);
+    background: #fff;
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    overflow: hidden;
+}

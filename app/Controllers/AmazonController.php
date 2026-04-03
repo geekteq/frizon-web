@@ -347,12 +347,19 @@ class AmazonController
 
     public function shopIndex(array $params): void
     {
-        $model      = new AmazonProduct($this->pdo);
-        $products   = $model->allPublished();
-        $categories = $model->publishedCategories();
-
+        $model          = new AmazonProduct($this->pdo);
         $filterCategory = $_GET['kategori'] ?? null;
         $search         = trim($_GET['s'] ?? '');
+
+        $filters = ['is_published' => 1];
+        if ($filterCategory) {
+            $filters['category'] = $filterCategory;
+        }
+        if ($search !== '') {
+            $filters['search'] = $search;
+        }
+        $products   = $model->all($filters);
+        $categories = $model->publishedCategories();
 
         $appUrl    = rtrim($_ENV['APP_URL'] ?? 'https://frizon.org', '/');
         $pageTitle = 'Shop — Frizon of Sweden';
