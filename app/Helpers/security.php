@@ -61,7 +61,7 @@ function set_security_headers(): void
         "object-src 'none'",
         "manifest-src 'self'",
         "worker-src 'self'",
-        "img-src 'self' data: blob: https://*.tile.openstreetmap.org https://unpkg.com https://www.google-analytics.com",
+        "img-src 'self' data: blob: https://*.tile.openstreetmap.org https://unpkg.com https://www.google-analytics.com https://www.googletagmanager.com",
         "font-src 'self' data: https://fonts.gstatic.com",
         "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://unpkg.com",
         "script-src 'self' 'nonce-{$nonce}' https://unpkg.com https://www.googletagmanager.com",
