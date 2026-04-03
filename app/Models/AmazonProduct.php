@@ -155,4 +155,25 @@ class AmazonProduct
             WHERE id = ?
         ')->execute([$id]);
     }
+
+    /** All distinct categories (published + unpublished), for admin dropdowns. */
+    public function allCategories(): array
+    {
+        $stmt = $this->pdo->query('
+            SELECT DISTINCT category
+            FROM amazon_products
+            WHERE category IS NOT NULL AND category != \'\'
+            ORDER BY category ASC
+        ');
+        return array_column($stmt->fetchAll(), 'category');
+    }
+
+    /** Generate a URL-safe slug from a title. */
+    public static function generateSlug(string $title): string
+    {
+        $slug = mb_strtolower($title, 'UTF-8');
+        $slug = str_replace(['å', 'ä', 'ö', 'Å', 'Ä', 'Ö'], ['a', 'a', 'o', 'a', 'a', 'o'], $slug);
+        $slug = preg_replace('/[^a-z0-9]+/', '-', $slug);
+        return trim($slug, '-');
+    }
 }
