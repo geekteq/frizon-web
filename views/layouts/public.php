@@ -106,7 +106,7 @@ $ogTitle         = htmlspecialchars($pageTitle);
     </div>
 
     <?php if (!empty($useLeaflet)): ?>
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" defer></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <?php endif; ?>
     <script<?= app_csp_nonce_attr() ?>>
     // Cookie consent
