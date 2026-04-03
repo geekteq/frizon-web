@@ -114,7 +114,8 @@ class ClaudeAiProvider implements AiProviderInterface
     /** Appended to every Swedish system prompt. */
     private function sw(): string
     {
-        return ' Skriv alltid "ställplats" — använd ALDRIG "Stellplatz", "Stellplats" eller "stellplats".';
+        return ' Skriv alltid "ställplats" — använd ALDRIG "Stellplatz", "Stellplats" eller "stellplats".'
+             . ' Om du nämner personnamn får du ENDAST använda Mattias och Ulrica — inga andra namn.';
     }
 
     private function callClaude(array $payload): string
