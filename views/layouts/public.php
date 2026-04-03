@@ -46,8 +46,9 @@ $ogTitle         = htmlspecialchars($pageTitle);
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=Dancing+Script:wght@700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" media="print" onload="this.media='all'">
-    <noscript><link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"></noscript>
+    <?php if (!empty($useLeaflet)): ?>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+    <?php endif; ?>
     <link rel="stylesheet" href="/css/main.css">
     <link rel="stylesheet" href="/css/pages/public.css">
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
@@ -104,7 +105,9 @@ $ogTitle         = htmlspecialchars($pageTitle);
         </div>
     </div>
 
+    <?php if (!empty($useLeaflet)): ?>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" defer></script>
+    <?php endif; ?>
     <script<?= app_csp_nonce_attr() ?>>
     // Cookie consent
     function getCookieConsent() { return localStorage.getItem('cookie_consent'); }

@@ -96,7 +96,8 @@ class PublicController
         require_once dirname(__DIR__) . '/Models/AmazonProduct.php';
         $shopTeaser = (new AmazonProduct($this->pdo))->latestPublished(3);
 
-        view('public/homepage', compact('places', 'filterType', 'filterCountry', 'allPublic', 'allTypes', 'pageTitle', 'seoMeta', 'schemas', 'shopTeaser'), 'public');
+        $useLeaflet = true;
+        view('public/homepage', compact('places', 'filterType', 'filterCountry', 'allPublic', 'allTypes', 'pageTitle', 'seoMeta', 'schemas', 'shopTeaser', 'useLeaflet'), 'public');
     }
 
     public function placeDetail(array $params): void
@@ -239,7 +240,8 @@ class PublicController
             ];
         }
 
-        view('public/place-detail', compact('place', 'visits', 'images', 'tags', 'avgRating', 'pageTitle', 'seoMeta', 'schemas', 'faqItems'), 'public');
+        $useLeaflet = true;
+        view('public/place-detail', compact('place', 'visits', 'images', 'tags', 'avgRating', 'pageTitle', 'seoMeta', 'schemas', 'faqItems', 'useLeaflet'), 'public');
     }
 
     public function privacy(array $params): void
