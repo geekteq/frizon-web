@@ -80,6 +80,10 @@ class VisitController
             $imageModel   = new VisitImage($this->pdo);
             $aiService    = new AiService();
             $files        = $_FILES['photos'];
+            $imgContext   = [
+                'place_name' => $p['name'],
+                'place_type' => $p['place_type'],
+            ];
 
             for ($i = 0; $i < min(count($files['name']), 8); $i++) {
                 if ($files['error'][$i] !== UPLOAD_ERR_OK) continue;
@@ -93,7 +97,7 @@ class VisitController
                 if ($result) {
                     // Generate AI caption from the cards variant (smaller/faster)
                     $cardsPath = dirname(__DIR__, 2) . '/storage/uploads/cards/' . $result['filename'];
-                    $caption   = $aiService->describeImage($cardsPath);
+                    $caption   = $aiService->describeImage($cardsPath, $imgContext);
                     $imageModel->create($visitId, $result['filename'], $files['name'][$i], $files['type'][$i], $files['size'][$i], $i, $caption);
                 }
             }
@@ -283,10 +287,25 @@ class VisitController
             return;
         }
 
+        // Fetch place context for a more accurate caption
+        $stmt = $this->pdo->prepare('
+            SELECT p.name AS place_name, p.place_type
+            FROM visit_images vi
+            JOIN visits v ON v.id = vi.visit_id
+            JOIN places p  ON p.id = v.place_id
+            WHERE vi.id = ?
+        ');
+        $stmt->execute([$id]);
+        $placeRow   = $stmt->fetch() ?: [];
+        $imgContext = [
+            'place_name' => $placeRow['place_name'] ?? '',
+            'place_type' => $placeRow['place_type'] ?? '',
+        ];
+
         $cardsPath = dirname(__DIR__, 2) . '/storage/uploads/cards/' . $image['filename'];
         try {
             $aiService = new AiService();
-            $caption   = $aiService->describeImage($cardsPath);
+            $caption   = $aiService->describeImage($cardsPath, $imgContext);
         } catch (RuntimeException $e) {
             http_response_code(500);
             echo json_encode(['error' => $e->getMessage()]);

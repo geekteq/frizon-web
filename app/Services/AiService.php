@@ -13,7 +13,7 @@ interface AiProviderInterface
     public function generateShopDescription(array $context): string;
     public function generateShopSeo(array $product): array;
     public function translateToSwedish(string $text): string;
-    public function describeImage(string $imagePath): string;
+    public function describeImage(string $imagePath, array $context = []): string;
 }
 
 // ---------------------------------------------------------------------------
@@ -231,18 +231,38 @@ class ClaudeAiProvider implements AiProviderInterface
         return $this->callClaude($payload);
     }
 
-    public function describeImage(string $imagePath): string
+    public function describeImage(string $imagePath, array $context = []): string
     {
         if (!file_exists($imagePath)) return '';
 
         $data = base64_encode((string) file_get_contents($imagePath));
         if (!$data) return '';
 
-        // WebP variants are always used for AI description (smaller file, faster)
+        $placeTypes = [
+            'stellplatz'   => 'ställplats', 'camping'      => 'camping',
+            'wild_camping' => 'fricamping', 'fika'         => 'fik',
+            'lunch'        => 'restaurang', 'dinner'       => 'restaurang',
+            'breakfast'    => 'restaurang', 'sight'        => 'sevärdhet',
+            'shopping'     => 'butik/shopping',
+        ];
+        $typeLabel  = $placeTypes[$context['place_type'] ?? ''] ?? '';
+        $placeName  = $context['place_name'] ?? '';
+
+        $contextLine = '';
+        if ($placeName || $typeLabel) {
+            $contextLine = 'Plats: ' . ($placeName ?: 'okänd');
+            if ($typeLabel) $contextLine .= ' (' . $typeLabel . ')';
+            $contextLine .= '. ';
+        }
+
+        $userText = $contextLine . 'Skriv en bildtext på max 15 ord som beskriver vad som syns.';
+
         $payload = [
             'model'      => self::MODEL_STRUCTURED,
-            'max_tokens' => 120,
-            'system'     => 'Du beskriver bilder kort och sakligt på svenska. Skriv 1-2 meningar med ren text, inga formateringstecken.' . $this->sw(),
+            'max_tokens' => 80,
+            'system'     => 'Du skriver korta bildtexter (max 15 ord) på svenska för en husbilsresedagbok. '
+                          . 'Vi reser med husbilen Frizze och fotograferar camping, ställplatser, parkeringar, restauranger och sevärdheter. '
+                          . 'Skriv ren text utan punkt i slutet, inga formateringstecken.' . $this->sw(),
             'messages'   => [
                 [
                     'role'    => 'user',
@@ -255,7 +275,7 @@ class ClaudeAiProvider implements AiProviderInterface
                                 'data'       => $data,
                             ],
                         ],
-                        ['type' => 'text', 'text' => 'Beskriv kort vad som syns på bilden.'],
+                        ['type' => 'text', 'text' => $userText],
                     ],
                 ],
             ],
@@ -416,7 +436,7 @@ class FakeAiProvider implements AiProviderInterface
         return $text;
     }
 
-    public function describeImage(string $imagePath): string
+    public function describeImage(string $imagePath, array $context = []): string
     {
         return '';
     }
@@ -471,8 +491,8 @@ class AiService
         return $this->provider->translateToSwedish($text);
     }
 
-    public function describeImage(string $imagePath): string
+    public function describeImage(string $imagePath, array $context = []): string
     {
-        return $this->provider->describeImage($imagePath);
+        return $this->provider->describeImage($imagePath, $context);
     }
 }
