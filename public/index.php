@@ -10,7 +10,7 @@ set_security_headers();
 
 // Serve uploaded images from storage
 $uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
-if (preg_match('#^/uploads/(thumbnails|cards|detail)/([^/]+)$#', $uri, $m)) {
+if (preg_match('#^/uploads/(thumbnails|cards|detail|amazon)/([^/]+)$#', $uri, $m)) {
     $variantDir = realpath(dirname(__DIR__) . '/storage/uploads/' . $m[1]);
     $candidatePath = $variantDir ? $variantDir . DIRECTORY_SEPARATOR . $m[2] : null;
     $realFilePath = $candidatePath ? realpath($candidatePath) : false;

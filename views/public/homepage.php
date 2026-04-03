@@ -104,6 +104,20 @@ $placeTypes = [
     <?php endif; ?>
 </div>
 
+<?php if (!empty($shopTeaser)): ?>
+<section style="max-width:var(--content-max-width); margin:var(--space-8) auto var(--space-6); padding:0 var(--space-4);">
+    <div style="display:flex; align-items:baseline; justify-content:space-between; margin-bottom:var(--space-4);">
+        <h2 style="font-size:var(--text-xl); font-weight:var(--weight-bold); color:var(--color-text);">Nytt i shoppen</h2>
+        <a href="/shop" style="font-size:var(--text-sm); color:var(--color-accent); text-decoration:none; font-weight:var(--weight-medium);">Se alla →</a>
+    </div>
+    <div class="place-grid">
+        <?php foreach ($shopTeaser as $p): ?>
+            <?php include dirname(__DIR__) . '/partials/shop-card.php'; ?>
+        <?php endforeach; ?>
+    </div>
+</section>
+<?php endif; ?>
+
 <script<?= app_csp_nonce_attr() ?>>
 document.addEventListener('DOMContentLoaded', function() {
     var mapEl = document.getElementById('public-map');

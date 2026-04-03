@@ -56,6 +56,7 @@ $ogTitle         = htmlspecialchars($pageTitle);
     <header class="public-header" style="height:auto; padding:var(--space-4) var(--space-6);">
         <div class="public-header__inner" style="flex-direction:row; align-items:center; justify-content:center; gap:var(--space-6); max-width:var(--content-max-width); margin:0 auto; width:100%;">
             <a href="/" class="public-header__link" style="font-weight:var(--weight-semibold);">Platser</a>
+            <a href="/shop" class="public-header__link <?= str_starts_with($reqPath ?? $_SERVER['REQUEST_URI'], '/shop') ? 'public-header__link--active' : '' ?>" style="font-weight:var(--weight-semibold);">Shop</a>
             <a href="/" style="text-decoration:none; flex-shrink:0;">
                 <img src="/img/frizon-logo.png" alt="Frizon of Sweden" style="width:64px; height:64px; border-radius:50%; display:block;">
             </a>
