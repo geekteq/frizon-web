@@ -28,6 +28,10 @@
         </a>
 
         <div class="sidebar-nav__label" style="margin-top:var(--space-4);">Publikt</div>
+        <a href="/adm/amazon-lista" class="sidebar-nav__item <?= str_starts_with($currentPath ?? '', '/adm/amazon-lista') ? 'sidebar-nav__item--active' : '' ?>">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+            Shop
+        </a>
         <a href="/adm/publicera" class="sidebar-nav__item <?= str_starts_with($currentPath, '/adm/publicera') ? 'sidebar-nav__item--active' : '' ?>">
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
             Publicera

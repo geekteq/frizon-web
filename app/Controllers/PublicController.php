@@ -69,7 +69,11 @@ class PublicController
             ],
         ]];
 
-        view('public/homepage', compact('places', 'filterType', 'filterCountry', 'allPublic', 'allTypes', 'pageTitle', 'seoMeta', 'schemas'), 'public');
+        // Shop teaser: 3 latest published products
+        require_once dirname(__DIR__) . '/Models/AmazonProduct.php';
+        $shopTeaser = (new AmazonProduct($this->pdo))->latestPublished(3);
+
+        view('public/homepage', compact('places', 'filterType', 'filterCountry', 'allPublic', 'allTypes', 'pageTitle', 'seoMeta', 'schemas', 'shopTeaser'), 'public');
     }
 
     public function placeDetail(array $params): void
@@ -302,6 +306,26 @@ class PublicController
             echo "    <loc>" . htmlspecialchars($appUrl . '/platser/' . $place['slug']) . "</loc>\n";
             echo "    <lastmod>" . $lastmod . "</lastmod>\n";
             echo "    <priority>0.7</priority>\n";
+            echo "  </url>\n";
+        }
+
+        // Shop pages
+        require_once dirname(__DIR__) . '/Models/AmazonProduct.php';
+        $shopProducts = (new AmazonProduct($this->pdo))->allPublished();
+
+        echo "  <url>\n";
+        echo "    <loc>" . htmlspecialchars($appUrl . '/shop') . "</loc>\n";
+        echo "    <lastmod>" . date('Y-m-d') . "</lastmod>\n";
+        echo "    <changefreq>weekly</changefreq>\n";
+        echo "    <priority>0.7</priority>\n";
+        echo "  </url>\n";
+
+        foreach ($shopProducts as $p) {
+            echo "  <url>\n";
+            echo "    <loc>" . htmlspecialchars($appUrl . '/shop/' . $p['slug']) . "</loc>\n";
+            echo "    <lastmod>" . date('Y-m-d', strtotime($p['updated_at'])) . "</lastmod>\n";
+            echo "    <changefreq>monthly</changefreq>\n";
+            echo "    <priority>0.6</priority>\n";
             echo "  </url>\n";
         }
 

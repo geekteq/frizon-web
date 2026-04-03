@@ -20,7 +20,19 @@
 <?php else: ?>
     <div class="place-list">
         <?php foreach ($places as $place): ?>
-            <?php include dirname(__DIR__) . '/partials/place-card.php'; ?>
+            <div style="display:flex; align-items:stretch; gap:var(--space-2); margin-bottom:var(--space-2);">
+                <div style="flex:1; min-width:0;">
+                    <?php include dirname(__DIR__) . '/partials/place-card.php'; ?>
+                </div>
+                <form method="POST" action="/adm/publicera/<?= htmlspecialchars($place['slug']) ?>/<?= $place['public_allowed'] ? 'avpublicera' : 'godkann' ?>"
+                      style="display:flex; align-items:center; flex-shrink:0;">
+                    <?php include dirname(__DIR__) . '/partials/csrf-field.php'; ?>
+                    <button type="submit" class="btn btn--sm <?= $place['public_allowed'] ? 'btn-ghost' : 'btn-secondary' ?>"
+                            style="white-space:nowrap;" <?= $place['public_allowed'] ? 'data-confirm="Avpublicera platsen?"' : '' ?>>
+                        <?= $place['public_allowed'] ? 'Avpublicera' : 'Publicera' ?>
+                    </button>
+                </form>
+            </div>
         <?php endforeach; ?>
     </div>
 <?php endif; ?>

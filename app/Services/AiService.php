@@ -10,6 +10,9 @@ interface AiProviderInterface
 {
     public function generateDraft(array $context): string;
     public function generatePlaceSeo(array $place, array $visits): array;
+    public function generateShopDescription(array $context): string;
+    public function generateShopSeo(array $product): array;
+    public function translateToSwedish(string $text): string;
 }
 
 // ---------------------------------------------------------------------------
@@ -45,42 +48,7 @@ class ClaudeAiProvider implements AiProviderInterface
             ],
         ];
 
-        $ch = curl_init('https://api.anthropic.com/v1/messages');
-        curl_setopt_array($ch, [
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_POST           => true,
-            CURLOPT_POSTFIELDS     => json_encode($payload),
-            CURLOPT_HTTPHEADER     => [
-                'Content-Type: application/json',
-                'x-api-key: ' . $this->apiKey,
-                'anthropic-version: 2023-06-01',
-            ],
-            CURLOPT_TIMEOUT        => 30,
-        ]);
-
-        $response = curl_exec($ch);
-        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        $curlError = curl_error($ch);
-        curl_close($ch);
-
-        if ($curlError) {
-            throw new RuntimeException('cURL-fel vid anrop till Claude API: ' . $curlError);
-        }
-
-        if ($httpCode !== 200) {
-            $body = json_decode($response, true);
-            $msg = $body['error']['message'] ?? 'HTTP ' . $httpCode;
-            throw new RuntimeException('Claude API-fel: ' . $msg);
-        }
-
-        $data = json_decode($response, true);
-        $text = $data['content'][0]['text'] ?? '';
-
-        if (trim($text) === '') {
-            throw new RuntimeException('Claude returnerade ett tomt svar.');
-        }
-
-        return trim($text);
+        return $this->callClaude($payload);
     }
 
     public function generatePlaceSeo(array $place, array $visits): array
@@ -129,6 +97,21 @@ class ClaudeAiProvider implements AiProviderInterface
             'messages'   => [['role' => 'user', 'content' => $userPrompt]],
         ];
 
+        $text   = $this->callClaude($payload);
+        $result = json_decode($text, true);
+
+        if (!isset($result['meta_description'], $result['faq']) || !is_array($result['faq'])) {
+            throw new RuntimeException('Ogiltigt JSON-svar från Claude vid SEO-generering.');
+        }
+
+        return [
+            'meta_description' => mb_substr((string) $result['meta_description'], 0, 155),
+            'faq_content'      => json_encode($result['faq'], JSON_UNESCAPED_UNICODE) ?: '[]',
+        ];
+    }
+
+    private function callClaude(array $payload): string
+    {
         $ch = curl_init('https://api.anthropic.com/v1/messages');
         curl_setopt_array($ch, [
             CURLOPT_RETURNTRANSFER => true,
@@ -148,25 +131,93 @@ class ClaudeAiProvider implements AiProviderInterface
         curl_close($ch);
 
         if ($curlError) {
-            throw new RuntimeException('cURL-fel: ' . $curlError);
+            throw new RuntimeException('cURL-fel vid anrop till Claude API: ' . $curlError);
         }
         if ($httpCode !== 200) {
             $body = json_decode($response, true);
             throw new RuntimeException('Claude API-fel: ' . ($body['error']['message'] ?? 'HTTP ' . $httpCode));
         }
 
-        $data   = json_decode($response, true);
-        $text   = trim($data['content'][0]['text'] ?? '');
+        $data = json_decode($response, true);
+        $text = trim($data['content'][0]['text'] ?? '');
+        if ($text === '') {
+            throw new RuntimeException('Claude returnerade ett tomt svar.');
+        }
+        return $text;
+    }
+
+    public function generateShopDescription(array $context): string
+    {
+        $title       = $context['title'] ?? 'Produkten';
+        $amazonDesc  = $context['amazon_description'] ?? '';
+        $currentText = $context['current_text'] ?? '';
+
+        $prompt = "Produkt: {$title}\n"
+            . ($amazonDesc ? "Amazon-beskrivning: {$amazonDesc}\n" : '')
+            . ($currentText ? "Nuvarande text: {$currentText}\n" : '')
+            . "\nSkriv en personlig och säljande produktbeskrivning på svenska (2-3 stycken) som förklarar "
+            . "varför vi gillar den, hur vi använder den på resan med vår husbil Frizze, och varför vi rekommenderar den. "
+            . "Skriv ren löpande text utan markdown, inga **, ## eller liknande.";
+
+        $payload = [
+            'model'      => $this->model,
+            'max_tokens' => 600,
+            'system'     => 'Du är en entusiastisk husbilsresenär som skriver produktrekommendationer på svenska. Skriv personligt, varmt och övertygande.',
+            'messages'   => [['role' => 'user', 'content' => $prompt]],
+        ];
+
+        return $this->callClaude($payload);
+    }
+
+    public function generateShopSeo(array $product): array
+    {
+        $title    = $product['title'] ?? '';
+        $desc     = $product['amazon_description'] ?? $product['our_description'] ?? '';
+        $category = $product['category'] ?? '';
+
+        $prompt = "Produkt: {$title}\n"
+            . ($category ? "Kategori: {$category}\n" : '')
+            . ($desc ? "Beskrivning: " . mb_substr($desc, 0, 500) . "\n" : '')
+            . "\nGenerera:\n"
+            . "1. seo_title: En säljande sidtitel max 60 tecken på svenska, inkludera produktnamnet.\n"
+            . "2. seo_description: En lockande meta-beskrivning max 155 tecken på svenska som beskriver produkten och nämner att det är en rekommendation från Frizon.\n\n"
+            . "Svara ENBART med giltig JSON:\n"
+            . '{"seo_title":"...","seo_description":"..."}';
+
+        $payload = [
+            'model'      => $this->model,
+            'max_tokens' => 300,
+            'system'     => 'Du är en SEO-expert som skriver säljande produkttitlar och beskrivningar på svenska. Svara ALLTID med giltig JSON och inget annat.',
+            'messages'   => [['role' => 'user', 'content' => $prompt]],
+        ];
+
+        $text   = $this->callClaude($payload);
         $result = json_decode($text, true);
 
-        if (!isset($result['meta_description'], $result['faq']) || !is_array($result['faq'])) {
-            throw new RuntimeException('Ogiltigt JSON-svar från Claude vid SEO-generering.');
+        if (!isset($result['seo_title'], $result['seo_description'])) {
+            throw new RuntimeException('Ogiltigt JSON-svar från Claude vid shop SEO-generering.');
         }
 
         return [
-            'meta_description' => mb_substr((string) $result['meta_description'], 0, 155),
-            'faq_content'      => json_encode($result['faq'], JSON_UNESCAPED_UNICODE) ?: '[]',
+            'seo_title'       => mb_substr((string) $result['seo_title'], 0, 60),
+            'seo_description' => mb_substr((string) $result['seo_description'], 0, 155),
         ];
+    }
+
+    public function translateToSwedish(string $text): string
+    {
+        if (trim($text) === '') {
+            return $text;
+        }
+
+        $payload = [
+            'model'      => $this->model,
+            'max_tokens' => 500,
+            'system'     => 'Du är en professionell översättare. Översätt texten till korrekt, naturlig svenska. Svara ENBART med den översatta texten, inget annat.',
+            'messages'   => [['role' => 'user', 'content' => $text]],
+        ];
+
+        return $this->callClaude($payload);
     }
 
     private function buildUserPrompt(array $ctx): string
@@ -292,6 +343,30 @@ class FakeAiProvider implements AiProviderInterface
             'faq_content'      => json_encode($faq, JSON_UNESCAPED_UNICODE),
         ];
     }
+
+    public function generateShopDescription(array $context): string
+    {
+        $title = $context['title'] ?? 'Produkten';
+        return "{$title} är en produkt vi verkligen gillar och använder under våra resor med Frizze.\n\n"
+            . "Den har visat sig vara ett praktiskt inköp som vi gärna rekommenderar till andra husbilsresenärer. "
+            . "Kvaliteten är bra och den är enkel att använda även när man befinner sig på resande fot.";
+    }
+
+    public function generateShopSeo(array $product): array
+    {
+        $title = $product['title'] ?? 'Produkt';
+        $desc  = $product['amazon_description'] ?? $product['our_description'] ?? '';
+        return [
+            'seo_title'       => mb_substr($title . ' — Frizon rekommenderar', 0, 60),
+            'seo_description' => mb_substr($desc ?: "Vi rekommenderar {$title} för husbilsresor.", 0, 155),
+        ];
+    }
+
+    public function translateToSwedish(string $text): string
+    {
+        // Fake provider: return unchanged (assume already Swedish in dev)
+        return $text;
+    }
 }
 
 // ---------------------------------------------------------------------------
@@ -326,5 +401,20 @@ class AiService
     public function generatePlaceSeo(array $place, array $visits): array
     {
         return $this->provider->generatePlaceSeo($place, $visits);
+    }
+
+    public function generateShopDescription(array $context): string
+    {
+        return $this->provider->generateShopDescription($context);
+    }
+
+    public function generateShopSeo(array $product): array
+    {
+        return $this->provider->generateShopSeo($product);
+    }
+
+    public function translateToSwedish(string $text): string
+    {
+        return $this->provider->translateToSwedish($text);
     }
 }
