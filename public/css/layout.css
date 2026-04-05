@@ -92,6 +92,32 @@ body.app-layout {
   gap: var(--space-2);
 }
 
+/* Icon button in header (e.g. stats link) */
+.app-header__icon-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-full);
+  background: transparent;
+  color: var(--color-text-muted);
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background var(--transition-fast), color var(--transition-fast);
+  flex-shrink: 0;
+  text-decoration: none;
+}
+
+.app-header__icon-btn:hover {
+  background: var(--color-info-bg);
+  color: var(--color-text);
+}
+
+.app-header__icon-btn:active {
+  transform: scale(0.95);
+}
+
 /* GPS quick-save button in header */
 .app-header__gps-btn {
   width: 40px;
