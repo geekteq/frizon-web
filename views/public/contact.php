@@ -10,11 +10,11 @@
         Intresserad? Fyll i formuläret nedan så hör vi av oss.
     </p>
 
-    <?php if ($flash = get_flash('success')): ?>
+    <?php if ($flash = flash('success')): ?>
         <div style="background:var(--color-success-bg,#dcfce7); color:var(--color-success,#166534); padding:var(--space-4); border-radius:var(--radius-md); margin-bottom:var(--space-6);">
             <?= htmlspecialchars($flash) ?>
         </div>
-    <?php elseif ($flash = get_flash('error')): ?>
+    <?php elseif ($flash = flash('error')): ?>
         <div style="background:#fee2e2; color:#991b1b; padding:var(--space-4); border-radius:var(--radius-md); margin-bottom:var(--space-6);">
             <?= htmlspecialchars($flash) ?>
         </div>
