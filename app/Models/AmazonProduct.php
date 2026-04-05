@@ -204,6 +204,42 @@ class AmazonProduct
         return $stmt->fetchAll();
     }
 
+    /**
+     * Returns all published products linked to a place, ordered by sort_order.
+     */
+    public function getByPlaceId(int $placeId): array
+    {
+        $stmt = $this->pdo->prepare('
+            SELECT ap.*
+            FROM amazon_products ap
+            JOIN place_products pp ON pp.product_id = ap.id
+            WHERE pp.place_id = ?
+            ORDER BY pp.sort_order ASC, ap.title ASC
+        ');
+        $stmt->execute([$placeId]);
+        return $stmt->fetchAll();
+    }
+
+    /**
+     * Replaces all product links for a place. Pass an empty array to clear all.
+     */
+    public function syncPlaceProducts(int $placeId, array $productIds): void
+    {
+        $this->pdo->prepare('DELETE FROM place_products WHERE place_id = ?')
+                  ->execute([$placeId]);
+
+        if (empty($productIds)) {
+            return;
+        }
+
+        $stmt = $this->pdo->prepare(
+            'INSERT INTO place_products (place_id, product_id, sort_order) VALUES (?, ?, ?)'
+        );
+        foreach (array_values($productIds) as $order => $productId) {
+            $stmt->execute([$placeId, (int) $productId, $order]);
+        }
+    }
+
     /** Generate a URL-safe slug from a title. */
     public static function generateSlug(string $title): string
     {
