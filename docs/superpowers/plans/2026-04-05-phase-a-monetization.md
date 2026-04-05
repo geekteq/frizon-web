@@ -731,7 +731,7 @@ AWS_SES_KEY=
 AWS_SES_SECRET=
 AWS_SES_REGION=eu-north-1
 MAIL_FROM=frizon@mobileminds.se
-CONTACT_EMAIL=kontakt@frizon.org
+CONTACT_EMAIL=frizonofsweden@gmail.com
 APP_KEY=change-me-to-random-32-char-string
 ```
 
