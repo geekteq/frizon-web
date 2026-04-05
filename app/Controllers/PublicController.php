@@ -521,7 +521,7 @@ class PublicController
             return;
         }
 
-        // --- Deliver via AWS SES ---
+        // --- Deliver via SMTP ---
         $company = trim($_POST['company'] ?? '');
         $subject = 'Samarbetsförfrågan från ' . $name . ($company ? ' (' . $company . ')' : '');
         $body    = "Namn: {$name}\n"
@@ -530,11 +530,11 @@ class PublicController
                  . "Meddelande:\n{$message}";
 
         if ($contactEmail) {
-            require_once dirname(__DIR__) . '/Services/SesMailer.php';
+            require_once dirname(__DIR__) . '/Services/SmtpMailer.php';
             try {
-                SesMailer::fromEnv()->send($contactEmail, $email, $subject, $body);
+                SmtpMailer::fromEnv()->send($contactEmail, $email, $subject, $body);
             } catch (RuntimeException $e) {
-                error_log('SesMailer failed: ' . $e->getMessage());
+                error_log('SmtpMailer failed: ' . $e->getMessage());
                 // Don't expose delivery failure to the user — log and continue
             }
         }
