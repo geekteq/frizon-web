@@ -118,7 +118,7 @@ A simple form: name, company (optional), email, message.
 2. **Timing check:** A hidden `<input name="ts">` populated with a signed timestamp on page load (`hash_hmac('sha256', $timestamp, APP_KEY)`). On submit, validate the signature and reject if less than 4 seconds have elapsed. Bots submit instantly.
 3. **IP rate limiting:** Reuse `LoginThrottle` — max 3 submissions per IP per hour.
 
-**Delivery:** `mail()` or SMTP (configured via `.env` `MAIL_*` variables) to a configured `CONTACT_EMAIL`. No DB storage of submissions.
+**Delivery:** AWS SES v2 via a minimal `SesMailer` service (cURL + SigV4, no SDK/Composer). Sender: `frizon@mobileminds.se` (whitelisted domain). Delivered to `CONTACT_EMAIL`. No DB storage of submissions.
 
 **Page content:** A short "Vi samarbetar med varumärken vi faktiskt använder och rekommenderar" paragraph. This page is linked from the Instagram bio when ready.
 

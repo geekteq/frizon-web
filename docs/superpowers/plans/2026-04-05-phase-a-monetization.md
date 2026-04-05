@@ -6,7 +6,7 @@
 
 **Architecture:** All changes are additive — new tables, new routes, new controller methods, and targeted modifications to existing views. No existing features are broken. Each task is independently deployable.
 
-**Tech Stack:** PHP 8.x, MariaDB, PDO, plain HTML/CSS, `mail()` for contact delivery, `LoginThrottle` for rate limiting.
+**Tech Stack:** PHP 8.x, MariaDB, PDO, plain HTML/CSS, AWS SES v2 API via cURL + SigV4 for contact delivery, `LoginThrottle` for rate limiting.
 
 ---
 
@@ -17,6 +17,7 @@
 - `database/migrations/010_place_products.sql`
 - `database/migrations/011_place_view_count.sql`
 - `database/migrations/012_trip_teaser.sql`
+- `app/Services/SesMailer.php` — minimal AWS SES v2 sender via cURL + SigV4, no SDK
 - `views/public/contact.php`
 
 **Modified files:**
@@ -712,26 +713,157 @@ git commit -m "feat: add place view counter — increments on each public place 
 
 **Files:**
 - Modify: `routes/web.php`
+- Create: `app/Services/SesMailer.php`
 - Modify: `app/Controllers/PublicController.php`
 - Create: `views/public/contact.php`
 - Modify: `views/layouts/public.php`
 - Modify: `.env.example`
 
-- [ ] **Step 1: Add APP_KEY and CONTACT_EMAIL to .env.example**
+- [ ] **Step 1: Add SES credentials and contact config to .env.example**
 
 Add to the end of `.env.example`:
 
 ```
-# Contact form — email delivery target and HMAC key for timing protection
+# Contact form — AWS SES delivery
+# Sender: frizon@mobileminds.se (mobileminds.se is whitelisted in SES)
+# CONTACT_EMAIL = inbox that receives sponsorship enquiries
+AWS_SES_KEY=
+AWS_SES_SECRET=
+AWS_SES_REGION=eu-north-1
+MAIL_FROM=frizon@mobileminds.se
 CONTACT_EMAIL=kontakt@frizon.org
 APP_KEY=change-me-to-random-32-char-string
 ```
 
-Add the same two lines to your `.env` file with real values:
-- `CONTACT_EMAIL` = the email address that receives sponsorship inquiries
-- `APP_KEY` = a random 32+ character string (generate with `openssl rand -hex 16`)
+Add the same lines to your `.env` file with real values:
+- `AWS_SES_KEY` / `AWS_SES_SECRET` — IAM user with `ses:SendEmail` permission only
+- `AWS_SES_REGION` — the region your SES identity is in (e.g. `eu-north-1`)
+- `MAIL_FROM` — `frizon@mobileminds.se` (whitelisted sender)
+- `CONTACT_EMAIL` — the inbox that receives sponsorship messages
+- `APP_KEY` — generate with `openssl rand -hex 16`
 
-- [ ] **Step 2: Add routes**
+- [ ] **Step 2: Create app/Services/SesMailer.php**
+
+```php
+<?php
+
+declare(strict_types=1);
+
+/**
+ * Minimal AWS SES v2 email sender via cURL + SigV4.
+ * No Composer or external SDK required.
+ */
+class SesMailer
+{
+    public function __construct(
+        private readonly string $key,
+        private readonly string $secret,
+        private readonly string $region,
+        private readonly string $from,
+    ) {}
+
+    public static function fromEnv(): self
+    {
+        return new self(
+            key:    $_ENV['AWS_SES_KEY']    ?? '',
+            secret: $_ENV['AWS_SES_SECRET'] ?? '',
+            region: $_ENV['AWS_SES_REGION'] ?? 'eu-north-1',
+            from:   $_ENV['MAIL_FROM']      ?? 'frizon@mobileminds.se',
+        );
+    }
+
+    /**
+     * Send a plain-text email via SES v2.
+     *
+     * @throws RuntimeException on HTTP or API error
+     */
+    public function send(string $to, string $replyTo, string $subject, string $body): void
+    {
+        $path    = '/v2/email/outbound-emails';
+        $payload = json_encode([
+            'FromEmailAddress' => $this->from,
+            'Destination'      => ['ToAddresses' => [$to]],
+            'ReplyToAddresses' => [$replyTo],
+            'Content'          => [
+                'Simple' => [
+                    'Subject' => ['Data' => $subject, 'Charset' => 'UTF-8'],
+                    'Body'    => ['Text' => ['Data' => $body, 'Charset' => 'UTF-8']],
+                ],
+            ],
+        ], JSON_THROW_ON_ERROR);
+
+        $headers = $this->buildHeaders('POST', $path, $payload);
+
+        $ch = curl_init("https://email.{$this->region}.amazonaws.com{$path}");
+        curl_setopt_array($ch, [
+            CURLOPT_POST           => true,
+            CURLOPT_POSTFIELDS     => $payload,
+            CURLOPT_HTTPHEADER     => $headers,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_TIMEOUT        => 10,
+        ]);
+
+        $response = (string) curl_exec($ch);
+        $httpCode = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $curlErr  = curl_error($ch);
+        curl_close($ch);
+
+        if ($curlErr !== '') {
+            throw new RuntimeException('SES cURL error: ' . $curlErr);
+        }
+        if ($httpCode < 200 || $httpCode >= 300) {
+            throw new RuntimeException("SES HTTP {$httpCode}: " . $response);
+        }
+    }
+
+    /** @return list<string> */
+    private function buildHeaders(string $method, string $path, string $payload): array
+    {
+        $service  = 'ses';
+        $now      = new DateTimeImmutable('now', new DateTimeZone('UTC'));
+        $date     = $now->format('Ymd');
+        $dateTime = $now->format('Ymd\THis\Z');
+        $host     = "email.{$this->region}.amazonaws.com";
+        $hash     = hash('sha256', $payload);
+
+        $canonicalHeaders = "content-type:application/json\nhost:{$host}\nx-amz-date:{$dateTime}\n";
+        $signedHeaders    = 'content-type;host;x-amz-date';
+        $canonicalRequest = implode("\n", [$method, $path, '', $canonicalHeaders, $signedHeaders, $hash]);
+
+        $scope        = "{$date}/{$this->region}/{$service}/aws4_request";
+        $stringToSign = implode("\n", ['AWS4-HMAC-SHA256', $dateTime, $scope, hash('sha256', $canonicalRequest)]);
+
+        $signingKey = hash_hmac('sha256', 'aws4_request',
+            hash_hmac('sha256', $service,
+                hash_hmac('sha256', $this->region,
+                    hash_hmac('sha256', $date, 'AWS4' . $this->secret, true),
+                true),
+            true),
+        true);
+
+        $signature  = hash_hmac('sha256', $stringToSign, $signingKey);
+        $authHeader = "AWS4-HMAC-SHA256 Credential={$this->key}/{$scope}, "
+                    . "SignedHeaders={$signedHeaders}, Signature={$signature}";
+
+        return [
+            'Content-Type: application/json',
+            "Host: {$host}",
+            "X-Amz-Date: {$dateTime}",
+            "Authorization: {$authHeader}",
+        ];
+    }
+}
+```
+
+- [ ] **Step 3: Verify syntax**
+
+```bash
+php -l app/Services/SesMailer.php
+```
+
+Expected: `No syntax errors detected`
+
+- [ ] **Step 4: Add routes**
 
 In `routes/web.php`, add after the `/cookiepolicy` route:
 
@@ -740,7 +872,7 @@ In `routes/web.php`, add after the `/cookiepolicy` route:
     $router->post('/samarbeta', 'PublicController', 'submitContact');
 ```
 
-- [ ] **Step 3: Add contact() method to PublicController**
+- [ ] **Step 5: Add contact() method to PublicController**
 
 Add this method to `app/Controllers/PublicController.php`:
 
@@ -763,17 +895,16 @@ Add this method to `app/Controllers/PublicController.php`:
     }
 ```
 
-- [ ] **Step 4: Add submitContact() method to PublicController**
+- [ ] **Step 6: Add submitContact() method to PublicController**
 
 ```php
     public function submitContact(array $params): void
     {
-        $appKey        = $_ENV['APP_KEY'] ?? 'default';
-        $contactEmail  = $_ENV['CONTACT_EMAIL'] ?? '';
+        $appKey       = $_ENV['APP_KEY'] ?? 'default';
+        $contactEmail = $_ENV['CONTACT_EMAIL'] ?? '';
 
         // --- Spam protection layer 1: honeypot ---
         if (!empty($_POST['website'])) {
-            // Bot filled the honeypot — silently succeed
             flash('success', 'Tack för ditt meddelande! Vi hör av oss inom kort.');
             redirect('/samarbeta');
             return;
@@ -821,7 +952,7 @@ Add this method to `app/Controllers/PublicController.php`:
             return;
         }
 
-        // --- Deliver ---
+        // --- Deliver via AWS SES ---
         $company = trim($_POST['company'] ?? '');
         $subject = 'Samarbetsförfrågan från ' . $name . ($company ? ' (' . $company . ')' : '');
         $body    = "Namn: {$name}\n"
@@ -829,13 +960,17 @@ Add this method to `app/Controllers/PublicController.php`:
                  . "E-post: {$email}\n\n"
                  . "Meddelande:\n{$message}";
 
-        $headers = "From: noreply@frizon.org\r\nReply-To: {$email}";
-
         if ($contactEmail) {
-            mail($contactEmail, $subject, $body, $headers);
+            require_once dirname(__DIR__) . '/Services/SesMailer.php';
+            try {
+                SesMailer::fromEnv()->send($contactEmail, $email, $subject, $body);
+            } catch (RuntimeException $e) {
+                error_log('SesMailer failed: ' . $e->getMessage());
+                // Don't expose delivery failure to the user — log and continue
+            }
         }
 
-        $throttle->recordFailure('contact', $ip); // reuse "failure" to count submissions
+        $throttle->recordFailure('contact', $ip); // count successful submissions
         flash('success', 'Tack för ditt meddelande! Vi hör av oss inom kort.');
         redirect('/samarbeta');
     }
@@ -919,7 +1054,11 @@ Add this method to `app/Controllers/PublicController.php`:
 </div>
 ```
 
-- [ ] **Step 6: Add "Samarbeta" to public nav and footer**
+- [ ] **Step 7: Create views/public/contact.php**
+
+See full view template in Step 5 block above (the `contact.php` content is the `views/public/contact.php` file to create).
+
+- [ ] **Step 8: Add "Samarbeta" to public nav and footer**
 
 In `views/layouts/public.php`, find:
 
@@ -941,27 +1080,29 @@ Also add to footer (find the privacy policy link block) — insert before the `A
             <span style="color:rgba(255,255,255,0.4);"> &middot; </span>
 ```
 
-- [ ] **Step 7: Verify syntax**
+- [ ] **Step 9: Verify syntax**
 
 ```bash
+php -l app/Services/SesMailer.php
 php -l app/Controllers/PublicController.php
 php -l views/public/contact.php
 php -l views/layouts/public.php
 ```
 
-- [ ] **Step 8: Test**
+- [ ] **Step 10: Test**
 
 1. Open `/samarbeta` — form renders correctly
-2. Submit with an empty honeypot, valid data, after 5+ seconds — message is sent, success flash shown
-3. Fill in the honeypot field in browser devtools and submit — success flash shown but no email sent (silent discard)
+2. Submit with an empty honeypot, valid data, after 5+ seconds — message arrives at `CONTACT_EMAIL`
+3. Fill in the honeypot field in browser devtools and submit — success flash shown but no email sent
 4. Submit 4 times rapidly — 4th attempt shows rate limit error
-5. Check your `CONTACT_EMAIL` inbox for the message
+5. Check SES send statistics in AWS console to confirm delivery
 
-- [ ] **Step 9: Commit**
+- [ ] **Step 11: Commit**
 
 ```bash
-git add routes/web.php app/Controllers/PublicController.php views/public/contact.php views/layouts/public.php .env.example
-git commit -m "feat: add contact/sponsorship page with honeypot, timing, and IP rate limiting"
+git add routes/web.php app/Services/SesMailer.php app/Controllers/PublicController.php \
+        views/public/contact.php views/layouts/public.php .env.example
+git commit -m "feat: add contact/sponsorship page — honeypot, timing check, IP throttle, SES delivery"
 ```
 
 ---
