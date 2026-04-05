@@ -38,6 +38,28 @@
         <textarea id="intro_text" name="intro_text" class="form-textarea" rows="3"><?= htmlspecialchars($trip['intro_text'] ?? '') ?></textarea>
     </div>
 
+    <section style="margin-top:var(--space-6); padding-top:var(--space-6); border-top:1px solid var(--color-border);">
+        <h2 style="font-size:var(--text-base); font-weight:var(--weight-semibold); margin-bottom:var(--space-3);">
+            Kommande resa — publik teaser
+        </h2>
+        <label style="display:flex; align-items:center; gap:var(--space-2); cursor:pointer; margin-bottom:var(--space-4);">
+            <input type="checkbox" name="public_teaser" value="1"
+                   <?= !empty($trip['public_teaser']) ? 'checked' : '' ?>>
+            <span style="font-size:var(--text-sm);">Visa som planerad resa på startsidan</span>
+        </label>
+        <div>
+            <label for="teaser_text" style="display:block; font-size:var(--text-sm); font-weight:var(--weight-medium); margin-bottom:var(--space-1);">
+                Teasertext (visas publikt — inga specifika platser)
+            </label>
+            <textarea id="teaser_text" name="teaser_text" rows="3" maxlength="500"
+                      style="width:100%; padding:var(--space-3); border:1px solid var(--color-border); border-radius:var(--radius-md); font-size:var(--text-sm); resize:vertical;"
+                      placeholder="T.ex. Vi planerar en Sverige-rund i sommar…"><?= htmlspecialchars($trip['teaser_text'] ?? '') ?></textarea>
+            <p style="font-size:var(--text-xs); color:var(--color-text-muted); margin-top:var(--space-1);">
+                Visas bara om "Visa som planerad resa" är ikryssad och startdatum är i framtiden.
+            </p>
+        </div>
+    </section>
+
     <div class="flex gap-3">
         <button type="submit" class="btn btn-primary">Spara ändringar</button>
         <a href="/adm/resor/<?= htmlspecialchars($trip['slug']) ?>" class="btn btn-ghost">Avbryt</a>

@@ -81,8 +81,19 @@ class PublicController
         require_once dirname(__DIR__) . '/Models/AmazonProduct.php';
         $shopTeaser = (new AmazonProduct($this->pdo))->latestPublished(3);
 
+        // Upcoming teasered trips
+        $upcomingStmt = $this->pdo->prepare('
+            SELECT title, teaser_text, start_date
+            FROM trips
+            WHERE public_teaser = 1 AND start_date > CURDATE()
+            ORDER BY start_date ASC
+            LIMIT 3
+        ');
+        $upcomingStmt->execute();
+        $upcomingTrips = $upcomingStmt->fetchAll();
+
         $useLeaflet = true;
-        view('public/homepage', compact('places', 'filterType', 'filterCountry', 'allPublic', 'allTypes', 'pageTitle', 'seoMeta', 'schemas', 'shopTeaser', 'useLeaflet', 'search'), 'public');
+        view('public/homepage', compact('places', 'filterType', 'filterCountry', 'allPublic', 'allTypes', 'pageTitle', 'seoMeta', 'schemas', 'shopTeaser', 'upcomingTrips', 'useLeaflet', 'search'), 'public');
     }
 
     public function placeDetail(array $params): void
