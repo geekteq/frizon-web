@@ -104,8 +104,8 @@ $typeLabel = $placeTypes[$place['place_type']] ?? $place['place_type'];
     @media(min-width:640px){.place-prod-grid{grid-template-columns:repeat(4,1fr);}}
     .place-prod-card{display:flex;flex-direction:column;border:1px solid var(--color-border);border-radius:var(--radius-md);text-decoration:none;color:inherit;background:var(--color-bg);overflow:hidden;transition:box-shadow .15s;}
     .place-prod-card:hover{box-shadow:0 2px 8px rgba(0,0,0,.08);}
-    .place-prod-card__img{aspect-ratio:1;display:flex;align-items:center;justify-content:center;background:#f5f5f4;padding:var(--space-3);}
-    .place-prod-card__img img{width:100%;height:100%;object-fit:contain;}
+    .place-prod-card__img{height:110px;display:flex;align-items:center;justify-content:center;background:#f5f5f4;padding:var(--space-3);}
+    .place-prod-card__img img{max-width:100%;max-height:100%;width:auto;height:auto;object-fit:contain;}
     .place-prod-card__body{padding:var(--space-2) var(--space-2) var(--space-3);display:flex;flex-direction:column;gap:2px;flex:1;}
     .place-prod-card__title{font-size:var(--text-xs);font-weight:var(--weight-semibold);line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
     .place-prod-card__cat{font-size:var(--text-xs);color:var(--color-text-muted);}
