@@ -97,6 +97,14 @@ class PublicController
             return;
         }
 
+        // Increment view counter (fire-and-forget, ignore failures)
+        try {
+            $this->pdo->prepare('UPDATE places SET view_count = view_count + 1 WHERE id = ?')
+                      ->execute([$place['id']]);
+        } catch (PDOException $e) {
+            error_log('view_count increment failed: ' . $e->getMessage());
+        }
+
         // Get visits with ratings and images
         $stmt = $this->pdo->prepare('
             SELECT v.*, vr.total_rating_cached, vr.location_rating, vr.calmness_rating,
