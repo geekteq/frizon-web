@@ -45,7 +45,7 @@
         </div>
         <?php endif; ?>
 
-        <a href="<?= htmlspecialchars($product['affiliate_url']) ?>"
+        <a href="/go/<?= htmlspecialchars($product['slug']) ?>"
            target="_blank" rel="noopener sponsored"
            class="btn btn-primary"
            style="display:inline-block; font-size:var(--text-base); padding:var(--space-3) var(--space-6);">

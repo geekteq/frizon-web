@@ -39,7 +39,7 @@
                class="btn btn-secondary btn--sm"
                style="flex:1; text-align:center;"
                aria-label="Läs mer om <?= htmlspecialchars($p['title']) ?>">Läs mer</a>
-            <a href="<?= htmlspecialchars($p['affiliate_url']) ?>"
+            <a href="/go/<?= htmlspecialchars($p['slug']) ?>"
                target="_blank" rel="noopener sponsored"
                class="btn btn--sm"
                style="flex:1; text-align:center; background:#FF9900; color:#111; border:1px solid #e68a00; font-weight:var(--weight-semibold);">
