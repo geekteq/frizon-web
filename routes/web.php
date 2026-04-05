@@ -15,6 +15,9 @@ function registerRoutes(Router $router): void
     $router->get('/shop', 'AmazonController', 'shopIndex');
     $router->get('/shop/{slug}', 'AmazonController', 'shopProduct');
 
+    // Affiliate click-through tracker (public)
+    $router->get('/go/{slug}', 'AmazonController', 'go');
+
     // Auth
     $router->get('/adm/login', 'AuthController', 'showLogin');
     $router->post('/adm/login', 'AuthController', 'login');
