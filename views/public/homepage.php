@@ -114,7 +114,12 @@ $placeTypes = [
         <div style="padding:var(--space-4); border:1px solid var(--color-border); border-radius:var(--radius-md); background:var(--color-bg);">
             <?php if ($t['start_date']): ?>
                 <div style="font-size:var(--text-xs); color:var(--color-text-muted); text-transform:uppercase; letter-spacing:0.06em; margin-bottom:var(--space-1);">
-                    <?= date('F Y', strtotime($t['start_date'])) ?>
+                    <?php
+                    $svMonths = ['Januari','Februari','Mars','April','Maj','Juni',
+                                 'Juli','Augusti','September','Oktober','November','December'];
+                    $ts = strtotime($t['start_date']);
+                    echo $svMonths[(int)date('n', $ts) - 1] . ' ' . date('Y', $ts);
+                    ?>
                 </div>
             <?php endif; ?>
             <?php if ($t['teaser_text']): ?>
