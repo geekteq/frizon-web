@@ -11,6 +11,27 @@ class Trip
         $this->pdo = $pdo;
     }
 
+    /**
+     * Auto-transition trip statuses based on start/end dates.
+     * Called when the trips list is loaded — no cron needed.
+     *   start_date reached, end_date not yet passed → ongoing
+     *   end_date passed                             → finished
+     * Trips without dates are left unchanged.
+     */
+    public function autoUpdateStatuses(): void
+    {
+        $this->pdo->exec("
+            UPDATE trips
+            SET status = CASE
+                WHEN start_date IS NOT NULL AND start_date <= CURDATE()
+                     AND (end_date IS NULL OR end_date >= CURDATE()) THEN 'ongoing'
+                WHEN end_date IS NOT NULL AND end_date < CURDATE()   THEN 'finished'
+                ELSE status
+            END
+            WHERE start_date IS NOT NULL
+        ");
+    }
+
     public function all(): array
     {
         $stmt = $this->pdo->query('

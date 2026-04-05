@@ -28,6 +28,7 @@ class TripController
     {
         Auth::requireLogin();
         $tripModel = new Trip($this->pdo);
+        $tripModel->autoUpdateStatuses();
         $trips = $tripModel->all();
 
         $grouped = ['ongoing' => [], 'planned' => [], 'finished' => []];
