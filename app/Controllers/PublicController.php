@@ -446,8 +446,15 @@ class PublicController
 
     public function submitContact(array $params): void
     {
-        $appKey       = $_ENV['APP_KEY'] ?? 'default';
+        $appKey       = $_ENV['APP_KEY'] ?? '';
         $contactEmail = $_ENV['CONTACT_EMAIL'] ?? '';
+
+        // Fail-closed if APP_KEY is not configured — timing token would be predictable
+        if ($appKey === '') {
+            flash('error', 'Formuläret är inte konfigurerat. Kontakta oss via e-post.');
+            redirect('/samarbeta');
+            return;
+        }
 
         // --- Spam protection layer 1: honeypot ---
         if (!empty($_POST['website'])) {
@@ -489,6 +496,11 @@ class PublicController
 
         if ($name === '' || $email === '' || $message === '') {
             flash('error', 'Fyll i alla obligatoriska fält.');
+            redirect('/samarbeta');
+            return;
+        }
+        if (mb_strlen($name) > 100 || mb_strlen($email) > 254 || mb_strlen($message) > 4000) {
+            flash('error', 'Ett eller flera fält är för långa.');
             redirect('/samarbeta');
             return;
         }

@@ -51,8 +51,9 @@ class SesMailer
             CURLOPT_POST           => true,
             CURLOPT_POSTFIELDS     => $payload,
             CURLOPT_HTTPHEADER     => $headers,
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_TIMEOUT        => 10,
+            CURLOPT_RETURNTRANSFER  => true,
+            CURLOPT_TIMEOUT         => 10,
+            CURLOPT_CONNECTTIMEOUT  => 5,
         ]);
 
         $response = (string) curl_exec($ch);
