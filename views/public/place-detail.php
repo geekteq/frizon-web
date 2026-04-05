@@ -99,34 +99,43 @@ $typeLabel = $placeTypes[$place['place_type']] ?? $place['place_type'];
     <?php endif; ?>
 
     <?php if (!empty($placeProducts)): ?>
+    <style>
+    .place-prod-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:var(--space-3);}
+    @media(min-width:640px){.place-prod-grid{grid-template-columns:repeat(4,1fr);}}
+    .place-prod-card{display:flex;flex-direction:column;border:1px solid var(--color-border);border-radius:var(--radius-md);text-decoration:none;color:inherit;background:var(--color-bg);overflow:hidden;transition:box-shadow .15s;}
+    .place-prod-card:hover{box-shadow:0 2px 8px rgba(0,0,0,.08);}
+    .place-prod-card__img{aspect-ratio:1;display:flex;align-items:center;justify-content:center;background:#f5f5f4;padding:var(--space-3);}
+    .place-prod-card__img img{width:100%;height:100%;object-fit:contain;}
+    .place-prod-card__body{padding:var(--space-2) var(--space-2) var(--space-3);display:flex;flex-direction:column;gap:2px;flex:1;}
+    .place-prod-card__title{font-size:var(--text-xs);font-weight:var(--weight-semibold);line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+    .place-prod-card__cat{font-size:var(--text-xs);color:var(--color-text-muted);}
+    .place-prod-card__cta{margin-top:auto;padding-top:var(--space-2);font-size:var(--text-xs);color:var(--color-text-muted);}
+    </style>
     <section style="margin-top:var(--space-8); padding-top:var(--space-6); border-top:1px solid var(--color-border);">
         <h2 style="font-size:var(--text-lg); font-weight:var(--weight-semibold); margin-bottom:var(--space-4); color:var(--color-text);">
             Produkter vi använde här
         </h2>
-        <div style="display:flex; flex-direction:column; gap:var(--space-3);">
+        <div class="place-prod-grid">
             <?php foreach ($placeProducts as $prod): ?>
             <a href="/go/<?= htmlspecialchars($prod['slug']) ?>"
                target="_blank" rel="noopener sponsored"
-               onclick="typeof gtag!=='undefined'&&gtag('event','affiliate_click',{'product_slug':'<?= htmlspecialchars($prod['slug'], ENT_QUOTES) ?>','product_name':'<?= htmlspecialchars($prod['title'], ENT_QUOTES) ?>','source':'place_detail'})"
-               style="display:flex; align-items:center; gap:var(--space-3); padding:var(--space-3); border:1px solid var(--color-border); border-radius:var(--radius-md); text-decoration:none; color:inherit; background:var(--color-bg);">
-                <?php if ($prod['image_path']): ?>
-                    <img src="/uploads/amazon/<?= htmlspecialchars($prod['image_path']) ?>"
-                         alt="<?= htmlspecialchars($prod['title']) ?>"
-                         width="56" height="56"
-                         loading="lazy"
-                         style="width:56px; height:56px; object-fit:contain; background:#f5f5f4; border-radius:var(--radius-sm); flex-shrink:0;">
-                <?php endif; ?>
-                <div style="flex:1; min-width:0;">
-                    <div style="font-size:var(--text-sm); font-weight:var(--weight-semibold); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
-                        <?= htmlspecialchars($prod['title']) ?>
-                    </div>
-                    <?php if ($prod['category']): ?>
-                    <div style="font-size:var(--text-xs); color:var(--color-text-muted); margin-top:2px;">
-                        <?= htmlspecialchars($prod['category']) ?>
-                    </div>
+               class="place-prod-card"
+               onclick="typeof gtag!=='undefined'&&gtag('event','affiliate_click',{'product_slug':'<?= htmlspecialchars($prod['slug'], ENT_QUOTES) ?>','product_name':'<?= htmlspecialchars($prod['title'], ENT_QUOTES) ?>','source':'place_detail'})">
+                <div class="place-prod-card__img">
+                    <?php if ($prod['image_path']): ?>
+                        <img src="/uploads/amazon/<?= htmlspecialchars($prod['image_path']) ?>"
+                             alt="<?= htmlspecialchars($prod['title']) ?>"
+                             width="120" height="120"
+                             loading="lazy">
                     <?php endif; ?>
                 </div>
-                <span style="font-size:var(--text-sm); color:var(--color-text-muted); flex-shrink:0;">Se hos Amazon &#x2197;</span>
+                <div class="place-prod-card__body">
+                    <div class="place-prod-card__title"><?= htmlspecialchars($prod['title']) ?></div>
+                    <?php if ($prod['category']): ?>
+                        <div class="place-prod-card__cat"><?= htmlspecialchars($prod['category']) ?></div>
+                    <?php endif; ?>
+                    <div class="place-prod-card__cta">Se hos Amazon ↗</div>
+                </div>
             </a>
             <?php endforeach; ?>
         </div>
