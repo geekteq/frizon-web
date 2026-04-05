@@ -27,6 +27,11 @@
             Listor
         </a>
 
+        <a href="/adm/statistik" class="sidebar-nav__item <?= str_starts_with($currentPath, '/adm/statistik') ? 'sidebar-nav__item--active' : '' ?>">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+            Statistik
+        </a>
+
         <div class="sidebar-nav__label" style="margin-top:var(--space-4);">Publikt</div>
         <a href="/adm/amazon-lista" class="sidebar-nav__item <?= str_starts_with($currentPath ?? '', '/adm/amazon-lista') ? 'sidebar-nav__item--active' : '' ?>">
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>

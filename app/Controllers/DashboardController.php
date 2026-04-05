@@ -36,4 +36,56 @@ class DashboardController
         $pageTitle = 'Dashboard';
         view('dashboard/index', compact('recentVisits', 'stats', 'places', 'pageTitle'));
     }
+
+    public function stats(array $params): void
+    {
+        Auth::requireLogin();
+
+        // Top products by clicks — last 30 days
+        $topProducts = $this->pdo->query('
+            SELECT ap.title, ap.slug, COUNT(pc.id) AS clicks
+            FROM product_clicks pc
+            JOIN amazon_products ap ON ap.id = pc.product_id
+            WHERE pc.clicked_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+            GROUP BY ap.id
+            ORDER BY clicks DESC
+            LIMIT 20
+        ')->fetchAll();
+
+        // Top referrer pages — last 30 days
+        $topReferrers = $this->pdo->query('
+            SELECT referrer, COUNT(*) AS clicks
+            FROM product_clicks
+            WHERE clicked_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+              AND referrer IS NOT NULL AND referrer != \'\'
+            GROUP BY referrer
+            ORDER BY clicks DESC
+            LIMIT 20
+        ')->fetchAll();
+
+        // Top places by views
+        $topPlaces = $this->pdo->query('
+            SELECT name, slug, view_count
+            FROM places
+            WHERE public_allowed = 1
+            ORDER BY view_count DESC
+            LIMIT 20
+        ')->fetchAll();
+
+        // Totals
+        $totalClicks30d = (int) $this->pdo->query('
+            SELECT COUNT(*) FROM product_clicks
+            WHERE clicked_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+        ')->fetchColumn();
+
+        $totalClicksAllTime = (int) $this->pdo->query('
+            SELECT COUNT(*) FROM product_clicks
+        ')->fetchColumn();
+
+        $pageTitle = 'Statistik';
+        view('dashboard/stats', compact(
+            'topProducts', 'topReferrers', 'topPlaces',
+            'totalClicks30d', 'totalClicksAllTime', 'pageTitle'
+        ));
+    }
 }

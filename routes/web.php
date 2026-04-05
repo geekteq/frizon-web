@@ -29,6 +29,7 @@ function registerRoutes(Router $router): void
 
     // Dashboard
     $router->get('/adm', 'DashboardController', 'index');
+    $router->get('/adm/statistik', 'DashboardController', 'stats');
 
     // Places
     $router->get('/adm/platser', 'PlaceController', 'index');
