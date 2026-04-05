@@ -125,6 +125,10 @@ class PublicController
         $tagStmt->execute([$place['id']]);
         $tags = $tagStmt->fetchAll(PDO::FETCH_COLUMN);
 
+        // Products linked to this place
+        require_once dirname(__DIR__) . '/Models/AmazonProduct.php';
+        $placeProducts = (new AmazonProduct($this->pdo))->getByPlaceId((int) $place['id']);
+
         // Avg rating
         $ratingStmt = $this->pdo->prepare('
             SELECT AVG(vr.total_rating_cached) as avg_rating
@@ -226,7 +230,7 @@ class PublicController
         }
 
         $useLeaflet = true;
-        view('public/place-detail', compact('place', 'visits', 'images', 'tags', 'avgRating', 'pageTitle', 'seoMeta', 'schemas', 'faqItems', 'useLeaflet'), 'public');
+        view('public/place-detail', compact('place', 'visits', 'images', 'tags', 'avgRating', 'pageTitle', 'seoMeta', 'schemas', 'faqItems', 'useLeaflet', 'placeProducts'), 'public');
     }
 
     public function privacy(array $params): void
