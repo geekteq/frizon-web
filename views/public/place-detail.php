@@ -97,6 +97,41 @@ $typeLabel = $placeTypes[$place['place_type']] ?? $place['place_type'];
             <?php endforeach; ?>
         </div>
     <?php endif; ?>
+
+    <?php if (!empty($placeProducts)): ?>
+    <section style="margin-top:var(--space-8); padding-top:var(--space-6); border-top:1px solid var(--color-border);">
+        <h2 style="font-size:var(--text-lg); font-weight:var(--weight-semibold); margin-bottom:var(--space-4); color:var(--color-text);">
+            Produkter vi använde här
+        </h2>
+        <div style="display:flex; flex-direction:column; gap:var(--space-3);">
+            <?php foreach ($placeProducts as $prod): ?>
+            <a href="/go/<?= htmlspecialchars($prod['slug']) ?>"
+               target="_blank" rel="noopener sponsored"
+               onclick="typeof gtag!=='undefined'&&gtag('event','affiliate_click',{'product_slug':'<?= htmlspecialchars($prod['slug'], ENT_QUOTES) ?>','product_name':'<?= htmlspecialchars($prod['title'], ENT_QUOTES) ?>','source':'place_detail'})"
+               style="display:flex; align-items:center; gap:var(--space-3); padding:var(--space-3); border:1px solid var(--color-border); border-radius:var(--radius-md); text-decoration:none; color:inherit; background:var(--color-bg);">
+                <?php if ($prod['image_path']): ?>
+                    <img src="/uploads/amazon/<?= htmlspecialchars($prod['image_path']) ?>"
+                         alt="<?= htmlspecialchars($prod['title']) ?>"
+                         width="56" height="56"
+                         loading="lazy"
+                         style="width:56px; height:56px; object-fit:contain; background:#f5f5f4; border-radius:var(--radius-sm); flex-shrink:0;">
+                <?php endif; ?>
+                <div style="flex:1; min-width:0;">
+                    <div style="font-size:var(--text-sm); font-weight:var(--weight-semibold); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+                        <?= htmlspecialchars($prod['title']) ?>
+                    </div>
+                    <?php if ($prod['category']): ?>
+                    <div style="font-size:var(--text-xs); color:var(--color-text-muted); margin-top:2px;">
+                        <?= htmlspecialchars($prod['category']) ?>
+                    </div>
+                    <?php endif; ?>
+                </div>
+                <span style="font-size:var(--text-sm); color:var(--color-text-muted); flex-shrink:0;">Se hos Amazon &#x2197;</span>
+            </a>
+            <?php endforeach; ?>
+        </div>
+    </section>
+    <?php endif; ?>
 </article>
 
 <script<?= app_csp_nonce_attr() ?>>

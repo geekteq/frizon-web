@@ -104,6 +104,35 @@ $placeTypes = [
     <?php endif; ?>
 </div>
 
+<?php if (!empty($upcomingTrips)): ?>
+<section style="max-width:var(--content-max-width); margin:0 auto var(--space-8); padding:0 var(--space-4);">
+    <h2 style="font-size:var(--text-lg); font-weight:var(--weight-semibold); margin-bottom:var(--space-4); color:var(--color-text);">
+        Kommande resor
+    </h2>
+    <div style="display:flex; flex-direction:column; gap:var(--space-3);">
+        <?php foreach ($upcomingTrips as $t): ?>
+        <div style="padding:var(--space-4); border:1px solid var(--color-border); border-radius:var(--radius-md); background:var(--color-bg);">
+            <?php if ($t['start_date']): ?>
+                <div style="font-size:var(--text-xs); color:var(--color-text-muted); text-transform:uppercase; letter-spacing:0.06em; margin-bottom:var(--space-1);">
+                    <?php
+                    $svMonths = ['Januari','Februari','Mars','April','Maj','Juni',
+                                 'Juli','Augusti','September','Oktober','November','December'];
+                    $ts = strtotime($t['start_date']);
+                    echo $svMonths[(int)date('n', $ts) - 1] . ' ' . date('Y', $ts);
+                    ?>
+                </div>
+            <?php endif; ?>
+            <?php if ($t['teaser_text']): ?>
+                <p style="font-size:var(--text-sm); color:var(--color-text); margin:0; line-height:var(--leading-relaxed);">
+                    <?= htmlspecialchars($t['teaser_text']) ?>
+                </p>
+            <?php endif; ?>
+        </div>
+        <?php endforeach; ?>
+    </div>
+</section>
+<?php endif; ?>
+
 <?php if (!empty($shopTeaser)): ?>
 <section style="max-width:var(--content-max-width); margin:var(--space-8) auto var(--space-6); padding:0 var(--space-4);">
     <div style="display:flex; align-items:baseline; justify-content:space-between; margin-bottom:var(--space-4);">

@@ -6,3 +6,9 @@ RewriteRule ^ index.php [L]
 # Hide PHP version from response headers
 php_flag expose_php Off
 Header always unset X-Powered-By
+
+# Security headers
+Header always set X-Content-Type-Options "nosniff"
+Header always set X-Frame-Options "DENY"
+Header always set Referrer-Policy "strict-origin-when-cross-origin"
+Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains"

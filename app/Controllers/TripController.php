@@ -116,11 +116,13 @@ class TripController
         if (!$trip) { http_response_code(404); return; }
 
         $tripModel->update((int) $trip['id'], [
-            'title'      => trim($_POST['title'] ?? $trip['title']),
-            'intro_text' => trim($_POST['intro_text'] ?? '') ?: null,
-            'status'     => $_POST['status'] ?? $trip['status'],
-            'start_date' => $_POST['start_date'] ?: null,
-            'end_date'   => $_POST['end_date'] ?: null,
+            'title'         => trim($_POST['title'] ?? $trip['title']),
+            'intro_text'    => trim($_POST['intro_text'] ?? '') ?: null,
+            'status'        => $_POST['status'] ?? $trip['status'],
+            'start_date'    => $_POST['start_date'] ?: null,
+            'end_date'      => $_POST['end_date'] ?: null,
+            'public_teaser' => isset($_POST['public_teaser']) ? 1 : 0,
+            'teaser_text'   => trim($_POST['teaser_text'] ?? '') ?: null,
         ]);
 
         flash('success', 'Resan har uppdaterats.');

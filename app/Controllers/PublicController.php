@@ -81,8 +81,19 @@ class PublicController
         require_once dirname(__DIR__) . '/Models/AmazonProduct.php';
         $shopTeaser = (new AmazonProduct($this->pdo))->latestPublished(3);
 
+        // Upcoming teasered trips
+        $upcomingStmt = $this->pdo->prepare('
+            SELECT title, teaser_text, start_date
+            FROM trips
+            WHERE public_teaser = 1 AND start_date > CURDATE()
+            ORDER BY start_date ASC
+            LIMIT 3
+        ');
+        $upcomingStmt->execute();
+        $upcomingTrips = $upcomingStmt->fetchAll();
+
         $useLeaflet = true;
-        view('public/homepage', compact('places', 'filterType', 'filterCountry', 'allPublic', 'allTypes', 'pageTitle', 'seoMeta', 'schemas', 'shopTeaser', 'useLeaflet', 'search'), 'public');
+        view('public/homepage', compact('places', 'filterType', 'filterCountry', 'allPublic', 'allTypes', 'pageTitle', 'seoMeta', 'schemas', 'shopTeaser', 'upcomingTrips', 'useLeaflet', 'search'), 'public');
     }
 
     public function placeDetail(array $params): void
@@ -95,6 +106,14 @@ class PublicController
             http_response_code(404);
             echo '<h1>Platsen hittades inte</h1>';
             return;
+        }
+
+        // Increment view counter (fire-and-forget, ignore failures)
+        try {
+            $this->pdo->prepare('UPDATE places SET view_count = view_count + 1 WHERE id = ?')
+                      ->execute([$place['id']]);
+        } catch (PDOException $e) {
+            error_log('view_count increment failed: ' . $e->getMessage());
         }
 
         // Get visits with ratings and images
@@ -124,6 +143,10 @@ class PublicController
         $tagStmt = $this->pdo->prepare('SELECT tag FROM place_tags WHERE place_id = ?');
         $tagStmt->execute([$place['id']]);
         $tags = $tagStmt->fetchAll(PDO::FETCH_COLUMN);
+
+        // Products linked to this place
+        require_once dirname(__DIR__) . '/Models/AmazonProduct.php';
+        $placeProducts = (new AmazonProduct($this->pdo))->getByPlaceId((int) $place['id']);
 
         // Avg rating
         $ratingStmt = $this->pdo->prepare('
@@ -226,7 +249,7 @@ class PublicController
         }
 
         $useLeaflet = true;
-        view('public/place-detail', compact('place', 'visits', 'images', 'tags', 'avgRating', 'pageTitle', 'seoMeta', 'schemas', 'faqItems', 'useLeaflet'), 'public');
+        view('public/place-detail', compact('place', 'visits', 'images', 'tags', 'avgRating', 'pageTitle', 'seoMeta', 'schemas', 'faqItems', 'useLeaflet', 'placeProducts'), 'public');
     }
 
     public function privacy(array $params): void
@@ -413,5 +436,111 @@ class PublicController
                 echo "\n";
             }
         }
+    }
+
+    public function contact(array $params): void
+    {
+        $appKey    = $_ENV['APP_KEY'] ?? 'default';
+        $loadedAt  = time();
+        $formToken = hash_hmac('sha256', (string) $loadedAt, $appKey);
+
+        $pageTitle = 'Samarbeta med oss — Frizon of Sweden';
+        $appUrl    = rtrim($_ENV['APP_URL'] ?? 'https://frizon.org', '/');
+        $seoMeta   = [
+            'description' => 'Intresserad av ett samarbete med Frizon of Sweden? Vi samarbetar med varumärken vi faktiskt använder på resan med Frizze.',
+            'og_url'      => $appUrl . '/samarbeta',
+            'og_image'    => $appUrl . '/img/frizon-logo.png',
+        ];
+
+        view('public/contact', compact('pageTitle', 'seoMeta', 'loadedAt', 'formToken'), 'public');
+    }
+
+    public function submitContact(array $params): void
+    {
+        $appKey       = $_ENV['APP_KEY'] ?? '';
+        $contactEmail = $_ENV['CONTACT_EMAIL'] ?? '';
+
+        // Fail-closed if APP_KEY is not configured — timing token would be predictable
+        if ($appKey === '') {
+            flash('error', 'Formuläret är inte konfigurerat. Kontakta oss via e-post.');
+            redirect('/samarbeta');
+            return;
+        }
+
+        // --- Spam protection layer 1: honeypot ---
+        if (!empty($_POST['website'])) {
+            flash('success', 'Tack för ditt meddelande! Vi hör av oss inom kort.');
+            redirect('/samarbeta');
+            return;
+        }
+
+        // --- Spam protection layer 2: timing check ---
+        $loadedAt  = (int) ($_POST['loaded_at'] ?? 0);
+        $formToken = trim($_POST['form_token'] ?? '');
+        $expected  = hash_hmac('sha256', (string) $loadedAt, $appKey);
+        if (!hash_equals($expected, $formToken) || (time() - $loadedAt) < 4) {
+            flash('success', 'Tack för ditt meddelande! Vi hör av oss inom kort.');
+            redirect('/samarbeta');
+            return;
+        }
+
+        // --- Spam protection layer 3: IP rate limit ---
+        require_once dirname(__DIR__) . '/Services/LoginThrottle.php';
+        $ip       = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
+        $throttle = new LoginThrottle(
+            storagePath:   dirname(__DIR__, 2) . '/storage/contact-throttle',
+            maxAttempts:   3,
+            windowSeconds: 3600
+        );
+        try {
+            $throttle->ensureAllowed('contact', $ip);
+        } catch (RuntimeException $e) {
+            flash('error', 'För många meddelanden. Försök igen senare.');
+            redirect('/samarbeta');
+            return;
+        }
+
+        // --- Validate ---
+        $name    = trim($_POST['name'] ?? '');
+        $email   = trim($_POST['email'] ?? '');
+        $message = trim($_POST['message'] ?? '');
+
+        if ($name === '' || $email === '' || $message === '') {
+            flash('error', 'Fyll i alla obligatoriska fält.');
+            redirect('/samarbeta');
+            return;
+        }
+        if (mb_strlen($name) > 100 || mb_strlen($email) > 254 || mb_strlen($message) > 4000) {
+            flash('error', 'Ett eller flera fält är för långa.');
+            redirect('/samarbeta');
+            return;
+        }
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            flash('error', 'Ange en giltig e-postadress.');
+            redirect('/samarbeta');
+            return;
+        }
+
+        // --- Deliver via AWS SES ---
+        $company = trim($_POST['company'] ?? '');
+        $subject = 'Samarbetsförfrågan från ' . $name . ($company ? ' (' . $company . ')' : '');
+        $body    = "Namn: {$name}\n"
+                 . ($company ? "Företag: {$company}\n" : '')
+                 . "E-post: {$email}\n\n"
+                 . "Meddelande:\n{$message}";
+
+        if ($contactEmail) {
+            require_once dirname(__DIR__) . '/Services/SesMailer.php';
+            try {
+                SesMailer::fromEnv()->send($contactEmail, $email, $subject, $body);
+            } catch (RuntimeException $e) {
+                error_log('SesMailer failed: ' . $e->getMessage());
+                // Don't expose delivery failure to the user — log and continue
+            }
+        }
+
+        $throttle->recordFailure('contact', $ip); // count successful submissions
+        flash('success', 'Tack för ditt meddelande! Vi hör av oss inom kort.');
+        redirect('/samarbeta');
     }
 }

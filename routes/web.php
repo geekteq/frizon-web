@@ -10,10 +10,15 @@ function registerRoutes(Router $router): void
     $router->get('/llms.txt', 'PublicController', 'llmsTxt');
     $router->get('/integritetspolicy', 'PublicController', 'privacy');
     $router->get('/cookiepolicy', 'PublicController', 'cookies');
+    $router->get('/samarbeta', 'PublicController', 'contact');
+    $router->post('/samarbeta', 'PublicController', 'submitContact');
 
     // Shop (public)
     $router->get('/shop', 'AmazonController', 'shopIndex');
     $router->get('/shop/{slug}', 'AmazonController', 'shopProduct');
+
+    // Affiliate click-through tracker (public)
+    $router->get('/go/{slug}', 'AmazonController', 'go');
 
     // Auth
     $router->get('/adm/login', 'AuthController', 'showLogin');

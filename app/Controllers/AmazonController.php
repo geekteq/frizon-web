@@ -568,6 +568,38 @@ class AmazonController
     }
 
     // -------------------------------------------------------------------------
+    // Public: affiliate click-through tracker — /go/{slug}
+    // -------------------------------------------------------------------------
+
+    public function go(array $params): void
+    {
+        $model   = new AmazonProduct($this->pdo);
+        $product = $model->findBySlug($params['slug']);
+
+        if (!$product || !$product['is_published'] || !$product['affiliate_url']) {
+            http_response_code(404);
+            echo 'Produkten hittades inte.';
+            return;
+        }
+
+        // Log the click — non-blocking: ignore DB errors
+        try {
+            $referrer  = substr($_SERVER['HTTP_REFERER'] ?? '', 0, 500);
+            $userAgent = substr($_SERVER['HTTP_USER_AGENT'] ?? '', 0, 500);
+            $stmt = $this->pdo->prepare(
+                'INSERT INTO product_clicks (product_id, referrer, user_agent) VALUES (?, ?, ?)'
+            );
+            $stmt->execute([$product['id'], $referrer ?: null, $userAgent ?: null]);
+        } catch (PDOException $e) {
+            // Never fail a redirect because of logging
+            error_log('product_clicks insert failed: ' . $e->getMessage());
+        }
+
+        header('Cache-Control: no-store, no-cache');
+        header('Location: ' . $product['affiliate_url'], true, 302);
+    }
+
+    // -------------------------------------------------------------------------
     // Private helpers
     // -------------------------------------------------------------------------
 

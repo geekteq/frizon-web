@@ -95,11 +95,18 @@ class PlaceController
     public function edit(array $params): void
     {
         Auth::requireLogin();
+        require_once dirname(__DIR__) . '/Models/AmazonProduct.php';
+
         $place = new Place($this->pdo);
         $p = $place->findBySlug($params['slug']);
         if (!$p) { http_response_code(404); echo '<h1>Platsen hittades inte</h1>'; return; }
+
+        $productModel       = new AmazonProduct($this->pdo);
+        $allProducts        = $productModel->allPublished();
+        $attachedProductIds = array_map('intval', array_column($productModel->getByPlaceId((int) $p['id']), 'id'));
+
         $pageTitle = 'Redigera ' . $p['name'];
-        view('places/edit', compact('p', 'pageTitle'));
+        view('places/edit', compact('p', 'pageTitle', 'allProducts', 'attachedProductIds'));
     }
 
     public function update(array $params): void
@@ -121,6 +128,11 @@ class PlaceController
             'meta_description'    => trim($_POST['meta_description'] ?? '') ?: null,
             'faq_content'         => $this->buildFaqContent(),
         ]);
+
+        // Sync place products
+        require_once dirname(__DIR__) . '/Models/AmazonProduct.php';
+        $productIds = array_map('intval', (array) ($_POST['product_ids'] ?? []));
+        (new AmazonProduct($this->pdo))->syncPlaceProducts((int) $p['id'], $productIds);
 
         flash('success', 'Platsen har uppdaterats.');
         redirect('/adm/platser/' . $params['slug']);

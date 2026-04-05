@@ -59,7 +59,9 @@ class Trip
     {
         $stmt = $this->pdo->prepare('
             UPDATE trips SET title = ?, intro_text = ?, status = ?,
-                start_date = ?, end_date = ?, updated_at = NOW()
+                start_date = ?, end_date = ?,
+                public_teaser = ?, teaser_text = ?,
+                updated_at = NOW()
             WHERE id = ?
         ');
         $stmt->execute([
@@ -68,6 +70,8 @@ class Trip
             $data['status'],
             $data['start_date'] ?? null,
             $data['end_date'] ?? null,
+            (int) ($data['public_teaser'] ?? 0),
+            $data['teaser_text'] ?? null,
             $id,
         ]);
     }
