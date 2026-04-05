@@ -69,6 +69,7 @@ $ogTitle         = htmlspecialchars($pageTitle);
                 </picture>
             </a>
             <a href="/topplista" class="public-header__link" style="font-weight:var(--weight-semibold);">Topplista</a>
+            <a href="/samarbeta" class="public-header__link <?= str_starts_with($reqPath ?? $_SERVER['REQUEST_URI'], '/samarbeta') ? 'public-header__link--active' : '' ?>" style="font-weight:var(--weight-semibold);">Samarbeta</a>
         </div>
     </header>
 
@@ -86,6 +87,8 @@ $ogTitle         = htmlspecialchars($pageTitle);
             <a href="/integritetspolicy" style="color:rgba(255,255,255,0.8); text-decoration:underline;">Integritetspolicy</a>
             <span style="color:rgba(255,255,255,0.4);"> &middot; </span>
             <a href="/cookiepolicy" style="color:rgba(255,255,255,0.8); text-decoration:underline;">Cookiepolicy</a>
+            <span style="color:rgba(255,255,255,0.4);"> &middot; </span>
+            <a href="/samarbeta" style="color:rgba(255,255,255,0.8); text-decoration:underline;">Samarbeta</a>
             <span style="color:rgba(255,255,255,0.4);"> &middot; </span>
             <a href="/adm" style="color:rgba(255,255,255,0.65); text-decoration:underline;">Admin</a>
         </p>

@@ -10,6 +10,8 @@ function registerRoutes(Router $router): void
     $router->get('/llms.txt', 'PublicController', 'llmsTxt');
     $router->get('/integritetspolicy', 'PublicController', 'privacy');
     $router->get('/cookiepolicy', 'PublicController', 'cookies');
+    $router->get('/samarbeta', 'PublicController', 'contact');
+    $router->post('/samarbeta', 'PublicController', 'submitContact');
 
     // Shop (public)
     $router->get('/shop', 'AmazonController', 'shopIndex');

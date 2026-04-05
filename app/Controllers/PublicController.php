@@ -426,4 +426,98 @@ class PublicController
             }
         }
     }
+
+    public function contact(array $params): void
+    {
+        $appKey    = $_ENV['APP_KEY'] ?? 'default';
+        $loadedAt  = time();
+        $formToken = hash_hmac('sha256', (string) $loadedAt, $appKey);
+
+        $pageTitle = 'Samarbeta med oss — Frizon of Sweden';
+        $appUrl    = rtrim($_ENV['APP_URL'] ?? 'https://frizon.org', '/');
+        $seoMeta   = [
+            'description' => 'Intresserad av ett samarbete med Frizon of Sweden? Vi samarbetar med varumärken vi faktiskt använder på resan med Frizze.',
+            'og_url'      => $appUrl . '/samarbeta',
+            'og_image'    => $appUrl . '/img/frizon-logo.png',
+        ];
+
+        view('public/contact', compact('pageTitle', 'seoMeta', 'loadedAt', 'formToken'), 'public');
+    }
+
+    public function submitContact(array $params): void
+    {
+        $appKey       = $_ENV['APP_KEY'] ?? 'default';
+        $contactEmail = $_ENV['CONTACT_EMAIL'] ?? '';
+
+        // --- Spam protection layer 1: honeypot ---
+        if (!empty($_POST['website'])) {
+            flash('success', 'Tack för ditt meddelande! Vi hör av oss inom kort.');
+            redirect('/samarbeta');
+            return;
+        }
+
+        // --- Spam protection layer 2: timing check ---
+        $loadedAt  = (int) ($_POST['loaded_at'] ?? 0);
+        $formToken = trim($_POST['form_token'] ?? '');
+        $expected  = hash_hmac('sha256', (string) $loadedAt, $appKey);
+        if (!hash_equals($expected, $formToken) || (time() - $loadedAt) < 4) {
+            flash('success', 'Tack för ditt meddelande! Vi hör av oss inom kort.');
+            redirect('/samarbeta');
+            return;
+        }
+
+        // --- Spam protection layer 3: IP rate limit ---
+        require_once dirname(__DIR__) . '/Services/LoginThrottle.php';
+        $ip       = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
+        $throttle = new LoginThrottle(
+            storagePath:   dirname(__DIR__, 2) . '/storage/contact-throttle',
+            maxAttempts:   3,
+            windowSeconds: 3600
+        );
+        try {
+            $throttle->ensureAllowed('contact', $ip);
+        } catch (RuntimeException $e) {
+            flash('error', 'För många meddelanden. Försök igen senare.');
+            redirect('/samarbeta');
+            return;
+        }
+
+        // --- Validate ---
+        $name    = trim($_POST['name'] ?? '');
+        $email   = trim($_POST['email'] ?? '');
+        $message = trim($_POST['message'] ?? '');
+
+        if ($name === '' || $email === '' || $message === '') {
+            flash('error', 'Fyll i alla obligatoriska fält.');
+            redirect('/samarbeta');
+            return;
+        }
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            flash('error', 'Ange en giltig e-postadress.');
+            redirect('/samarbeta');
+            return;
+        }
+
+        // --- Deliver via AWS SES ---
+        $company = trim($_POST['company'] ?? '');
+        $subject = 'Samarbetsförfrågan från ' . $name . ($company ? ' (' . $company . ')' : '');
+        $body    = "Namn: {$name}\n"
+                 . ($company ? "Företag: {$company}\n" : '')
+                 . "E-post: {$email}\n\n"
+                 . "Meddelande:\n{$message}";
+
+        if ($contactEmail) {
+            require_once dirname(__DIR__) . '/Services/SesMailer.php';
+            try {
+                SesMailer::fromEnv()->send($contactEmail, $email, $subject, $body);
+            } catch (RuntimeException $e) {
+                error_log('SesMailer failed: ' . $e->getMessage());
+                // Don't expose delivery failure to the user — log and continue
+            }
+        }
+
+        $throttle->recordFailure('contact', $ip); // count successful submissions
+        flash('success', 'Tack för ditt meddelande! Vi hör av oss inom kort.');
+        redirect('/samarbeta');
+    }
 }
