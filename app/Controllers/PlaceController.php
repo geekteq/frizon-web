@@ -103,7 +103,7 @@ class PlaceController
 
         $productModel       = new AmazonProduct($this->pdo);
         $allProducts        = $productModel->allPublished();
-        $attachedProductIds = array_column($productModel->getByPlaceId((int) $p['id']), 'id');
+        $attachedProductIds = array_map('intval', array_column($productModel->getByPlaceId((int) $p['id']), 'id'));
 
         $pageTitle = 'Redigera ' . $p['name'];
         view('places/edit', compact('p', 'pageTitle', 'allProducts', 'attachedProductIds'));

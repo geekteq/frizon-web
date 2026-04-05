@@ -107,6 +107,7 @@ $typeLabel = $placeTypes[$place['place_type']] ?? $place['place_type'];
             <?php foreach ($placeProducts as $prod): ?>
             <a href="/go/<?= htmlspecialchars($prod['slug']) ?>"
                target="_blank" rel="noopener sponsored"
+               onclick="typeof gtag!=='undefined'&&gtag('event','affiliate_click',{'product_slug':'<?= htmlspecialchars($prod['slug'], ENT_QUOTES) ?>','product_name':'<?= htmlspecialchars($prod['title'], ENT_QUOTES) ?>','source':'place_detail'})"
                style="display:flex; align-items:center; gap:var(--space-3); padding:var(--space-3); border:1px solid var(--color-border); border-radius:var(--radius-md); text-decoration:none; color:inherit; background:var(--color-bg);">
                 <?php if ($prod['image_path']): ?>
                     <img src="/uploads/amazon/<?= htmlspecialchars($prod['image_path']) ?>"

@@ -213,7 +213,7 @@ class AmazonProduct
             SELECT ap.*
             FROM amazon_products ap
             JOIN place_products pp ON pp.product_id = ap.id
-            WHERE pp.place_id = ?
+            WHERE pp.place_id = ? AND ap.is_published = 1
             ORDER BY pp.sort_order ASC, ap.title ASC
         ');
         $stmt->execute([$placeId]);
