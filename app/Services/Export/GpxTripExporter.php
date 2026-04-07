@@ -32,7 +32,9 @@ class GpxTripExporter
         if (!empty($trip['intro_text'])) {
             $xml->writeElement('desc', $trip['intro_text']);
         }
-        $xml->writeElement('author', 'Frizon of Sweden');
+        $xml->startElement('author');
+        $xml->writeElement('name', 'Frizon of Sweden');
+        $xml->endElement(); // author
         $xml->writeElement('time', date('c'));
         $xml->endElement(); // metadata
 
