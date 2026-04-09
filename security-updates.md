@@ -155,3 +155,16 @@
 - Minska blast radius om ytterligare användare eller komprometterade konton tillkommer senare.
 - Få revisionsspår för kritiska åtgärder utan att bygga ett tungt backend-ramverk.
 - Göra proddeploy säkrare och mer reproducerbar med tydligare migrering och preflight-kontroll.
+
+## 2026-04-09 — Uppföljning efter prodtest
+
+### Ändringar
+- Justerade sorteringen på landningssidans publika platslista så senaste publicerade besök väger tyngre än platsens senaste `updated_at`.
+- Lade till ett regressions-test som verifierar att featured-platser fortfarande ligger först, men att övriga platser sorteras efter senaste besöksdatum.
+
+### Påverkade filer
+- [app/Models/Place.php](/Users/mattias/Development/frizon-web/app/Models/Place.php)
+- [tests/test_public_place_sorting.php](/Users/mattias/Development/frizon-web/tests/test_public_place_sorting.php)
+
+### Motiv
+- Få landningssidan att visa "senast besökta" i faktisk besöksordning i stället för att råka favorisera poster som nyligen bara uppdaterats administrativt.

@@ -57,7 +57,9 @@ class Place
                     p.default_public_text,
                     p.is_featured,
                     COUNT(v.id) as visit_count,
-                    AVG(vr.total_rating_cached) as avg_rating
+                    AVG(vr.total_rating_cached) as avg_rating,
+                    MAX(v.visited_at) as latest_visit_date,
+                    MAX(v.created_at) as latest_visit_created_at
                 FROM places p
                 LEFT JOIN visits v ON v.place_id = p.id AND v.ready_for_publish = 1
                 LEFT JOIN visit_ratings vr ON vr.visit_id = v.id
@@ -77,7 +79,12 @@ class Place
             $params[] = '%' . $filters['search'] . '%';
         }
 
-        $sql .= ' GROUP BY p.id ORDER BY p.is_featured DESC, p.updated_at DESC';
+        $sql .= ' GROUP BY p.id
+                  ORDER BY
+                    p.is_featured DESC,
+                    latest_visit_date DESC,
+                    latest_visit_created_at DESC,
+                    p.updated_at DESC';
 
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute($params);
