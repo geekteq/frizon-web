@@ -4,6 +4,8 @@ storage/uploads/thumbnails/*
 storage/uploads/cards/*
 storage/uploads/detail/*
 !storage/uploads/*/.gitkeep
+storage/runtime-secrets/*
+!storage/runtime-secrets/.gitkeep
 vendor/
 *.log
 .DS_Store

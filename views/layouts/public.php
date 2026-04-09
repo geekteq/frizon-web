@@ -40,7 +40,7 @@ $ogTitle         = htmlspecialchars($pageTitle);
 
     <!-- JSON-LD structured data -->
     <?php foreach ($schemas as $schemaObj): ?>
-    <script type="application/ld+json"><?= json_encode($schemaObj, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG) ?></script>
+    <script type="application/ld+json"<?= app_csp_nonce_attr() ?>><?= json_encode($schemaObj, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG) ?></script>
     <?php endforeach; ?>
 
     <link rel="preload" as="image" href="/img/frizon-logo.webp" type="image/webp" fetchpriority="high">
@@ -155,6 +155,22 @@ $ogTitle         = htmlspecialchars($pageTitle);
     var declineBtn = document.getElementById('decline-cookies-btn');
     if (acceptBtn) acceptBtn.addEventListener('click', acceptCookies);
     if (declineBtn) declineBtn.addEventListener('click', declineCookies);
+
+    document.addEventListener('click', function(event) {
+        var link = event.target.closest('[data-affiliate-click]');
+        if (!link || typeof window.gtag !== 'function') return;
+
+        var payload = {
+            product_slug: link.dataset.affiliateProductSlug || '',
+            product_name: link.dataset.affiliateProductName || ''
+        };
+
+        if (link.dataset.affiliateSource) {
+            payload.source = link.dataset.affiliateSource;
+        }
+
+        window.gtag('event', 'affiliate_click', payload);
+    });
 
     // Non-blocking font load (avoids render-blocking Google Fonts request)
     (function() {

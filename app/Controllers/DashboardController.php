@@ -62,6 +62,16 @@ class DashboardController
             ORDER BY clicks DESC
             LIMIT 20
         ')->fetchAll();
+        $topReferrers = array_map(function (array $row): array {
+            $rawReferrer = trim((string) ($row['referrer'] ?? ''));
+
+            return [
+                'referrer'         => $rawReferrer,
+                'display_referrer' => $this->truncateReferrer($rawReferrer),
+                'safe_href'        => $this->safeExternalUrl($rawReferrer),
+                'clicks'           => (int) ($row['clicks'] ?? 0),
+            ];
+        }, $topReferrers);
 
         // Top places by views
         $topPlaces = $this->pdo->query('
@@ -87,5 +97,35 @@ class DashboardController
             'topProducts', 'topReferrers', 'topPlaces',
             'totalClicks30d', 'totalClicksAllTime', 'pageTitle'
         ));
+    }
+
+    private function safeExternalUrl(string $url): ?string
+    {
+        if ($url === '') {
+            return null;
+        }
+
+        $parts = parse_url($url);
+        if (!is_array($parts)) {
+            return null;
+        }
+
+        $scheme = strtolower((string) ($parts['scheme'] ?? ''));
+        $host   = trim((string) ($parts['host'] ?? ''));
+
+        if (!in_array($scheme, ['http', 'https'], true) || $host === '') {
+            return null;
+        }
+
+        return $url;
+    }
+
+    private function truncateReferrer(string $url, int $maxLength = 120): string
+    {
+        if (mb_strlen($url) <= $maxLength) {
+            return $url;
+        }
+
+        return mb_substr($url, 0, $maxLength - 1) . '…';
     }
 }

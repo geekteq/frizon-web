@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 require_once dirname(__DIR__) . '/Services/Auth.php';
+require_once dirname(__DIR__) . '/Services/ActionRateLimiter.php';
 require_once dirname(__DIR__) . '/Services/CsrfService.php';
 require_once dirname(__DIR__) . '/Services/AiService.php';
 require_once dirname(__DIR__) . '/Services/AmazonFetcher.php';
@@ -310,6 +311,14 @@ class AmazonController
             return;
         }
 
+        try {
+            $this->consumeActionQuota('amazon-refetch', 12, 1800);
+        } catch (RuntimeException) {
+            $_SESSION['flash'] = ['type' => 'error', 'message' => 'För många hämtningar från Amazon just nu. Försök igen senare.'];
+            header('Location: /adm/amazon-lista/' . $id . '/redigera');
+            return;
+        }
+
         $fetcher = $this->makeFetcher();
         if (!$fetcher->isAmazonUrl($product['amazon_url'])) {
             $_SESSION['flash'] = ['type' => 'error', 'message' => 'Produktens Amazon-URL är ogiltig.'];
@@ -386,6 +395,14 @@ class AmazonController
             return;
         }
 
+        try {
+            $this->consumeActionQuota('amazon-ai-draft', 12, 900);
+        } catch (RuntimeException) {
+            http_response_code(429);
+            echo json_encode(['success' => false, 'error' => 'För många AI-förfrågningar just nu. Försök igen senare.']);
+            return;
+        }
+
         $input = json_decode(file_get_contents('php://input'), true);
 
         $context = [
@@ -398,8 +415,9 @@ class AmazonController
             $ai   = new AiService();
             $text = $ai->generateShopDescription($context);
         } catch (RuntimeException $e) {
+            error_log('Amazon AI draft generation failed for product ' . $id . ': ' . $e->getMessage());
             http_response_code(500);
-            echo json_encode(['success' => false, 'error' => $e->getMessage()]);
+            echo json_encode(['success' => false, 'error' => 'AI-tjänsten kunde inte generera text just nu. Försök igen senare.']);
             return;
         }
 
@@ -662,5 +680,11 @@ class AmazonController
                 ),
             ];
         }
+    }
+
+    private function consumeActionQuota(string $action, int $maxAttempts, int $windowSeconds): void
+    {
+        $limiter = new ActionRateLimiter();
+        $limiter->consumeForUser($action, Auth::userId(), $maxAttempts, $windowSeconds);
     }
 }

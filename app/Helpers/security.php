@@ -12,7 +12,98 @@ function app_is_https_request(): bool
         return true;
     }
 
-    return strtolower((string) ($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '')) === 'https';
+    $forwardedProto = strtolower((string) ($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? ''));
+    if ($forwardedProto !== 'https') {
+        return false;
+    }
+
+    if (!app_enforce_trusted_proxies()) {
+        return true;
+    }
+
+    return app_is_trusted_proxy_request();
+}
+
+function app_is_trusted_proxy_request(): bool
+{
+    $trustedProxies = app_trusted_proxies();
+    if ($trustedProxies === []) {
+        return false;
+    }
+
+    $remoteAddr = trim((string) ($_SERVER['REMOTE_ADDR'] ?? ''));
+    if ($remoteAddr === '') {
+        return false;
+    }
+
+    foreach ($trustedProxies as $proxy) {
+        if (app_ip_matches_proxy($remoteAddr, $proxy)) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+function app_enforce_trusted_proxies(): bool
+{
+    return strtolower((string) ($_ENV['ENFORCE_TRUSTED_PROXIES'] ?? 'false')) === 'true';
+}
+
+function app_trusted_proxies(): array
+{
+    static $trustedProxies;
+    if ($trustedProxies !== null) {
+        return $trustedProxies;
+    }
+
+    $configured = $_ENV['TRUSTED_PROXIES'] ?? '';
+    $trustedProxies = array_values(array_filter(array_map(
+        static fn (string $proxy): string => trim($proxy),
+        explode(',', $configured)
+    )));
+
+    return $trustedProxies;
+}
+
+function app_ip_matches_proxy(string $ipAddress, string $proxy): bool
+{
+    if ($proxy === $ipAddress) {
+        return true;
+    }
+
+    if (!str_contains($proxy, '/')) {
+        return false;
+    }
+
+    [$network, $prefixLength] = explode('/', $proxy, 2);
+    $networkBin = @inet_pton($network);
+    $ipBin = @inet_pton($ipAddress);
+    $prefixLength = (int) $prefixLength;
+
+    if ($networkBin === false || $ipBin === false || strlen($networkBin) !== strlen($ipBin)) {
+        return false;
+    }
+
+    $maxBits = strlen($networkBin) * 8;
+    if ($prefixLength < 0 || $prefixLength > $maxBits) {
+        return false;
+    }
+
+    $fullBytes = intdiv($prefixLength, 8);
+    $remainingBits = $prefixLength % 8;
+
+    if ($fullBytes > 0 && substr($networkBin, 0, $fullBytes) !== substr($ipBin, 0, $fullBytes)) {
+        return false;
+    }
+
+    if ($remainingBits === 0) {
+        return true;
+    }
+
+    $mask = (0xFF << (8 - $remainingBits)) & 0xFF;
+
+    return (ord($networkBin[$fullBytes]) & $mask) === (ord($ipBin[$fullBytes]) & $mask);
 }
 
 function app_request_path(): string

@@ -4,9 +4,12 @@ declare(strict_types=1);
 
 require_once dirname(__DIR__) . '/Services/Auth.php';
 require_once dirname(__DIR__) . '/Services/CsrfService.php';
+require_once dirname(__DIR__) . '/Services/SecurityAudit.php';
 
 class AuthController
 {
+    private const PASSWORD_MIN_LENGTH = 12;
+
     private PDO $pdo;
     private array $config;
 
@@ -37,22 +40,40 @@ class AuthController
             redirect('/adm/login');
         }
 
-        $throttle = new LoginThrottle();
+        $throttles = $this->loginThrottles($username, $ipAddress);
 
         try {
-            $throttle->ensureAllowed($username, $ipAddress);
+            foreach ($throttles as [$throttle, $scopeUsername, $scopeIp]) {
+                $throttle->ensureAllowed($scopeUsername, $scopeIp);
+            }
         } catch (RuntimeException $e) {
+            SecurityAudit::log($this->pdo, 'auth.login_throttled', [
+                'username' => $username,
+                'ip_address' => $ipAddress,
+            ]);
             flash('error', $e->getMessage());
             redirect('/adm/login');
         }
 
         $auth = new Auth($this->pdo);
         if ($auth->attempt($username, $password)) {
-            $throttle->clear($username, $ipAddress);
+            foreach ($throttles as [$throttle, $scopeUsername, $scopeIp]) {
+                $throttle->clear($scopeUsername, $scopeIp);
+            }
+            SecurityAudit::log($this->pdo, 'auth.login_success', [
+                'username' => $username,
+            ], Auth::userId());
             redirect('/adm');
         }
 
-        $throttle->recordFailure($username, $ipAddress);
+        foreach ($throttles as [$throttle, $scopeUsername, $scopeIp]) {
+            $throttle->recordFailure($scopeUsername, $scopeIp);
+        }
+
+        SecurityAudit::log($this->pdo, 'auth.login_failed', [
+            'username' => $username,
+            'ip_address' => $ipAddress,
+        ]);
         flash('error', 'Fel användarnamn eller lösenord.');
         redirect('/adm/login');
     }
@@ -83,8 +104,13 @@ class AuthController
             redirect('/adm/byt-losenord');
         }
 
-        if (strlen($new) < 8) {
-            flash('error', 'Lösenordet måste vara minst 8 tecken.');
+        if (mb_strlen($new) < self::PASSWORD_MIN_LENGTH) {
+            flash('error', 'Lösenordet måste vara minst ' . self::PASSWORD_MIN_LENGTH . ' tecken.');
+            redirect('/adm/byt-losenord');
+        }
+
+        if (!preg_match('/[A-Za-z]/', $new) || !preg_match('/\d/', $new)) {
+            flash('error', 'Lösenordet måste innehålla både bokstäver och siffror.');
             redirect('/adm/byt-losenord');
         }
 
@@ -103,6 +129,7 @@ class AuthController
         $stmt = $this->pdo->prepare('UPDATE users SET password_hash = ?, updated_at = NOW() WHERE id = ?');
         $stmt->execute([$hash, Auth::userId()]);
 
+        SecurityAudit::log($this->pdo, 'auth.password_changed', [], Auth::userId());
         flash('success', 'Lösenordet har ändrats.');
         redirect('/adm');
     }
@@ -110,7 +137,18 @@ class AuthController
     public function logout(array $params): void
     {
         CsrfService::requireValid();
+        $userId = Auth::userId();
+        SecurityAudit::log($this->pdo, 'auth.logout', [], $userId);
         Auth::logout();
         redirect('/adm/login');
+    }
+
+    private function loginThrottles(string $username, string $ipAddress): array
+    {
+        return [
+            [new LoginThrottle(maxAttempts: 5, windowSeconds: 900), $username, $ipAddress],
+            [new LoginThrottle(maxAttempts: 10, windowSeconds: 900), $username, '*'],
+            [new LoginThrottle(maxAttempts: 20, windowSeconds: 900), '*', $ipAddress],
+        ];
     }
 }

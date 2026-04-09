@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 require_once dirname(__DIR__) . '/Services/Auth.php';
+require_once dirname(__DIR__) . '/Services/ActionRateLimiter.php';
 require_once dirname(__DIR__) . '/Services/CsrfService.php';
 require_once dirname(__DIR__) . '/Services/AiService.php';
 require_once dirname(__DIR__) . '/Models/Visit.php';
@@ -33,6 +34,14 @@ class AiController
         if (!CsrfService::verify()) {
             http_response_code(403);
             echo json_encode(['success' => false, 'error' => 'Ogiltig säkerhetstoken. Ladda om sidan.']);
+            return;
+        }
+
+        try {
+            $this->consumeActionQuota('visit-ai-draft', 12, 900);
+        } catch (RuntimeException) {
+            http_response_code(429);
+            echo json_encode(['success' => false, 'error' => 'För många AI-förfrågningar just nu. Försök igen om en stund.']);
             return;
         }
 
@@ -69,8 +78,9 @@ class AiController
             $aiService  = new AiService();
             $draftText  = $aiService->generateDraft($context);
         } catch (RuntimeException $e) {
+            error_log('AI draft generation failed for visit ' . $visitId . ': ' . $e->getMessage());
             http_response_code(500);
-            echo json_encode(['success' => false, 'error' => $e->getMessage()]);
+            echo json_encode(['success' => false, 'error' => 'AI-tjänsten kunde inte generera text just nu. Försök igen senare.']);
             return;
         }
 
@@ -106,6 +116,14 @@ class AiController
         if (!CsrfService::verify()) {
             http_response_code(403);
             echo json_encode(['success' => false, 'error' => 'Ogiltig säkerhetstoken.']);
+            return;
+        }
+
+        try {
+            $this->consumeActionQuota('place-ai-draft', 8, 900);
+        } catch (RuntimeException) {
+            http_response_code(429);
+            echo json_encode(['success' => false, 'error' => 'För många AI-förfrågningar just nu. Försök igen om en stund.']);
             return;
         }
 
@@ -157,8 +175,9 @@ class AiController
             $aiService = new AiService();
             $draftText = $aiService->generateDraft($context);
         } catch (RuntimeException $e) {
+            error_log('AI place draft generation failed for place ' . ($place['id'] ?? 'unknown') . ': ' . $e->getMessage());
             http_response_code(500);
-            echo json_encode(['success' => false, 'error' => $e->getMessage()]);
+            echo json_encode(['success' => false, 'error' => 'AI-tjänsten kunde inte generera text just nu. Försök igen senare.']);
             return;
         }
 
@@ -243,5 +262,11 @@ class AiController
         $draftModel->reject($draftId);
 
         echo json_encode(['success' => true]);
+    }
+
+    private function consumeActionQuota(string $action, int $maxAttempts, int $windowSeconds): void
+    {
+        $limiter = new ActionRateLimiter();
+        $limiter->consumeForUser($action, Auth::userId(), $maxAttempts, $windowSeconds);
     }
 }

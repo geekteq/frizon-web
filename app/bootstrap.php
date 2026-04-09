@@ -14,6 +14,12 @@ if (file_exists($envFile)) {
     }
 }
 
+if (empty($_ENV['APP_ENV'])) {
+    $_ENV['APP_ENV'] = (($_ENV['APP_DEBUG'] ?? 'false') === 'true')
+        ? 'development'
+        : 'production';
+}
+
 // Load config
 $config = require dirname(__DIR__) . '/config/app.php';
 

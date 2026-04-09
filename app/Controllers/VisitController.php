@@ -3,10 +3,12 @@
 declare(strict_types=1);
 
 require_once dirname(__DIR__) . '/Services/Auth.php';
+require_once dirname(__DIR__) . '/Services/ActionRateLimiter.php';
 require_once dirname(__DIR__) . '/Services/CsrfService.php';
 require_once dirname(__DIR__) . '/Services/ImageService.php';
 require_once dirname(__DIR__) . '/Services/AiService.php';
 require_once dirname(__DIR__) . '/Services/InstagramService.php';
+require_once dirname(__DIR__) . '/Services/SecurityAudit.php';
 require_once dirname(__DIR__) . '/Models/Place.php';
 require_once dirname(__DIR__) . '/Models/Visit.php';
 require_once dirname(__DIR__) . '/Models/VisitRating.php';
@@ -104,6 +106,11 @@ class VisitController
             }
         }
 
+        SecurityAudit::log($this->pdo, 'visit.created', [
+            'visit_id' => (int) $visitId,
+            'place_id' => (int) $p['id'],
+            'place_slug' => $p['slug'],
+        ], Auth::userId());
         flash('success', 'Besöket har sparats!');
         redirect('/adm/platser/' . $p['slug']);
     }
@@ -171,6 +178,10 @@ class VisitController
             'return_value_rating' => !empty($_POST['return_value_rating']) ? (int) $_POST['return_value_rating'] : null,
         ]);
 
+        SecurityAudit::log($this->pdo, 'visit.updated', [
+            'visit_id' => (int) $params['id'],
+            'place_id' => (int) $visit['place_id'],
+        ], Auth::userId());
         flash('success', 'Besöket har uppdaterats.');
         redirect('/adm/besok/' . $params['id']);
     }
@@ -196,6 +207,11 @@ class VisitController
             }
         }
 
+        SecurityAudit::log($this->pdo, 'visit.deleted', [
+            'visit_id' => (int) $params['id'],
+            'place_id' => (int) $visit['place_id'],
+            'place_slug' => $visit['place_slug'],
+        ], Auth::userId());
         flash('success', 'Besöket har tagits bort.');
         redirect('/adm/platser/' . $visit['place_slug']);
     }
@@ -208,6 +224,14 @@ class VisitController
 
         if (empty($_FILES['photo'])) {
             echo json_encode(['error' => 'Ingen fil']);
+            return;
+        }
+
+        try {
+            $this->consumeActionQuota('image-upload', 24, 900);
+        } catch (RuntimeException) {
+            http_response_code(429);
+            echo json_encode(['error' => 'För många bilduppladdningar just nu. Försök igen senare.']);
             return;
         }
 
@@ -256,6 +280,14 @@ class VisitController
         if (!$image) {
             http_response_code(404);
             echo json_encode(['error' => 'Bilden hittades inte']);
+            return;
+        }
+
+        try {
+            $this->consumeActionQuota('image-ai-caption', 20, 900);
+        } catch (RuntimeException) {
+            http_response_code(429);
+            echo json_encode(['error' => 'För många AI-förfrågningar just nu. Försök igen senare.']);
             return;
         }
 
@@ -308,14 +340,15 @@ class VisitController
             $aiService = new AiService();
             $caption   = $aiService->describeImage($cardsPath, $imgContext);
         } catch (RuntimeException $e) {
+            error_log('AI caption generation failed for image ' . $id . ': ' . $e->getMessage());
             http_response_code(500);
-            echo json_encode(['error' => $e->getMessage()]);
+            echo json_encode(['error' => 'Bildtext kunde inte genereras just nu. Försök igen senare.']);
             return;
         }
 
         if ($caption === '') {
             http_response_code(500);
-            echo json_encode(['error' => 'AI returnerade ingen text. Kontrollera att ANTHROPIC_API_KEY är konfigurerad.']);
+            echo json_encode(['error' => 'Bildtext kunde inte genereras just nu. Försök igen senare.']);
             return;
         }
 
@@ -384,11 +417,19 @@ class VisitController
             return;
         }
 
+        try {
+            $this->consumeActionQuota('instagram-publish', 5, 3600);
+        } catch (RuntimeException) {
+            http_response_code(429);
+            echo json_encode(['error' => 'För många Instagram-publiceringar just nu. Försök igen senare.']);
+            return;
+        }
+
         $ig = new InstagramService($this->config);
 
         if (!$ig->isConfigured()) {
             http_response_code(400);
-            echo json_encode(['error' => 'Instagram är inte konfigurerat. Lägg till INSTAGRAM_USER_ID och INSTAGRAM_ACCESS_TOKEN i .env']);
+            echo json_encode(['error' => 'Instagram-publicering är inte tillgänglig just nu.']);
             return;
         }
 
@@ -398,10 +439,19 @@ class VisitController
 
         try {
             $postId = $ig->publish($filenames, $caption);
+            SecurityAudit::log($this->pdo, 'instagram.publish_success', [
+                'visit_id' => (int) $id,
+                'post_id' => $postId,
+                'image_count' => count($filenames),
+            ], Auth::userId());
             echo json_encode(['success' => true, 'post_id' => $postId]);
         } catch (RuntimeException $e) {
+            error_log('Instagram publish failed for visit ' . $id . ': ' . $e->getMessage());
+            SecurityAudit::log($this->pdo, 'instagram.publish_failed', [
+                'visit_id' => (int) $id,
+            ], Auth::userId());
             http_response_code(500);
-            echo json_encode(['success' => false, 'error' => $e->getMessage()]);
+            echo json_encode(['success' => false, 'error' => 'Instagram-publicering misslyckades. Försök igen senare.']);
         }
     }
 
@@ -430,5 +480,11 @@ class VisitController
 
         $imageModel->updateCaption($id, $caption);
         echo json_encode(['success' => true]);
+    }
+
+    private function consumeActionQuota(string $action, int $maxAttempts, int $windowSeconds): void
+    {
+        $limiter = new ActionRateLimiter();
+        $limiter->consumeForUser($action, Auth::userId(), $maxAttempts, $windowSeconds);
     }
 }

@@ -64,7 +64,11 @@
                 <tr style="border-bottom:1px solid var(--color-border);">
                     <td style="padding:var(--space-2) var(--space-3) var(--space-2) 0; color:var(--color-text-muted);"><?= $i + 1 ?></td>
                     <td style="padding:var(--space-2) var(--space-3); font-family:monospace; font-size:var(--text-xs);">
-                        <a href="<?= htmlspecialchars($row['referrer']) ?>" style="color:inherit;"><?= htmlspecialchars($row['referrer']) ?></a>
+                        <?php if (!empty($row['safe_href'])): ?>
+                            <a href="<?= htmlspecialchars($row['safe_href']) ?>" target="_blank" rel="noopener noreferrer nofollow" style="color:inherit;"><?= htmlspecialchars($row['display_referrer']) ?></a>
+                        <?php else: ?>
+                            <span><?= htmlspecialchars($row['display_referrer']) ?></span>
+                        <?php endif; ?>
                     </td>
                     <td style="padding:var(--space-2) 0 var(--space-2) var(--space-3); text-align:right; font-weight:var(--weight-semibold);"><?= $row['clicks'] ?></td>
                 </tr>
@@ -93,7 +97,7 @@
                 <tr style="border-bottom:1px solid var(--color-border);">
                     <td style="padding:var(--space-2) var(--space-3) var(--space-2) 0; color:var(--color-text-muted);"><?= $i + 1 ?></td>
                     <td style="padding:var(--space-2) var(--space-3);">
-                        <a href="/platser/<?= htmlspecialchars($row['slug']) ?>" target="_blank" style="color:inherit;"><?= htmlspecialchars($row['name']) ?></a>
+                        <a href="/platser/<?= htmlspecialchars($row['slug']) ?>" target="_blank" rel="noopener noreferrer" style="color:inherit;"><?= htmlspecialchars($row['name']) ?></a>
                     </td>
                     <td style="padding:var(--space-2) 0 var(--space-2) var(--space-3); text-align:right; font-weight:var(--weight-semibold);"><?= number_format((int)$row['view_count']) ?></td>
                 </tr>

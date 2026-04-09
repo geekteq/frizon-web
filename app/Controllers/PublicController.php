@@ -440,9 +440,15 @@ class PublicController
 
     public function contact(array $params): void
     {
-        $appKey    = $_ENV['APP_KEY'] ?? 'default';
+        app_start_session();
+
         $loadedAt  = time();
-        $formToken = hash_hmac('sha256', (string) $loadedAt, $appKey);
+        $formToken = bin2hex(random_bytes(32));
+
+        $_SESSION['contact_form_token'] = [
+            'loaded_at' => $loadedAt,
+            'token'     => $formToken,
+        ];
 
         $pageTitle = 'Samarbeta med oss — Frizon of Sweden';
         $appUrl    = rtrim($_ENV['APP_URL'] ?? 'https://frizon.org', '/');
@@ -457,15 +463,8 @@ class PublicController
 
     public function submitContact(array $params): void
     {
-        $appKey       = $_ENV['APP_KEY'] ?? '';
         $contactEmail = $_ENV['CONTACT_EMAIL'] ?? '';
-
-        // Fail-closed if APP_KEY is not configured — timing token would be predictable
-        if ($appKey === '') {
-            flash('error', 'Formuläret är inte konfigurerat. Kontakta oss via e-post.');
-            redirect('/samarbeta');
-            return;
-        }
+        app_start_session();
 
         // --- Spam protection layer 1: honeypot ---
         if (!empty($_POST['website'])) {
@@ -475,10 +474,20 @@ class PublicController
         }
 
         // --- Spam protection layer 2: timing check ---
-        $loadedAt  = (int) ($_POST['loaded_at'] ?? 0);
-        $formToken = trim($_POST['form_token'] ?? '');
-        $expected  = hash_hmac('sha256', (string) $loadedAt, $appKey);
-        if (!hash_equals($expected, $formToken) || (time() - $loadedAt) < 4) {
+        $loadedAt    = (int) ($_POST['loaded_at'] ?? 0);
+        $formToken   = trim($_POST['form_token'] ?? '');
+        $sessionForm = $_SESSION['contact_form_token'] ?? null;
+        $maxAge      = 15 * 60;
+
+        $isValidFormToken = is_array($sessionForm)
+            && hash_equals((string) ($sessionForm['token'] ?? ''), $formToken)
+            && (int) ($sessionForm['loaded_at'] ?? 0) === $loadedAt
+            && (time() - $loadedAt) >= 4
+            && (time() - $loadedAt) <= $maxAge;
+
+        unset($_SESSION['contact_form_token']);
+
+        if (!$isValidFormToken) {
             flash('success', 'Tack för ditt meddelande! Vi hör av oss inom kort.');
             redirect('/samarbeta');
             return;

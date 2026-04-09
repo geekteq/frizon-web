@@ -37,6 +37,11 @@ class ImageService
             return null;
         }
 
+        [$width, $height] = $imageInfo;
+        if (!$this->isWithinImageLimits($width, $height)) {
+            return null;
+        }
+
         // All variants stored as WebP for Lighthouse performance
         $filename = date('Ymd_His') . '_' . bin2hex(random_bytes(4)) . '.webp';
 
@@ -103,6 +108,23 @@ class ImageService
 
         imagedestroy($img);
         imagedestroy($resized);
+    }
+
+    private function isWithinImageLimits(int $width, int $height): bool
+    {
+        if ($width < 1 || $height < 1) {
+            return false;
+        }
+
+        $maxWidth = (int) ($this->config['upload_max_width'] ?? 8000);
+        $maxHeight = (int) ($this->config['upload_max_height'] ?? 8000);
+        $maxPixels = (int) ($this->config['upload_max_pixels'] ?? 40000000);
+
+        if ($width > $maxWidth || $height > $maxHeight) {
+            return false;
+        }
+
+        return ($width * $height) <= $maxPixels;
     }
 
     /**

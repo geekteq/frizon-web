@@ -120,7 +120,10 @@ $typeLabel = $placeTypes[$place['place_type']] ?? $place['place_type'];
             <a href="/go/<?= htmlspecialchars($prod['slug']) ?>"
                target="_blank" rel="noopener sponsored"
                class="place-prod-card"
-               onclick="typeof gtag!=='undefined'&&gtag('event','affiliate_click',{'product_slug':'<?= htmlspecialchars($prod['slug'], ENT_QUOTES) ?>','product_name':'<?= htmlspecialchars($prod['title'], ENT_QUOTES) ?>','source':'place_detail'})">
+               data-affiliate-click="1"
+               data-affiliate-product-slug="<?= htmlspecialchars($prod['slug'], ENT_QUOTES) ?>"
+               data-affiliate-product-name="<?= htmlspecialchars($prod['title'], ENT_QUOTES) ?>"
+               data-affiliate-source="place_detail">
                 <div class="place-prod-card__img">
                     <?php if ($prod['image_path']): ?>
                         <img src="/uploads/amazon/<?= htmlspecialchars($prod['image_path']) ?>"

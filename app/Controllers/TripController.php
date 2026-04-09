@@ -3,7 +3,9 @@
 declare(strict_types=1);
 
 require_once dirname(__DIR__) . '/Services/Auth.php';
+require_once dirname(__DIR__) . '/Services/ActionRateLimiter.php';
 require_once dirname(__DIR__) . '/Services/CsrfService.php';
+require_once dirname(__DIR__) . '/Services/SecurityAudit.php';
 require_once dirname(__DIR__) . '/Models/Trip.php';
 require_once dirname(__DIR__) . '/Models/TripStop.php';
 require_once dirname(__DIR__) . '/Models/TripRouteSegment.php';
@@ -69,6 +71,9 @@ class TripController
             'end_date'   => $_POST['end_date'] ?: null,
         ]);
 
+        SecurityAudit::log($this->pdo, 'trip.created', [
+            'trip_title' => $title,
+        ], Auth::userId());
         flash('success', 'Resan har skapats!');
         redirect('/adm/resor');
     }
@@ -126,6 +131,10 @@ class TripController
             'teaser_text'   => trim($_POST['teaser_text'] ?? '') ?: null,
         ]);
 
+        SecurityAudit::log($this->pdo, 'trip.updated', [
+            'trip_id' => (int) $trip['id'],
+            'trip_slug' => $trip['slug'],
+        ], Auth::userId());
         flash('success', 'Resan har uppdaterats.');
         redirect('/adm/resor/' . $params['slug']);
     }
@@ -139,6 +148,10 @@ class TripController
         $trip = $tripModel->findBySlug($params['slug']);
         if ($trip) {
             $tripModel->delete((int) $trip['id']);
+            SecurityAudit::log($this->pdo, 'trip.deleted', [
+                'trip_id' => (int) $trip['id'],
+                'trip_slug' => $trip['slug'],
+            ], Auth::userId());
             flash('success', 'Resan har tagits bort.');
         }
         redirect('/adm/resor');
@@ -216,6 +229,13 @@ class TripController
         Auth::requireLogin();
         CsrfService::requireValid();
 
+        try {
+            $this->consumeActionQuota('trip-route-calc', 10, 1800);
+        } catch (RuntimeException) {
+            flash('error', 'För många ruttberäkningar just nu. Försök igen senare.');
+            redirect('/adm/resor/' . $params['slug']);
+        }
+
         $tripModel = new Trip($this->pdo);
         $trip = $tripModel->findBySlug($params['slug']);
         if (!$trip) { http_response_code(404); return; }
@@ -232,22 +252,38 @@ class TripController
         $provider = $this->getRouteProvider();
 
         $segmentModel = new TripRouteSegment($this->pdo);
+        $segmentsToSave = [];
+
+        try {
+            for ($i = 0; $i < count($stops) - 1; $i++) {
+                $from = $stops[$i];
+                $to = $stops[$i + 1];
+
+                $routeData = $provider->getRoute(
+                    (float) $from['lat'], (float) $from['lng'],
+                    (float) $to['lat'], (float) $to['lng']
+                );
+
+                $segmentsToSave[] = [
+                    'from_id'    => (int) $from['id'],
+                    'to_id'      => (int) $to['id'],
+                    'route_data' => $routeData,
+                ];
+            }
+        } catch (RuntimeException $e) {
+            error_log('Trip route calculation failed for trip ' . $trip['id'] . ': ' . $e->getMessage());
+            flash('error', 'Rutten kunde inte beräknas just nu. Försök igen senare.');
+            redirect('/adm/resor/' . $params['slug']);
+        }
+
         $segmentModel->deleteByTrip((int) $trip['id']);
 
-        for ($i = 0; $i < count($stops) - 1; $i++) {
-            $from = $stops[$i];
-            $to = $stops[$i + 1];
-
-            $routeData = $provider->getRoute(
-                (float) $from['lat'], (float) $from['lng'],
-                (float) $to['lat'], (float) $to['lng']
-            );
-
+        foreach ($segmentsToSave as $segment) {
             $segmentModel->saveSegment(
                 (int) $trip['id'],
-                (int) $from['id'],
-                (int) $to['id'],
-                $routeData
+                $segment['from_id'],
+                $segment['to_id'],
+                $segment['route_data']
             );
         }
 
@@ -326,5 +362,11 @@ class TripController
 
         require_once dirname(__DIR__) . '/Services/Routing/FakeRouteProvider.php';
         return new FakeRouteProvider();
+    }
+
+    private function consumeActionQuota(string $action, int $maxAttempts, int $windowSeconds): void
+    {
+        $limiter = new ActionRateLimiter();
+        $limiter->consumeForUser($action, Auth::userId(), $maxAttempts, $windowSeconds);
     }
 }

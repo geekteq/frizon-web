@@ -42,6 +42,12 @@ class OpenRouteServiceProvider implements RouteProviderInterface
         curl_close($ch);
 
         if ($httpCode !== 200 || $response === false) {
+            error_log('OpenRouteService request failed with HTTP ' . $httpCode . '.');
+
+            if ($this->isProduction()) {
+                throw new RuntimeException('Ruttjänsten svarade inte korrekt.');
+            }
+
             // Fallback to fake provider on error
             require_once __DIR__ . '/FakeRouteProvider.php';
             $fake = new FakeRouteProvider();
@@ -51,6 +57,12 @@ class OpenRouteServiceProvider implements RouteProviderInterface
         $data = json_decode($response, true);
 
         if (empty($data['routes'][0])) {
+            error_log('OpenRouteService returned no route payload.');
+
+            if ($this->isProduction()) {
+                throw new RuntimeException('Ruttjänsten returnerade ingen giltig rutt.');
+            }
+
             require_once __DIR__ . '/FakeRouteProvider.php';
             $fake = new FakeRouteProvider();
             return $fake->getRoute($fromLat, $fromLng, $toLat, $toLng);
@@ -65,5 +77,10 @@ class OpenRouteServiceProvider implements RouteProviderInterface
             'geometry'            => $route['geometry'] ?? null,
             'provider_name'       => 'openrouteservice',
         ];
+    }
+
+    private function isProduction(): bool
+    {
+        return strtolower((string) ($_ENV['APP_ENV'] ?? '')) === 'production';
     }
 }

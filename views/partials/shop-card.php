@@ -43,7 +43,9 @@
                target="_blank" rel="noopener sponsored"
                class="btn btn--sm"
                style="flex:1; text-align:center; background:#FF9900; color:#111; border:1px solid #e68a00; font-weight:var(--weight-semibold);"
-               onclick="typeof gtag!=='undefined'&&gtag('event','affiliate_click',{'product_slug':'<?= htmlspecialchars($p['slug'], ENT_QUOTES) ?>','product_name':'<?= htmlspecialchars($p['title'], ENT_QUOTES) ?>'})">
+               data-affiliate-click="1"
+               data-affiliate-product-slug="<?= htmlspecialchars($p['slug'], ENT_QUOTES) ?>"
+               data-affiliate-product-name="<?= htmlspecialchars($p['title'], ENT_QUOTES) ?>">
                 Se hos Amazon ↗
             </a>
         </div>

@@ -26,9 +26,11 @@ Built for two users tracking campervan travels with Frizze (Adria Twin SPT 600 P
    ```sql
    CREATE DATABASE frizon CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
    ```
-3. Run the migration:
+3. Run all migrations in order:
    ```bash
-   mysql -u root frizon < database/migrations/001_initial_schema.sql
+   for f in database/migrations/*.sql; do
+     mysql -u root frizon < "$f"
+   done
    ```
 4. Optionally seed test data:
    ```bash
@@ -40,6 +42,39 @@ Built for two users tracking campervan travels with Frizze (Adria Twin SPT 600 P
    mkdir -p storage/uploads/{originals,thumbnails,cards,detail}
    ```
 7. Ensure PHP GD or Imagick extension is enabled (for image resizing)
+
+## Production Checklist
+
+1. Set production-safe env values in `.env`:
+   - `APP_ENV=production`
+   - `APP_DEBUG=false`
+   - `AI_PROVIDER=claude`
+   - `ANTHROPIC_API_KEY=...`
+   - `APP_KEY=...`
+2. If the app sits behind a trusted reverse proxy and you want strict forwarded-header trust:
+   - set `ENFORCE_TRUSTED_PROXIES=true`
+   - set `TRUSTED_PROXIES=` to proxy IP or CIDR list
+3. Ensure these directories exist and are writable by PHP:
+   ```bash
+   mkdir -p storage/uploads/{originals,thumbnails,cards,detail} storage/runtime-secrets
+   ```
+4. Run the config preflight:
+   ```bash
+   php scripts/check-production-config.php
+   ```
+5. Run the test suite:
+   ```bash
+   for f in tests/*.php; do
+     php "$f" || exit 1
+   done
+   ```
+
+## Security Notes
+
+- Migration `013_security_controls.sql` adds `users.is_admin` and `security_audit_log`.
+- Existing users are promoted to admin by the migration so current access keeps working.
+- Seeded users are also marked as admins.
+- Audit logging is best-effort: if the log table is unavailable the app should keep functioning while emitting server log warnings.
 
 ## Project Structure
 

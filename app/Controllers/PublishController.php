@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 require_once dirname(__DIR__) . '/Services/Auth.php';
 require_once dirname(__DIR__) . '/Services/CsrfService.php';
+require_once dirname(__DIR__) . '/Services/SecurityAudit.php';
 require_once dirname(__DIR__) . '/Models/Place.php';
 require_once dirname(__DIR__) . '/Services/AiService.php';
 
@@ -76,10 +77,15 @@ class PublishController
 
             flash('success', $place['name'] . ' är nu publik med SEO-innehåll!');
         } catch (RuntimeException $e) {
+            error_log('SEO generation failed for published place ' . $place['id'] . ': ' . $e->getMessage());
             // Place is live — only SEO generation failed. Show warning, continue.
-            flash('warning', $place['name'] . ' är publik men SEO-innehåll kunde inte genereras: ' . $e->getMessage());
+            flash('warning', $place['name'] . ' är publik men SEO-innehåll kunde inte genereras just nu.');
         }
 
+        SecurityAudit::log($this->pdo, 'publish.approve', [
+            'place_id' => (int) $place['id'],
+            'place_slug' => $place['slug'],
+        ], Auth::userId());
         ping_search_engines();
         redirect('/adm/publicera');
     }
@@ -96,6 +102,10 @@ class PublishController
         $this->pdo->prepare('UPDATE places SET public_allowed = 0, is_toplisted = 0, is_featured = 0, updated_at = NOW() WHERE id = ?')
             ->execute([$place['id']]);
 
+        SecurityAudit::log($this->pdo, 'publish.unpublish', [
+            'place_id' => (int) $place['id'],
+            'place_slug' => $place['slug'],
+        ], Auth::userId());
         flash('success', $place['name'] . ' är inte längre publik.');
         ping_search_engines();
         redirect('/adm/publicera');
@@ -114,6 +124,11 @@ class PublishController
         $this->pdo->prepare('UPDATE places SET is_toplisted = ?, updated_at = NOW() WHERE id = ?')
             ->execute([$newVal, $place['id']]);
 
+        SecurityAudit::log($this->pdo, 'publish.toggle_toplist', [
+            'place_id' => (int) $place['id'],
+            'place_slug' => $place['slug'],
+            'is_toplisted' => (bool) $newVal,
+        ], Auth::userId());
         $msg = $newVal ? 'Tillagd i topplistan!' : 'Borttagen från topplistan.';
         flash('success', $msg);
         ping_search_engines();

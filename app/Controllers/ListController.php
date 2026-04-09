@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 require_once dirname(__DIR__) . '/Services/Auth.php';
 require_once dirname(__DIR__) . '/Services/CsrfService.php';
+require_once dirname(__DIR__) . '/Services/SecurityAudit.php';
 require_once dirname(__DIR__) . '/Models/ItemList.php';
 require_once dirname(__DIR__) . '/Models/ListItem.php';
 require_once dirname(__DIR__) . '/Models/ListTemplate.php';
@@ -74,6 +75,10 @@ class ListController
             $templateModel->instantiate($templateId, $listId, $this->pdo);
         }
 
+        SecurityAudit::log($this->pdo, 'list.created', [
+            'list_id' => (int) $listId,
+            'list_title' => $title,
+        ], Auth::userId());
         flash('success', 'Listan har skapats!');
         redirect('/adm/listor/' . $listId);
     }
@@ -117,6 +122,10 @@ class ListController
             'list_type' => $_POST['list_type'] ?? $list['list_type'],
         ]);
 
+        SecurityAudit::log($this->pdo, 'list.updated', [
+            'list_id' => (int) $list['id'],
+            'list_title' => $list['title'],
+        ], Auth::userId());
         flash('success', 'Listan har uppdaterats.');
         redirect('/adm/listor/' . $params['id']);
     }
@@ -130,6 +139,10 @@ class ListController
         $list = $listModel->findById((int) $params['id']);
         if ($list) {
             $listModel->delete((int) $list['id']);
+            SecurityAudit::log($this->pdo, 'list.deleted', [
+                'list_id' => (int) $list['id'],
+                'list_title' => $list['title'],
+            ], Auth::userId());
             flash('success', 'Listan har tagits bort.');
         }
         redirect('/adm/listor');

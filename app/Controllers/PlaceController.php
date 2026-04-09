@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 require_once dirname(__DIR__) . '/Services/Auth.php';
 require_once dirname(__DIR__) . '/Services/CsrfService.php';
+require_once dirname(__DIR__) . '/Services/SecurityAudit.php';
 require_once dirname(__DIR__) . '/Models/Place.php';
 
 class PlaceController
@@ -88,6 +89,9 @@ class PlaceController
             'created_by'          => Auth::userId(),
         ]);
 
+        SecurityAudit::log($this->pdo, 'place.created', [
+            'place_name' => $name,
+        ], Auth::userId());
         flash('success', 'Platsen har sparats!');
         redirect('/adm/platser');
     }
@@ -134,6 +138,10 @@ class PlaceController
         $productIds = array_map('intval', (array) ($_POST['product_ids'] ?? []));
         (new AmazonProduct($this->pdo))->syncPlaceProducts((int) $p['id'], $productIds);
 
+        SecurityAudit::log($this->pdo, 'place.updated', [
+            'place_id' => (int) $p['id'],
+            'place_slug' => $p['slug'],
+        ], Auth::userId());
         flash('success', 'Platsen har uppdaterats.');
         redirect('/adm/platser/' . $params['slug']);
     }
@@ -144,7 +152,14 @@ class PlaceController
         CsrfService::requireValid();
         $place = new Place($this->pdo);
         $p = $place->findBySlug($params['slug']);
-        if ($p) { $place->delete((int) $p['id']); flash('success', 'Platsen har tagits bort.'); }
+        if ($p) {
+            $place->delete((int) $p['id']);
+            SecurityAudit::log($this->pdo, 'place.deleted', [
+                'place_id' => (int) $p['id'],
+                'place_slug' => $p['slug'],
+            ], Auth::userId());
+            flash('success', 'Platsen har tagits bort.');
+        }
         redirect('/adm/platser');
     }
 

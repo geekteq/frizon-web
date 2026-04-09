@@ -20,6 +20,8 @@ declare(strict_types=1);
  *      GET https://graph.facebook.com/v21.0/me/accounts?access_token={token}
  *      Then: GET https://graph.facebook.com/v21.0/{page_id}?fields=instagram_business_account&access_token={token}
  *   5. Put INSTAGRAM_USER_ID and INSTAGRAM_ACCESS_TOKEN in .env
+ *      Refreshed runtime tokens are stored in storage/runtime-secrets/instagram-token.json,
+ *      not written back to .env.
  *
  * Images: Instagram requires JPEG. We auto-convert WebP → JPEG on publish.
  *         Converted files are cached in storage/uploads/instagram/.
@@ -35,7 +37,8 @@ class InstagramService
     private string $accessToken;
     private string $appUrl;
     private string $uploadPath;
-    private string $envPath;
+    private string $runtimeTokenPath;
+    private int $tokenExpires;
 
     public function __construct(array $config)
     {
@@ -43,7 +46,10 @@ class InstagramService
         $this->accessToken = $config['instagram']['access_token'] ?? '';
         $this->appUrl      = rtrim($config['url'], '/');
         $this->uploadPath  = dirname(__DIR__, 2) . '/storage/uploads';
-        $this->envPath     = dirname(__DIR__, 2) . '/.env';
+        $this->runtimeTokenPath = dirname(__DIR__, 2) . '/storage/runtime-secrets/instagram-token.json';
+        $this->tokenExpires     = (int) ($_ENV['INSTAGRAM_TOKEN_EXPIRES'] ?? 0);
+
+        $this->loadRuntimeToken();
     }
 
     public function isConfigured(): bool
@@ -271,11 +277,8 @@ class InstagramService
      */
     private function refreshTokenIfNeeded(): void
     {
-        $expiresEnv = $_ENV['INSTAGRAM_TOKEN_EXPIRES'] ?? '';
-        $expires    = $expiresEnv ? (int) $expiresEnv : 0;
-
         // Refresh if expiry unknown or less than 7 days away
-        if ($expires > 0 && $expires > time() + (7 * 86400)) {
+        if ($this->tokenExpires > 0 && $this->tokenExpires > time() + (7 * 86400)) {
             return;
         }
 
@@ -298,30 +301,74 @@ class InstagramService
 
         // Update in-memory token
         $this->accessToken = $newToken;
-
-        // Write back to .env
-        $this->updateEnv('INSTAGRAM_ACCESS_TOKEN', $newToken);
-        $this->updateEnv('INSTAGRAM_TOKEN_EXPIRES', (string) $newExpiry);
+        $this->tokenExpires = $newExpiry;
+        $_ENV['INSTAGRAM_ACCESS_TOKEN'] = $newToken;
         $_ENV['INSTAGRAM_TOKEN_EXPIRES'] = (string) $newExpiry;
+
+        if (!$this->persistRuntimeToken($newToken, $newExpiry)) {
+            error_log('Instagram token refresh succeeded but runtime token persistence failed.');
+        }
     }
 
     /**
-     * Update or append a key=value line in .env.
+     * Load a refreshed runtime token from storage when available.
      */
-    private function updateEnv(string $key, string $value): void
+    private function loadRuntimeToken(): void
     {
-        if (!file_exists($this->envPath)) return;
-
-        $content = file_get_contents($this->envPath);
-        $line    = $key . '=' . $value;
-
-        if (preg_match('/^' . preg_quote($key, '/') . '=.*/m', $content)) {
-            $content = preg_replace('/^' . preg_quote($key, '/') . '=.*/m', $line, $content);
-        } else {
-            $content = rtrim($content) . "\n" . $line . "\n";
+        if (!is_file($this->runtimeTokenPath)) {
+            return;
         }
 
-        file_put_contents($this->envPath, $content);
+        $content = file_get_contents($this->runtimeTokenPath);
+        $data = json_decode((string) $content, true);
+
+        if (!is_array($data)) {
+            return;
+        }
+
+        $storedToken = trim((string) ($data['access_token'] ?? ''));
+        $storedExpiry = (int) ($data['expires_at'] ?? 0);
+
+        if ($storedToken !== '') {
+            $this->accessToken = $storedToken;
+            $_ENV['INSTAGRAM_ACCESS_TOKEN'] = $storedToken;
+        }
+
+        if ($storedExpiry > 0) {
+            $this->tokenExpires = $storedExpiry;
+            $_ENV['INSTAGRAM_TOKEN_EXPIRES'] = (string) $storedExpiry;
+        }
+    }
+
+    /**
+     * Persist refreshed runtime credentials outside of the application config file.
+     */
+    private function persistRuntimeToken(string $token, int $expiresAt): bool
+    {
+        $dir = dirname($this->runtimeTokenPath);
+        if (!is_dir($dir) && !mkdir($dir, 0700, true) && !is_dir($dir)) {
+            return false;
+        }
+
+        $payload = json_encode([
+            'access_token' => $token,
+            'expires_at'   => $expiresAt,
+            'updated_at'   => gmdate('c'),
+        ], JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
+
+        if ($payload === false) {
+            return false;
+        }
+
+        $bytes = file_put_contents($this->runtimeTokenPath, $payload, LOCK_EX);
+        if ($bytes === false) {
+            return false;
+        }
+
+        @chmod($dir, 0700);
+        @chmod($this->runtimeTokenPath, 0600);
+
+        return true;
     }
 
     /** @throws RuntimeException */

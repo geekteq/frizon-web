@@ -1,9 +1,9 @@
 -- Seed users (password: "frizon2026" bcrypt hash)
 -- Generate real hash: php -r "echo password_hash('frizon2026', PASSWORD_BCRYPT) . PHP_EOL;"
 -- Placeholder hashes below — replace after setup.
-INSERT INTO users (username, email, password_hash, display_name) VALUES
-('mattias', 'mattias@frizon.org', '$2y$10$PLACEHOLDER_HASH_REPLACE_ME_AFTER_SETUP_mattias000000000', 'Mattias'),
-('ulrica', 'ulrica@frizon.org', '$2y$10$PLACEHOLDER_HASH_REPLACE_ME_AFTER_SETUP_ulrica0000000000', 'Ulrica');
+INSERT INTO users (username, email, password_hash, display_name, is_admin) VALUES
+('mattias', 'mattias@frizon.org', '$2y$10$PLACEHOLDER_HASH_REPLACE_ME_AFTER_SETUP_mattias000000000', 'Mattias', 1),
+('ulrica', 'ulrica@frizon.org', '$2y$10$PLACEHOLDER_HASH_REPLACE_ME_AFTER_SETUP_ulrica0000000000', 'Ulrica', 1);
 
 -- Seed example places
 INSERT INTO places (slug, name, lat, lng, country_code, place_type, created_by) VALUES

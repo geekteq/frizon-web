@@ -15,7 +15,7 @@ class Auth
     {
         app_start_session();
 
-        $stmt = $this->pdo->prepare('SELECT id, password_hash, display_name FROM users WHERE username = ?');
+        $stmt = $this->pdo->prepare('SELECT * FROM users WHERE username = ?');
         $stmt->execute([$username]);
         $user = $stmt->fetch();
 
@@ -25,6 +25,9 @@ class Auth
 
         $_SESSION['user_id'] = $user['id'];
         $_SESSION['user_name'] = $user['display_name'];
+        $_SESSION['is_admin'] = array_key_exists('is_admin', $user)
+            ? (bool) $user['is_admin']
+            : true;
         session_regenerate_id(true);
         return true;
     }
@@ -47,6 +50,21 @@ class Auth
         return $_SESSION['user_name'] ?? null;
     }
 
+    public static function isAdmin(): bool
+    {
+        app_start_session();
+
+        if (!isset($_SESSION['user_id'])) {
+            return false;
+        }
+
+        if (!array_key_exists('is_admin', $_SESSION)) {
+            return true;
+        }
+
+        return (bool) $_SESSION['is_admin'];
+    }
+
     public static function logout(): void
     {
         app_start_session();
@@ -66,6 +84,11 @@ class Auth
         if (!self::check()) {
             flash('error', 'Du måste logga in.');
             redirect('/adm/login');
+        }
+
+        if (str_starts_with(app_request_path(), '/adm') && !self::isAdmin()) {
+            flash('error', 'Du saknar behörighet för adminområdet.');
+            redirect('/');
         }
     }
 }

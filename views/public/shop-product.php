@@ -49,7 +49,9 @@
            target="_blank" rel="noopener sponsored"
            class="btn btn-primary"
            style="display:inline-block; font-size:var(--text-base); padding:var(--space-3) var(--space-6);"
-           onclick="typeof gtag!=='undefined'&&gtag('event','affiliate_click',{'product_slug':'<?= htmlspecialchars($product['slug'], ENT_QUOTES) ?>','product_name':'<?= htmlspecialchars($product['title'], ENT_QUOTES) ?>'})">
+           data-affiliate-click="1"
+           data-affiliate-product-slug="<?= htmlspecialchars($product['slug'], ENT_QUOTES) ?>"
+           data-affiliate-product-name="<?= htmlspecialchars($product['title'], ENT_QUOTES) ?>">
             Köp hos Amazon →
         </a>
 
