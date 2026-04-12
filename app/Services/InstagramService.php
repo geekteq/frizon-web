@@ -114,10 +114,13 @@ class InstagramService
     {
         $parts = [$place['name'], ''];
 
-        // Description: raw_note first, fall back to place description
-        $desc = trim($visit['raw_note'] ?? '');
+        // Description: approved text first, then place default, then raw note
+        $desc = trim($visit['approved_public_text'] ?? '');
         if ($desc === '') {
             $desc = trim($place['default_public_text'] ?? '');
+        }
+        if ($desc === '') {
+            $desc = trim($visit['raw_note'] ?? '');
         }
         if ($desc !== '') {
             if (mb_strlen($desc) > 280) {

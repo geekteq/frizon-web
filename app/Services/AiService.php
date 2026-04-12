@@ -12,6 +12,7 @@ interface AiProviderInterface
     public function generatePlaceSeo(array $place, array $visits): array;
     public function generateShopDescription(array $context): string;
     public function generateShopSeo(array $product): array;
+    public function generateInstagramCaption(array $context): string;
     public function translateToSwedish(string $text): string;
     public function describeImage(string $imagePath, array $context = []): string;
 }
@@ -213,6 +214,45 @@ class ClaudeAiProvider implements AiProviderInterface
             'seo_title'       => mb_substr((string) $result['seo_title'], 0, 60),
             'seo_description' => mb_substr((string) $result['seo_description'], 0, 155),
         ];
+    }
+
+    public function generateInstagramCaption(array $context): string
+    {
+        $placeName = $context['place_name'] ?? 'Okänd plats';
+        $placeType = $context['place_type'] ?? '';
+        $text      = $context['approved_text'] ?? '';
+        $date      = $context['visited_at'] ?? '';
+        $address   = $context['address'] ?? '';
+        $rating    = $context['total_rating'] ?? '';
+        $wouldReturn = $context['would_return'] ?? '';
+
+        $lines = ["Plats: {$placeName}"];
+        if ($placeType) $lines[] = "Typ: {$placeType}";
+        if ($date)      $lines[] = "Besökt: {$date}";
+        if ($address)   $lines[] = "Adress: {$address}";
+        if ($rating)    $lines[] = "Betyg: {$rating}/5";
+        if ($wouldReturn) {
+            $returnMap = ['yes' => 'Ja', 'maybe' => 'Kanske', 'no' => 'Nej'];
+            $lines[] = 'Skulle återvända: ' . ($returnMap[$wouldReturn] ?? $wouldReturn);
+        }
+        $lines[] = '';
+        $lines[] = "Publicerad text:\n{$text}";
+
+        $userPrompt = implode("\n", $lines)
+            . "\n\nSkriv en säljande Instagram-caption baserat på ovanstående. Max 800 tecken.";
+
+        $payload = [
+            'model'      => self::MODEL_DESCRIPTIONS,
+            'max_tokens' => 400,
+            'system'     => 'Du skriver korta, engagerande Instagram-captions på svenska för husbilsreseloggen Frizon. '
+                . 'Tonen ska vara personlig, varm och inbjudande — locka läsaren att vilja veta mer. '
+                . 'Avsluta ALLTID med raden "Länk i bio" (inte en URL). '
+                . 'Skriv ren text utan markdown, inga **, ## eller emojis. '
+                . 'Max 800 tecken, kortare är bättre.' . $this->sw(),
+            'messages'   => [['role' => 'user', 'content' => $userPrompt]],
+        ];
+
+        return $this->callClaude($payload);
     }
 
     public function translateToSwedish(string $text): string
@@ -430,6 +470,14 @@ class FakeAiProvider implements AiProviderInterface
         ];
     }
 
+    public function generateInstagramCaption(array $context): string
+    {
+        $name = $context['place_name'] ?? 'Platsen';
+        $text = $context['approved_text'] ?? '';
+        $short = $text ? mb_substr($text, 0, 200) : "Vi besökte {$name} med Frizze.";
+        return "{$name}\n\n{$short}\n\nLänk i bio";
+    }
+
     public function translateToSwedish(string $text): string
     {
         // Fake provider: return unchanged (assume already Swedish in dev)
@@ -484,6 +532,11 @@ class AiService
     public function generateShopSeo(array $product): array
     {
         return $this->provider->generateShopSeo($product);
+    }
+
+    public function generateInstagramCaption(array $context): string
+    {
+        return $this->provider->generateInstagramCaption($context);
     }
 
     public function translateToSwedish(string $text): string

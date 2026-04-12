@@ -384,8 +384,41 @@ class VisitController
             return;
         }
 
-        $ig = new InstagramService($this->config);
-        echo json_encode($ig->buildPreview($visit, $place, $images));
+        $ig      = new InstagramService($this->config);
+        $preview = $ig->buildPreview($visit, $place, $images);
+
+        // Try AI-generated selling caption if approved text exists
+        $approvedText = trim($visit['approved_public_text'] ?? '');
+        if ($approvedText !== '') {
+            try {
+                $placeTypes = [
+                    'stellplatz' => 'ställplats', 'camping' => 'camping',
+                    'wild_camping' => 'fricamping', 'fika' => 'fika',
+                    'lunch' => 'lunch', 'dinner' => 'middag',
+                    'breakfast' => 'frukost', 'sight' => 'sevärdhet',
+                    'shopping' => 'shopping',
+                ];
+                $ai = new AiService();
+                $aiCaption = $ai->generateInstagramCaption([
+                    'place_name'    => $place['name'],
+                    'place_type'    => $placeTypes[$place['place_type'] ?? ''] ?? ($place['place_type'] ?? ''),
+                    'visited_at'    => $visit['visited_at'] ?? '',
+                    'address'       => $place['address_text'] ?? '',
+                    'total_rating'  => $visit['total_rating'] ?? '',
+                    'would_return'  => $visit['would_return'] ?? '',
+                    'approved_text' => $approvedText,
+                ]);
+
+                // Append hashtags and place URL after AI caption
+                $hashtags = '#husbil #husbilar #campinglivet #vanlife #plåtis #frizze #frizon #camping #äventyr #sverige';
+                $preview['caption'] = $aiCaption . "\n\n" . $preview['place_url'] . "\n\n" . $hashtags;
+            } catch (RuntimeException $e) {
+                // AI failed — keep the regular buildCaption result
+                error_log('Instagram AI caption failed: ' . $e->getMessage());
+            }
+        }
+
+        echo json_encode($preview);
     }
 
     /**
