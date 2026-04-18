@@ -73,8 +73,12 @@
 
 <!-- SEO section -->
 <div style="margin-top:var(--space-6); padding-top:var(--space-4); border-top:1px solid var(--color-border);">
-    <h3 style="font-size:var(--text-base); font-weight:var(--weight-semibold); margin-bottom:var(--space-2);">SEO-innehåll</h3>
+    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:var(--space-2);">
+        <h3 style="font-size:var(--text-base); font-weight:var(--weight-semibold); margin:0;">SEO-innehåll</h3>
+        <button type="button" id="ai-seo-btn" class="btn btn-secondary btn--sm" style="font-size:var(--text-xs);">Generera SEO</button>
+    </div>
     <p style="font-size:var(--text-sm); color:var(--color-text-muted); margin-bottom:var(--space-4);">Genereras automatiskt vid publicering. Kan redigeras fritt efteråt.</p>
+    <p id="ai-seo-status" style="font-size:var(--text-sm); color:var(--color-text-muted); margin-bottom:var(--space-3); display:none;"></p>
 
     <div class="form-group">
         <label for="meta_description" class="form-label">
@@ -220,6 +224,60 @@ document.addEventListener('DOMContentLoaded', function() {
             .finally(function() {
                 aiBtn.disabled = false;
                 aiBtn.textContent = 'Brodera ut text';
+            });
+        });
+    }
+
+    // AI SEO generation button
+    var seoBtn = document.getElementById('ai-seo-btn');
+    var seoStatus = document.getElementById('ai-seo-status');
+    if (seoBtn) {
+        seoBtn.addEventListener('click', function() {
+            seoBtn.disabled = true;
+            seoBtn.textContent = 'Genererar...';
+            seoStatus.style.display = 'block';
+            seoStatus.textContent = 'Genererar SEO-innehåll med AI...';
+
+            var csrf = document.querySelector('input[name="_csrf"]');
+            fetch('/adm/platser/<?= htmlspecialchars($p['slug']) ?>/ai/seo', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-Token': csrf ? csrf.value : ''
+                }
+            })
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                if (data.success) {
+                    // Fill meta description
+                    var metaInput = document.getElementById('meta_description');
+                    if (metaInput) {
+                        metaInput.value = data.meta_description || '';
+                        var metaCount = document.getElementById('meta-count');
+                        if (metaCount) metaCount.textContent = '(' + metaInput.value.length + '/155)';
+                    }
+                    // Fill FAQ rows
+                    var faqRows = document.getElementById('faq-rows');
+                    if (faqRows && data.faq) {
+                        faqRows.innerHTML = '';
+                        data.faq.forEach(function(item) {
+                            var row = makeFaqRow();
+                            row.querySelector('input[name="faq_q[]"]').value = item.q || '';
+                            row.querySelector('textarea[name="faq_a[]"]').value = item.a || '';
+                            faqRows.appendChild(row);
+                        });
+                    }
+                    seoStatus.textContent = 'SEO-innehåll genererat — granska och spara.';
+                } else {
+                    seoStatus.textContent = data.error || 'Något gick fel.';
+                }
+            })
+            .catch(function() {
+                seoStatus.textContent = 'Nätverksfel — försök igen.';
+            })
+            .finally(function() {
+                seoBtn.disabled = false;
+                seoBtn.textContent = 'Generera SEO';
             });
         });
     }

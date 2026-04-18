@@ -185,6 +185,58 @@ class AiController
     }
 
     /**
+     * POST /adm/platser/{slug}/ai/seo
+     * Manually (re)generate SEO content for a place.
+     */
+    public function generatePlaceSeo(array $params): void
+    {
+        Auth::requireLogin();
+        header('Content-Type: application/json');
+
+        if (!CsrfService::verify()) {
+            http_response_code(403);
+            echo json_encode(['success' => false, 'error' => 'Ogiltig säkerhetstoken.']);
+            return;
+        }
+
+        $placeModel = new Place($this->pdo);
+        $place = $placeModel->findBySlug($params['slug']);
+        if (!$place) {
+            http_response_code(404);
+            echo json_encode(['success' => false, 'error' => 'Platsen hittades inte.']);
+            return;
+        }
+
+        $stmt = $this->pdo->prepare('
+            SELECT v.*, vr.total_rating_cached
+            FROM visits v
+            LEFT JOIN visit_ratings vr ON vr.visit_id = v.id
+            WHERE v.place_id = ? AND v.ready_for_publish = 1
+        ');
+        $stmt->execute([$place['id']]);
+        $visits = $stmt->fetchAll();
+
+        try {
+            $aiService = new AiService();
+            $seo = $aiService->generatePlaceSeo($place, $visits);
+
+            $this->pdo->prepare(
+                'UPDATE places SET meta_description = ?, faq_content = ?, updated_at = NOW() WHERE id = ?'
+            )->execute([$seo['meta_description'], $seo['faq_content'], $place['id']]);
+
+            echo json_encode([
+                'success'          => true,
+                'meta_description' => $seo['meta_description'],
+                'faq'              => json_decode($seo['faq_content'], true),
+            ]);
+        } catch (RuntimeException $e) {
+            error_log('Manual SEO generation failed for place ' . $place['id'] . ': ' . $e->getMessage());
+            http_response_code(500);
+            echo json_encode(['success' => false, 'error' => 'SEO-generering misslyckades: ' . $e->getMessage()]);
+        }
+    }
+
+    /**
      * POST /adm/besok/{id}/ai/{draftId}/godkann
      * Approve a draft — copy text to visits.approved_public_text and flag ready_for_publish.
      */
@@ -228,6 +280,35 @@ class AiController
             WHERE id = (SELECT place_id FROM visits WHERE id = ?)
         ');
         $stmt->execute([$draft['draft_text'], $visitId]);
+
+        // Regenerate SEO if the place is already public
+        $placeModel = new Place($this->pdo);
+        $stmt = $this->pdo->prepare('SELECT place_id FROM visits WHERE id = ?');
+        $stmt->execute([$visitId]);
+        $placeId = (int) $stmt->fetchColumn();
+        $place = $placeModel->findById($placeId);
+
+        if ($place && $place['public_allowed']) {
+            try {
+                $visitStmt = $this->pdo->prepare('
+                    SELECT v.*, vr.total_rating_cached
+                    FROM visits v
+                    LEFT JOIN visit_ratings vr ON vr.visit_id = v.id
+                    WHERE v.place_id = ? AND v.ready_for_publish = 1
+                ');
+                $visitStmt->execute([$placeId]);
+                $allVisits = $visitStmt->fetchAll();
+
+                $aiService = new AiService();
+                $seo = $aiService->generatePlaceSeo($place, $allVisits);
+
+                $this->pdo->prepare(
+                    'UPDATE places SET meta_description = ?, faq_content = ?, updated_at = NOW() WHERE id = ?'
+                )->execute([$seo['meta_description'], $seo['faq_content'], $placeId]);
+            } catch (RuntimeException $e) {
+                error_log('SEO regeneration failed after visit approval for place ' . $placeId . ': ' . $e->getMessage());
+            }
+        }
 
         echo json_encode(['success' => true]);
     }

@@ -103,16 +103,26 @@ class ClaudeAiProvider implements AiProviderInterface
         ];
 
         $text   = $this->callClaude($payload);
+        $text   = $this->extractJson($text);
         $result = json_decode($text, true);
 
         if (!isset($result['meta_description'], $result['faq']) || !is_array($result['faq'])) {
-            throw new RuntimeException('Ogiltigt JSON-svar från Claude vid SEO-generering.');
+            throw new RuntimeException('Ogiltigt JSON-svar från Claude vid SEO-generering: ' . mb_substr($text, 0, 200));
         }
 
         return [
             'meta_description' => mb_substr((string) $result['meta_description'], 0, 155),
             'faq_content'      => json_encode($result['faq'], JSON_UNESCAPED_UNICODE) ?: '[]',
         ];
+    }
+
+    /** Strip markdown code fences that Claude sometimes wraps around JSON. */
+    private function extractJson(string $text): string
+    {
+        if (preg_match('/```(?:json)?\s*\n?(.*?)\n?\s*```/s', $text, $m)) {
+            return trim($m[1]);
+        }
+        return $text;
     }
 
     /** Appended to every Swedish system prompt. */
@@ -204,10 +214,11 @@ class ClaudeAiProvider implements AiProviderInterface
         ];
 
         $text   = $this->callClaude($payload);
+        $text   = $this->extractJson($text);
         $result = json_decode($text, true);
 
         if (!isset($result['seo_title'], $result['seo_description'])) {
-            throw new RuntimeException('Ogiltigt JSON-svar från Claude vid shop SEO-generering.');
+            throw new RuntimeException('Ogiltigt JSON-svar från Claude vid shop SEO-generering: ' . mb_substr($text, 0, 200));
         }
 
         return [

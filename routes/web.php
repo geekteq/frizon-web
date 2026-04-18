@@ -110,6 +110,7 @@ function registerRoutes(Router $router): void
 
     // AI drafts
     $router->post('/adm/platser/{slug}/ai/generera', 'AiController', 'generatePlaceDraft');
+    $router->post('/adm/platser/{slug}/ai/seo', 'AiController', 'generatePlaceSeo');
     $router->post('/adm/besok/{id}/ai/generera', 'AiController', 'generateDraft');
     $router->post('/adm/besok/{id}/ai/{draftId}/godkann', 'AiController', 'approveDraft');
     $router->post('/adm/besok/{id}/ai/{draftId}/avvisa', 'AiController', 'rejectDraft');
