@@ -7,6 +7,11 @@ $placeTypes = [
 ?>
 
 <div style="max-width:720px; margin:0 auto; padding:var(--space-6) var(--space-4);">
+    <nav class="pub-detail__breadcrumb" aria-label="Brödsmulor" style="margin-bottom:var(--space-3);">
+        <a href="/">Platser</a>
+        <span aria-hidden="true">›</span>
+        <span>Topplista</span>
+    </nav>
     <div style="text-align:center; margin-bottom:var(--space-6);">
         <h1 style="font-size:var(--text-2xl); font-weight:var(--weight-bold); margin-bottom:var(--space-2);">Topplistan</h1>
         <p style="color:var(--color-text-muted);">Våra bästa platser, handplockade.</p>

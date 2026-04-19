@@ -8,8 +8,12 @@ $typeLabel = $placeTypes[$place['place_type']] ?? $place['place_type'];
 ?>
 
 <article class="pub-detail">
+    <nav class="pub-detail__breadcrumb" aria-label="Brödsmulor">
+        <a href="/">Platser</a>
+        <span aria-hidden="true">›</span>
+        <span><?= htmlspecialchars($place['name']) ?></span>
+    </nav>
     <div class="pub-detail__header">
-        <a href="/" class="pub-detail__back">&larr; Alla platser</a>
         <h1 class="pub-detail__title"><?= htmlspecialchars($place['name']) ?></h1>
         <div class="pub-detail__meta">
             <span><?= $typeLabel ?></span>

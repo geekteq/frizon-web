@@ -4,6 +4,11 @@
 
 <!-- Shop header -->
 <div style="max-width:680px; margin:0 auto; padding:var(--space-8) var(--space-4) var(--space-4); text-align:center;">
+    <nav class="pub-detail__breadcrumb" aria-label="Brödsmulor" style="margin-bottom:var(--space-3); justify-content:center;">
+        <a href="/">Platser</a>
+        <span aria-hidden="true">›</span>
+        <span>Shop</span>
+    </nav>
     <h1 style="font-size:var(--text-2xl); font-weight:var(--weight-bold); margin-bottom:var(--space-3); color:var(--color-text);">Våra favoritprodukter</h1>
     <p style="font-size:var(--text-base); line-height:var(--leading-relaxed); color:var(--color-text-muted); margin-bottom:var(--space-4);">
         Saker vi faktiskt använder på resan med Frizze — noggrant utvalda och personligen testade.
