@@ -48,18 +48,25 @@
         <p class="text-muted">Inga besök ännu.</p>
     <?php else: ?>
         <?php foreach ($visits as $visit): ?>
-            <div class="visit-card mb-3">
+            <a href="/adm/besok/<?= $visit['id'] ?>" class="visit-card mb-3" style="display:block; text-decoration:none; color:inherit; border-left:3px solid <?= $visit['ready_for_publish'] ? 'var(--color-success)' : 'var(--color-border)' ?>;">
                 <div class="flex-between">
-                    <span class="visit-card__date"><?= htmlspecialchars($visit['visited_at']) ?></span>
-                    <?php if ($visit['total_rating_cached']): ?>
-                        <span class="visit-card__rating">&#9733; <?= number_format((float) $visit['total_rating_cached'], 1) ?></span>
-                    <?php endif; ?>
+                    <div>
+                        <span class="visit-card__date"><?= htmlspecialchars($visit['visited_at']) ?></span>
+                        <?php if ($visit['total_rating_cached']): ?>
+                            <span class="visit-card__rating" style="margin-left:var(--space-2);">&#9733; <?= number_format((float) $visit['total_rating_cached'], 1) ?></span>
+                        <?php endif; ?>
+                    </div>
+                    <div style="display:flex; align-items:center; gap:var(--space-2);">
+                        <span class="text-sm" style="color:<?= $visit['ready_for_publish'] ? 'var(--color-success)' : 'var(--color-text-muted)' ?>; font-weight:600;">
+                            <?= $visit['ready_for_publish'] ? 'Pub' : 'Ej pub' ?>
+                        </span>
+                        <span style="color:var(--color-text-muted);">&rsaquo;</span>
+                    </div>
                 </div>
                 <?php if ($visit['raw_note']): ?>
                     <p class="visit-card__note text-sm mt-2"><?= nl2br(htmlspecialchars(mb_strimwidth($visit['raw_note'], 0, 200, '...'))) ?></p>
                 <?php endif; ?>
-                <a href="/adm/besok/<?= $visit['id'] ?>" class="text-sm" style="color:var(--color-accent);">Visa besök &rarr;</a>
-            </div>
+            </a>
         <?php endforeach; ?>
     <?php endif; ?>
 </div>

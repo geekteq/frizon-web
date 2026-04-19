@@ -122,6 +122,9 @@ class VisitController
         $visit = $visitModel->findById((int) $params['id']);
         if (!$visit) { http_response_code(404); return; }
 
+        $placeModel = new Place($this->pdo);
+        $place = $placeModel->findById((int) $visit['place_id']);
+
         $ratingModel = new VisitRating($this->pdo);
         $ratings = $ratingModel->findByVisit((int) $params['id']);
 
@@ -129,7 +132,7 @@ class VisitController
         $images = $imageModel->findByVisit((int) $params['id']);
 
         $pageTitle = 'Besök — ' . $visit['place_name'];
-        view('visits/show', compact('visit', 'ratings', 'images', 'pageTitle'));
+        view('visits/show', compact('visit', 'ratings', 'images', 'pageTitle', 'place'));
     }
 
     public function edit(array $params): void

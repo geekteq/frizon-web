@@ -40,6 +40,7 @@ function registerRoutes(Router $router): void
     $router->get('/adm/platser/{slug}/redigera', 'PlaceController', 'edit');
     $router->put('/adm/platser/{slug}', 'PlaceController', 'update');
     $router->delete('/adm/platser/{slug}', 'PlaceController', 'destroy');
+    $router->post('/adm/platser/{slug}/preview-image', 'PlaceController', 'setPreviewImage');
 
     // Visits
     $router->get('/adm/platser/{slug}/besok/nytt', 'VisitController', 'create');

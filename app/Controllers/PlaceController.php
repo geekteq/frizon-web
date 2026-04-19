@@ -40,7 +40,7 @@ class PlaceController
         if (!$p) { http_response_code(404); echo '<h1>Platsen hittades inte</h1>'; return; }
 
         $stmt = $this->pdo->prepare('
-            SELECT v.*, vr.total_rating_cached FROM visits v
+            SELECT v.*, v.ready_for_publish, vr.total_rating_cached FROM visits v
             LEFT JOIN visit_ratings vr ON vr.visit_id = v.id
             WHERE v.place_id = ? ORDER BY v.visited_at DESC
         ');
@@ -176,6 +176,42 @@ class PlaceController
             }
         }
         return empty($faq) ? null : json_encode($faq, JSON_UNESCAPED_UNICODE);
+    }
+
+    public function setPreviewImage(array $params): void
+    {
+        Auth::requireLogin();
+        CsrfService::requireValid();
+
+        $placeModel = new Place($this->pdo);
+        $place = $placeModel->findBySlug($params['slug']);
+        if (!$place) { http_response_code(404); return; }
+
+        $imageId = (int) ($_POST['image_id'] ?? 0);
+
+        // Verify image belongs to a visit on this place
+        $stmt = $this->pdo->prepare('
+            SELECT vi.id FROM visit_images vi
+            JOIN visits v ON v.id = vi.visit_id
+            WHERE vi.id = ? AND v.place_id = ?
+        ');
+        $stmt->execute([$imageId, $place['id']]);
+        if (!$stmt->fetch()) {
+            flash('error', 'Bilden hör inte till denna plats.');
+            redirect('/adm/platser/' . $params['slug']);
+            return;
+        }
+
+        $this->pdo->prepare('UPDATE places SET preview_image_id = ?, updated_at = NOW() WHERE id = ?')
+                   ->execute([$imageId, $place['id']]);
+
+        SecurityAudit::log($this->pdo, 'place.preview_image_set', [
+            'place_id' => $place['id'],
+            'image_id' => $imageId,
+        ], Auth::userId());
+
+        flash('success', 'Platsbild uppdaterad.');
+        redirect('/adm/platser/' . $params['slug']);
     }
 
     public function nearby(array $params): void
