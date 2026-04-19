@@ -252,6 +252,59 @@ class PublicController
         view('public/place-detail', compact('place', 'visits', 'images', 'tags', 'avgRating', 'pageTitle', 'seoMeta', 'schemas', 'faqItems', 'useLeaflet', 'placeProducts'), 'public');
     }
 
+    public function visitDetail(array $params): void
+    {
+        header('Cache-Control: public, max-age=300, s-maxage=3600');
+
+        $placeModel = new Place($this->pdo);
+        $place = $placeModel->findBySlug($params['slug']);
+        if (!$place || !$place['public_allowed']) {
+            http_response_code(404);
+            echo '<h1>Platsen hittades inte</h1>';
+            return;
+        }
+
+        $stmt = $this->pdo->prepare('
+            SELECT v.*, vr.total_rating_cached, vr.location_rating, vr.calmness_rating,
+                   vr.service_rating, vr.value_rating, vr.return_value_rating
+            FROM visits v
+            LEFT JOIN visit_ratings vr ON vr.visit_id = v.id
+            WHERE v.id = ? AND v.place_id = ? AND v.ready_for_publish = 1
+        ');
+        $stmt->execute([(int) $params['id'], $place['id']]);
+        $visit = $stmt->fetch();
+
+        if (!$visit) {
+            http_response_code(404);
+            echo '<h1>Besöket hittades inte</h1>';
+            return;
+        }
+
+        $imageStmt = $this->pdo->prepare('
+            SELECT * FROM visit_images WHERE visit_id = ? ORDER BY image_order ASC
+        ');
+        $imageStmt->execute([(int) $visit['id']]);
+        $images = $imageStmt->fetchAll();
+
+        $pageTitle = $place['name'] . ' — Besök ' . $visit['visited_at'] . ' | Frizon';
+        $appUrl    = rtrim($_ENV['APP_URL'] ?? 'https://frizon.org', '/');
+
+        $ogImage = $appUrl . '/img/frizon-logo.png';
+        if (!empty($images)) {
+            $ogImage = $appUrl . '/uploads/cards/' . $images[0]['filename'];
+        }
+
+        $seoMeta = [
+            'description' => mb_strimwidth($visit['approved_public_text'] ?? $place['name'], 0, 155, '...'),
+            'og_url'      => $appUrl . '/platser/' . $place['slug'] . '/besok/' . $visit['id'],
+            'og_image'    => $ogImage,
+        ];
+
+        $schemas = [];
+
+        view('public/visit-detail', compact('place', 'visit', 'images', 'pageTitle', 'seoMeta', 'schemas'), 'public');
+    }
+
     public function privacy(array $params): void
     {
         header('Cache-Control: public, max-age=300, s-maxage=3600');

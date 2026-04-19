@@ -345,6 +345,105 @@
   line-height: 44px;
 }
 
+/* Visit detail — image grid */
+.pub-visit__images {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2px;
+}
+.pub-visit__img-btn {
+    border: 0;
+    padding: 0;
+    cursor: pointer;
+    background: none;
+    display: block;
+}
+.pub-visit__img-btn--hero {
+    grid-column: 1 / -1;
+}
+.pub-visit__img-btn img {
+    width: 100%;
+    height: auto;
+    display: block;
+    object-fit: cover;
+}
+.pub-visit__img-btn:not(.pub-visit__img-btn--hero) img {
+    aspect-ratio: 1;
+    object-fit: cover;
+}
+
+/* Visit detail — ratings */
+.pub-visit__ratings {
+    padding: var(--space-4);
+    border-bottom: 1px solid var(--color-border);
+}
+.pub-visit__section-title {
+    font-size: var(--text-sm);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--color-text-muted);
+    font-weight: var(--weight-semibold);
+    margin-bottom: var(--space-3);
+}
+.pub-visit__rating-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-2);
+}
+.pub-visit__rating-item {
+    background: var(--color-bg-muted, #f8f9fa);
+    border-radius: var(--radius-md);
+    padding: var(--space-3);
+}
+.pub-visit__rating-label {
+    font-size: var(--text-xs);
+    color: var(--color-text-muted);
+    display: block;
+}
+.pub-visit__rating-value {
+    font-size: var(--text-base);
+    font-weight: var(--weight-semibold);
+    margin-top: 2px;
+}
+.pub-visit__rating-avg {
+    background: var(--color-success-light, #f0fdf4);
+    border-radius: var(--radius-md);
+    padding: var(--space-3);
+    margin-top: var(--space-2);
+    text-align: center;
+}
+.pub-visit__rating-value--avg {
+    font-size: var(--text-xl);
+    font-weight: var(--weight-bold);
+    color: var(--color-success);
+}
+
+/* Visit detail — metadata rows */
+.pub-visit__details {
+    padding: var(--space-4);
+    border-bottom: 1px solid var(--color-border);
+}
+.pub-visit__detail-row {
+    display: flex;
+    justify-content: space-between;
+    padding: var(--space-2) 0;
+    border-bottom: 1px solid var(--color-border-light, #f0f0f0);
+    font-size: var(--text-sm);
+}
+.pub-visit__detail-row:last-child {
+    border-bottom: 0;
+}
+.pub-visit__detail-label {
+    color: var(--color-text-muted);
+}
+
+/* Visit detail — footer */
+.pub-detail__footer {
+    padding: var(--space-4);
+    text-align: center;
+    font-size: var(--text-sm);
+}
+
 /* ── Shop ─────────────────────────────────────────────────── */
 .shop-card__img-wrap {
     border-bottom: 1px solid var(--color-border);

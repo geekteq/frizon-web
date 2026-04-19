@@ -5,6 +5,7 @@ function registerRoutes(Router $router): void
     // Public pages (no auth required) — root-level routes
     $router->get('/', 'PublicController', 'homepage');
     $router->get('/platser/{slug}', 'PublicController', 'placeDetail');
+    $router->get('/platser/{slug}/besok/{id}', 'PublicController', 'visitDetail');
     $router->get('/topplista', 'PublicController', 'topList');
     $router->get('/sitemap.xml', 'PublicController', 'sitemap');
     $router->get('/llms.txt', 'PublicController', 'llmsTxt');
