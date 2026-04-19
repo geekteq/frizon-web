@@ -99,6 +99,18 @@
         <?php endforeach; ?>
     </div>
 
+    <div class="form-group" style="margin-top:var(--space-6); padding-top:var(--space-4); border-top:1px solid var(--color-border);">
+        <label for="approved_public_text" class="form-label">Publicerad text</label>
+        <?php if ($visit['ready_for_publish']): ?>
+            <span class="text-sm" style="color:var(--color-success); font-weight:600;">Publicerad</span>
+        <?php endif; ?>
+        <textarea id="approved_public_text" name="approved_public_text" class="form-textarea" rows="6"
+            style="border-color:<?= $visit['ready_for_publish'] ? 'var(--color-success)' : 'var(--color-border)' ?>;"
+            placeholder="Redigera den publika texten direkt här. Spara utan att köra om AI."
+        ><?= htmlspecialchars($visit['approved_public_text'] ?? '') ?></textarea>
+        <span class="form-hint">Redigera direkt. Använd "Brodera ut text" på besökssidan för att generera ny AI-text.</span>
+    </div>
+
     <button type="submit" class="btn btn-primary btn--full">Spara ändringar</button>
 </form>
 

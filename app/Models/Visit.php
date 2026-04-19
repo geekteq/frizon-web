@@ -92,7 +92,7 @@ class Visit
                 visited_at = ?, raw_note = ?,
                 plus_notes = ?, minus_notes = ?, tips_notes = ?,
                 price_level = ?, would_return = ?, suitable_for = ?,
-                things_to_note = ?, updated_at = NOW()
+                things_to_note = ?, approved_public_text = ?, updated_at = NOW()
             WHERE id = ?
         ');
         $stmt->execute([
@@ -105,6 +105,7 @@ class Visit
             $data['would_return'] ?? null,
             $data['suitable_for'] ?? null,
             $data['things_to_note'] ?? null,
+            $data['approved_public_text'] ?? null,
             $id,
         ]);
     }

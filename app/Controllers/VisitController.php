@@ -158,15 +158,16 @@ class VisitController
         if (!$visit) { http_response_code(404); return; }
 
         $visitModel->update((int) $params['id'], [
-            'visited_at'     => $_POST['visited_at'] ?? $visit['visited_at'],
-            'raw_note'       => trim($_POST['raw_note'] ?? '') ?: null,
-            'plus_notes'     => trim($_POST['plus_notes'] ?? '') ?: null,
-            'minus_notes'    => trim($_POST['minus_notes'] ?? '') ?: null,
-            'tips_notes'     => trim($_POST['tips_notes'] ?? '') ?: null,
-            'price_level'    => $_POST['price_level'] ?? null,
-            'would_return'   => $_POST['would_return'] ?? null,
-            'suitable_for'   => trim($_POST['suitable_for'] ?? '') ?: null,
-            'things_to_note' => trim($_POST['things_to_note'] ?? '') ?: null,
+            'visited_at'           => $_POST['visited_at'] ?? $visit['visited_at'],
+            'raw_note'             => trim($_POST['raw_note'] ?? '') ?: null,
+            'plus_notes'           => trim($_POST['plus_notes'] ?? '') ?: null,
+            'minus_notes'          => trim($_POST['minus_notes'] ?? '') ?: null,
+            'tips_notes'           => trim($_POST['tips_notes'] ?? '') ?: null,
+            'price_level'          => $_POST['price_level'] ?? null,
+            'would_return'         => $_POST['would_return'] ?? null,
+            'suitable_for'         => trim($_POST['suitable_for'] ?? '') ?: null,
+            'things_to_note'       => trim($_POST['things_to_note'] ?? '') ?: null,
+            'approved_public_text' => trim($_POST['approved_public_text'] ?? '') ?: null,
         ]);
 
         $ratingModel = new VisitRating($this->pdo);
