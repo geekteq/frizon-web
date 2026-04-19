@@ -40,7 +40,7 @@ class PlaceController
         if (!$p) { http_response_code(404); echo '<h1>Platsen hittades inte</h1>'; return; }
 
         $stmt = $this->pdo->prepare('
-            SELECT v.*, v.ready_for_publish, vr.total_rating_cached FROM visits v
+            SELECT v.*, vr.total_rating_cached FROM visits v
             LEFT JOIN visit_ratings vr ON vr.visit_id = v.id
             WHERE v.place_id = ? ORDER BY v.visited_at DESC
         ');

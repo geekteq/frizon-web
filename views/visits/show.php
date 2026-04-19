@@ -75,7 +75,7 @@
                         <?php include dirname(__DIR__) . '/partials/csrf-field.php'; ?>
                         <input type="hidden" name="image_id" value="<?= (int)$img['id'] ?>">
                         <button type="submit" class="btn btn-ghost btn--sm" title="Använd som platsbild" aria-label="Använd som platsbild"
-                            <?= (isset($place) && ($place['preview_image_id'] ?? null) == $img['id']) ? 'disabled style="opacity:0.5;"' : '' ?>>
+                            <?= (isset($place) && (int)($place['preview_image_id'] ?? 0) === (int)$img['id']) ? 'disabled style="opacity:0.5;"' : '' ?>>
                             📌
                         </button>
                     </form>
