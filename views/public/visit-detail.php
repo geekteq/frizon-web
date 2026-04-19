@@ -8,15 +8,29 @@ $typeLabel = $placeTypes[$place['place_type']] ?? $place['place_type'];
 
 $priceLevels = ['free' => 'Gratis', 'low' => '€', 'medium' => '€€', 'high' => '€€€'];
 $wouldReturnLabels = ['yes' => 'Ja', 'maybe' => 'Kanske', 'no' => 'Nej'];
+
+$svMonths = ['januari','februari','mars','april','maj','juni','juli','augusti','september','oktober','november','december'];
+$visitDate = strtotime($visit['visited_at']);
+$formattedDate = (int)date('j', $visitDate) . ' ' . $svMonths[(int)date('n', $visitDate) - 1] . ' ' . date('Y', $visitDate);
 ?>
 
 <article class="pub-detail">
+    <!-- Breadcrumb -->
+    <nav class="pub-detail__breadcrumb" aria-label="Brödsmulor">
+        <a href="/">Platser</a>
+        <span aria-hidden="true">›</span>
+        <a href="/platser/<?= htmlspecialchars($place['slug']) ?>"><?= htmlspecialchars($place['name']) ?></a>
+        <span aria-hidden="true">›</span>
+        <span><?= $formattedDate ?></span>
+    </nav>
+
     <div class="pub-detail__header">
-        <a href="/platser/<?= htmlspecialchars($place['slug']) ?>" class="pub-detail__back">&larr; <?= htmlspecialchars($place['name']) ?></a>
-        <h1 class="pub-detail__title"><?= htmlspecialchars($visit['visited_at']) ?></h1>
+        <h1 class="pub-detail__title"><?= htmlspecialchars($place['name']) ?> — <?= $formattedDate ?></h1>
         <div class="pub-detail__meta">
-            <span><?= htmlspecialchars($place['name']) ?></span>
-            · <span><?= $typeLabel ?></span>
+            <span><?= $typeLabel ?></span>
+            <?php if ($place['country_code']): ?>
+                · <span><?= strtoupper($place['country_code']) ?></span>
+            <?php endif; ?>
             <?php if ($visit['total_rating_cached']): ?>
                 · <span>&#9733; <?= number_format((float)$visit['total_rating_cached'], 1) ?></span>
             <?php endif; ?>

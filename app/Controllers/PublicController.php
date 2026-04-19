@@ -300,7 +300,14 @@ class PublicController
         $imageStmt->execute([(int) $visit['id']]);
         $images = $imageStmt->fetchAll();
 
-        $pageTitle = $place['name'] . ' — Besök ' . $visit['visited_at'] . ' | Frizon';
+        $placeTypes = [
+            'stellplatz' => 'ställplats', 'camping' => 'camping', 'wild_camping' => 'fricamping',
+            'fika' => 'fika', 'lunch' => 'lunch', 'dinner' => 'middag',
+            'breakfast' => 'frukost', 'sight' => 'sevärdhet', 'shopping' => 'shopping',
+        ];
+        $typeLabel = $placeTypes[$place['place_type']] ?? $place['place_type'];
+
+        $pageTitle = $place['name'] . ' — recension av ' . $typeLabel . ' | Frizon';
         $appUrl    = rtrim($_ENV['APP_URL'] ?? 'https://frizon.org', '/');
 
         $ogImage = $appUrl . '/img/frizon-logo.png';
@@ -308,13 +315,48 @@ class PublicController
             $ogImage = $appUrl . '/uploads/cards/' . $images[0]['filename'];
         }
 
+        $metaDesc = $visit['approved_public_text']
+            ? mb_strimwidth($visit['approved_public_text'], 0, 155, '...')
+            : 'Vi besökte ' . $place['name'] . ' med vår husbil Frizze. Läs vår recension och se betyg på Frizon of Sweden.';
+
         $seoMeta = [
-            'description' => mb_strimwidth($visit['approved_public_text'] ?? $place['name'], 0, 155, '...'),
+            'description' => $metaDesc,
             'og_url'      => $appUrl . '/platser/' . $place['slug'] . '/besok/' . $visit['id'],
             'og_image'    => $ogImage,
         ];
 
-        $schemas = [];
+        // BreadcrumbList schema
+        $schemas = [[
+            '@context'        => 'https://schema.org',
+            '@type'           => 'BreadcrumbList',
+            'itemListElement' => [
+                ['@type' => 'ListItem', 'position' => 1, 'name' => 'Platser', 'item' => $appUrl . '/'],
+                ['@type' => 'ListItem', 'position' => 2, 'name' => $place['name'], 'item' => $appUrl . '/platser/' . $place['slug']],
+                ['@type' => 'ListItem', 'position' => 3, 'name' => 'Besök ' . $visit['visited_at']],
+            ],
+        ]];
+
+        // Review schema
+        if (!empty($visit['approved_public_text']) && !empty($visit['total_rating_cached'])) {
+            $schemas[] = [
+                '@context'      => 'https://schema.org',
+                '@type'         => 'Review',
+                'itemReviewed'  => [
+                    '@type' => 'TouristAttraction',
+                    'name'  => $place['name'],
+                    'url'   => $appUrl . '/platser/' . $place['slug'],
+                ],
+                'author'        => ['@type' => 'Person', 'name' => 'Mattias & Ulrica'],
+                'datePublished' => substr((string) $visit['visited_at'], 0, 10),
+                'reviewBody'    => $visit['approved_public_text'],
+                'reviewRating'  => [
+                    '@type'       => 'Rating',
+                    'ratingValue' => round((float) $visit['total_rating_cached'], 1),
+                    'bestRating'  => 5,
+                    'worstRating' => 1,
+                ],
+            ];
+        }
 
         view('public/visit-detail', compact('place', 'visit', 'images', 'pageTitle', 'seoMeta', 'schemas'), 'public');
     }
