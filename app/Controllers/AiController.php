@@ -308,6 +308,10 @@ class AiController
             } catch (RuntimeException $e) {
                 error_log('SEO regeneration failed after visit approval for place ' . $placeId . ': ' . $e->getMessage());
             }
+
+            // Ping Google to re-crawl sitemap
+            $sitemapUrl = rtrim($_ENV['APP_URL'] ?? 'https://frizon.org', '/') . '/sitemap.xml';
+            @file_get_contents('https://www.google.com/ping?sitemap=' . urlencode($sitemapUrl));
         }
 
         echo json_encode(['success' => true]);
