@@ -13,3 +13,6 @@ Skärmavbild*
 claude.md
 test-results/
 .worktrees/
+.playwright-mcp/
+.superpowers/
+screenshots/
