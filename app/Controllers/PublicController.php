@@ -182,6 +182,7 @@ class PublicController
             'description' => $metaDesc,
             'og_url'      => $appUrl . '/platser/' . $place['slug'],
             'og_image'    => $ogImage,
+            'og_type'     => 'article',
         ];
 
         // TouristAttraction schema
@@ -240,6 +241,16 @@ class PublicController
         }
 
         $schemas = [$placeSchema];
+
+        // BreadcrumbList schema
+        $schemas[] = [
+            '@context'        => 'https://schema.org',
+            '@type'           => 'BreadcrumbList',
+            'itemListElement' => [
+                ['@type' => 'ListItem', 'position' => 1, 'name' => 'Platser', 'item' => $appUrl . '/'],
+                ['@type' => 'ListItem', 'position' => 2, 'name' => $place['name']],
+            ],
+        ];
 
         // FAQPage schema — only when faq_content is populated
         $faqItems = !empty($place['faq_content']) ? json_decode((string) $place['faq_content'], true) : [];
@@ -323,6 +334,7 @@ class PublicController
             'description' => $metaDesc,
             'og_url'      => $appUrl . '/platser/' . $place['slug'] . '/besok/' . $visit['id'],
             'og_image'    => $ogImage,
+            'og_type'     => 'article',
         ];
 
         // BreadcrumbList schema
@@ -428,6 +440,15 @@ class PublicController
             'itemListElement' => $listItems,
         ]];
 
+        $schemas[] = [
+            '@context'        => 'https://schema.org',
+            '@type'           => 'BreadcrumbList',
+            'itemListElement' => [
+                ['@type' => 'ListItem', 'position' => 1, 'name' => 'Platser', 'item' => $appUrl . '/'],
+                ['@type' => 'ListItem', 'position' => 2, 'name' => 'Topplista'],
+            ],
+        ];
+
         view('public/toplist', compact('places', 'pageTitle', 'seoMeta', 'schemas'), 'public');
     }
 
@@ -449,6 +470,7 @@ class PublicController
         $staticPages = [
             [$appUrl . '/',          date('Y-m-d'), '1.0'],
             [$appUrl . '/topplista', date('Y-m-d'), '0.8'],
+            [$appUrl . '/samarbeta', date('Y-m-d'), '0.5'],
         ];
 
         foreach ($staticPages as [$loc, $lastmod, $priority]) {
@@ -465,6 +487,23 @@ class PublicController
             echo "    <loc>" . htmlspecialchars($appUrl . '/platser/' . $place['slug']) . "</loc>\n";
             echo "    <lastmod>" . $lastmod . "</lastmod>\n";
             echo "    <priority>0.7</priority>\n";
+            echo "  </url>\n";
+        }
+
+        // Published visit detail pages
+        $visitStmt = $this->pdo->query('
+            SELECT v.id, v.updated_at, p.slug AS place_slug
+            FROM visits v
+            JOIN places p ON p.id = v.place_id
+            WHERE v.ready_for_publish = 1 AND p.public_allowed = 1
+            ORDER BY v.visited_at DESC
+        ');
+        foreach ($visitStmt->fetchAll() as $v) {
+            $lastmod = date('Y-m-d', strtotime($v['updated_at']));
+            echo "  <url>\n";
+            echo "    <loc>" . htmlspecialchars($appUrl . '/platser/' . $v['place_slug'] . '/besok/' . $v['id']) . "</loc>\n";
+            echo "    <lastmod>" . $lastmod . "</lastmod>\n";
+            echo "    <priority>0.5</priority>\n";
             echo "  </url>\n";
         }
 
@@ -541,6 +580,28 @@ class PublicController
                 echo "URL: " . $appUrl . "/platser/" . $p['slug'] . "\n";
                 if ($p['meta_description']) {
                     echo $p['meta_description'] . "\n";
+                }
+                echo "\n";
+            }
+        }
+
+        // Published visits
+        $visitStmt = $this->pdo->query("
+            SELECT v.id, v.visited_at, v.approved_public_text, p.name AS place_name, p.slug AS place_slug
+            FROM visits v
+            JOIN places p ON p.id = v.place_id
+            WHERE v.ready_for_publish = 1 AND p.public_allowed = 1
+            ORDER BY v.visited_at DESC
+            LIMIT 50
+        ");
+        $visits = $visitStmt->fetchAll();
+        if (!empty($visits)) {
+            echo "## Published Reviews (" . count($visits) . ")\n\n";
+            foreach ($visits as $v) {
+                echo "### " . $v['place_name'] . " — " . $v['visited_at'] . "\n";
+                echo "URL: " . $appUrl . "/platser/" . $v['place_slug'] . "/besok/" . $v['id'] . "\n";
+                if ($v['approved_public_text']) {
+                    echo mb_strimwidth($v['approved_public_text'], 0, 200, '...') . "\n";
                 }
                 echo "\n";
             }

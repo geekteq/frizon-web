@@ -474,6 +474,15 @@ class AmazonController
             'inLanguage'  => 'sv',
         ]];
 
+        $schemas[] = [
+            '@context'        => 'https://schema.org',
+            '@type'           => 'BreadcrumbList',
+            'itemListElement' => [
+                ['@type' => 'ListItem', 'position' => 1, 'name' => 'Frizon', 'item' => $appUrl . '/'],
+                ['@type' => 'ListItem', 'position' => 2, 'name' => 'Shop'],
+            ],
+        ];
+
         view('public/shop', compact(
             'products', 'categories', 'filterCategory', 'search', 'pageTitle', 'seoMeta', 'schemas'
         ), 'public');
