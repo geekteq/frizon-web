@@ -19,6 +19,9 @@ $typeLabel = $placeTypes[$place['place_type']] ?? $place['place_type'];
             <?php if ($avgRating): ?>
                 · <span>&#9733; <?= number_format((float)$avgRating, 1) ?></span>
             <?php endif; ?>
+            <?php if (count($visits) > 0): ?>
+                · <span>Besökt <?= count($visits) ?> <?= count($visits) === 1 ? 'gång' : 'gånger' ?></span>
+            <?php endif; ?>
             <?php if ($place['is_toplisted']): ?>
                 · <span class="pub-detail__toplist">Topplistan</span>
             <?php endif; ?>
@@ -29,6 +32,16 @@ $typeLabel = $placeTypes[$place['place_type']] ?? $place['place_type'];
     <div id="place-map" class="pub-detail__map"
          data-lat="<?= $place['lat'] ?>" data-lng="<?= $place['lng'] ?>" data-name="<?= htmlspecialchars($place['name']) ?>">
     </div>
+
+    <!-- Preview image -->
+    <?php if (!empty($previewImage)): ?>
+        <div class="pub-detail__preview-img">
+            <img src="/uploads/detail/<?= htmlspecialchars($previewImage['filename']) ?>"
+                 alt="<?= htmlspecialchars($previewImage['alt_text'] ?? $place['name']) ?>"
+                 width="1200" height="900"
+                 loading="eager">
+        </div>
+    <?php endif; ?>
 
     <!-- Description -->
     <?php if ($place['default_public_text']): ?>
@@ -83,18 +96,53 @@ $typeLabel = $placeTypes[$place['place_type']] ?? $place['place_type'];
     <!-- Visit summaries -->
     <?php if (!empty($visits)): ?>
         <div class="pub-detail__visits">
-            <h3>Besök</h3>
-            <?php foreach ($visits as $visit): ?>
-                <div class="pub-visit-card">
-                    <div class="pub-visit-card__date"><?= htmlspecialchars($visit['visited_at']) ?></div>
-                    <?php if ($visit['approved_public_text']): ?>
-                        <p><?= nl2br(htmlspecialchars($visit['approved_public_text'])) ?></p>
-                    <?php endif; ?>
-                    <?php if ($visit['total_rating_cached']): ?>
-                        <span class="pub-visit-card__rating">&#9733; <?= number_format((float)$visit['total_rating_cached'], 1) ?></span>
-                    <?php endif; ?>
+            <!-- Latest visit -->
+            <?php $latest = $visits[0]; ?>
+            <div class="pub-visit-card__section-title">Senaste besöket</div>
+            <a href="/platser/<?= htmlspecialchars($place['slug']) ?>/besok/<?= $latest['id'] ?>" class="pub-visit-card pub-visit-card--linked">
+                <div class="pub-visit-card__top">
+                    <span class="pub-visit-card__date"><?= htmlspecialchars($latest['visited_at']) ?></span>
+                    <span class="pub-visit-card__right">
+                        <?php if ($latest['total_rating_cached']): ?>
+                            <span class="pub-visit-card__rating">&#9733; <?= number_format((float)$latest['total_rating_cached'], 1) ?></span>
+                        <?php endif; ?>
+                        <span class="pub-visit-card__chevron">&rsaquo;</span>
+                    </span>
                 </div>
-            <?php endforeach; ?>
+                <?php if ($latest['approved_public_text']): ?>
+                    <p class="pub-visit-card__text"><?= nl2br(htmlspecialchars(mb_strimwidth($latest['approved_public_text'], 0, 250, '...'))) ?></p>
+                <?php endif; ?>
+                <?php $latestImgCount = $visitImageCounts[$latest['id']] ?? 0; ?>
+                <?php if ($latestImgCount > 0): ?>
+                    <span class="pub-visit-card__img-count"><?= $latestImgCount ?> <?= $latestImgCount === 1 ? 'bild' : 'bilder' ?></span>
+                <?php endif; ?>
+            </a>
+
+            <!-- Older visits -->
+            <?php if (count($visits) > 1): ?>
+                <details class="pub-detail__older-visits">
+                    <summary class="pub-detail__older-summary">
+                        <span>Tidigare besök (<?= count($visits) - 1 ?>)</span>
+                        <span class="pub-detail__older-toggle">Visa</span>
+                    </summary>
+                    <?php for ($i = 1; $i < count($visits); $i++): $v = $visits[$i]; ?>
+                        <a href="/platser/<?= htmlspecialchars($place['slug']) ?>/besok/<?= $v['id'] ?>" class="pub-visit-card pub-visit-card--linked pub-visit-card--compact">
+                            <div class="pub-visit-card__top">
+                                <span class="pub-visit-card__date"><?= htmlspecialchars($v['visited_at']) ?></span>
+                                <span class="pub-visit-card__right">
+                                    <?php if ($v['total_rating_cached']): ?>
+                                        <span class="pub-visit-card__rating">&#9733; <?= number_format((float)$v['total_rating_cached'], 1) ?></span>
+                                    <?php endif; ?>
+                                    <span class="pub-visit-card__chevron">&rsaquo;</span>
+                                </span>
+                            </div>
+                            <?php if ($v['approved_public_text']): ?>
+                                <p class="pub-visit-card__text"><?= nl2br(htmlspecialchars(mb_strimwidth($v['approved_public_text'], 0, 150, '...'))) ?></p>
+                            <?php endif; ?>
+                        </a>
+                    <?php endfor; ?>
+                </details>
+            <?php endif; ?>
         </div>
     <?php endif; ?>
 

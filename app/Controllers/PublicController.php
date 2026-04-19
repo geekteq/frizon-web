@@ -139,6 +139,13 @@ class PublicController
         $imageStmt->execute([$place['id']]);
         $images = $imageStmt->fetchAll();
 
+        // Index image counts per visit
+        $visitImageCounts = [];
+        foreach ($images as $img) {
+            $vid = $img['visit_id'];
+            $visitImageCounts[$vid] = ($visitImageCounts[$vid] ?? 0) + 1;
+        }
+
         // Tags
         $tagStmt = $this->pdo->prepare('SELECT tag FROM place_tags WHERE place_id = ?');
         $tagStmt->execute([$place['id']]);
@@ -248,8 +255,15 @@ class PublicController
             ];
         }
 
+        $previewImage = null;
+        if ($place['preview_image_id']) {
+            $prevStmt = $this->pdo->prepare('SELECT filename, alt_text FROM visit_images WHERE id = ?');
+            $prevStmt->execute([$place['preview_image_id']]);
+            $previewImage = $prevStmt->fetch() ?: null;
+        }
+
         $useLeaflet = true;
-        view('public/place-detail', compact('place', 'visits', 'images', 'tags', 'avgRating', 'pageTitle', 'seoMeta', 'schemas', 'faqItems', 'useLeaflet', 'placeProducts'), 'public');
+        view('public/place-detail', compact('place', 'visits', 'images', 'tags', 'avgRating', 'pageTitle', 'seoMeta', 'schemas', 'faqItems', 'useLeaflet', 'placeProducts', 'visitImageCounts', 'previewImage'), 'public');
     }
 
     public function visitDetail(array $params): void

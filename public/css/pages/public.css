@@ -451,3 +451,93 @@
     border-radius: var(--radius-lg) var(--radius-lg) 0 0;
     overflow: hidden;
 }
+
+/* Preview image */
+.pub-detail__preview-img {
+    margin-bottom: var(--space-4);
+}
+.pub-detail__preview-img img {
+    width: 100%;
+    height: auto;
+    display: block;
+    border-radius: var(--radius-md);
+}
+
+/* Place detail — visit cards */
+.pub-visit-card__section-title {
+    font-size: var(--text-xs);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--color-text-muted);
+    font-weight: var(--weight-semibold);
+    margin-bottom: var(--space-2);
+}
+.pub-visit-card--linked {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+    background: var(--color-bg-muted, #f8f9fa);
+    border-radius: var(--radius-lg);
+    padding: var(--space-4);
+    margin-bottom: var(--space-2);
+}
+.pub-visit-card__top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--space-2);
+}
+.pub-visit-card__date {
+    font-weight: var(--weight-semibold);
+}
+.pub-visit-card__right {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+}
+.pub-visit-card__chevron {
+    color: var(--color-text-muted);
+    font-size: var(--text-lg);
+}
+.pub-visit-card__text {
+    font-size: var(--text-sm);
+    line-height: var(--leading-relaxed);
+    color: var(--color-text-muted);
+    margin: 0;
+}
+.pub-visit-card__img-count {
+    display: inline-block;
+    margin-top: var(--space-2);
+    font-size: var(--text-xs);
+    color: var(--color-text-muted);
+}
+
+/* Older visits — collapsible */
+.pub-detail__older-visits {
+    margin-top: var(--space-3);
+}
+.pub-detail__older-summary {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: var(--text-sm);
+    font-weight: var(--weight-semibold);
+    color: var(--color-text-muted);
+    cursor: pointer;
+    padding: var(--space-2) 0;
+    list-style: none;
+}
+.pub-detail__older-summary::-webkit-details-marker {
+    display: none;
+}
+.pub-detail__older-toggle {
+    font-size: var(--text-xs);
+    color: var(--color-text-muted);
+}
+.pub-visit-card--compact {
+    padding: var(--space-3);
+    margin-top: var(--space-2);
+}
+.pub-visit-card--compact .pub-visit-card__text {
+    font-size: var(--text-xs);
+}
