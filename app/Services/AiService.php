@@ -129,7 +129,8 @@ class ClaudeAiProvider implements AiProviderInterface
     private function sw(): string
     {
         return ' Skriv alltid "ställplats" — använd ALDRIG "Stellplatz", "Stellplats" eller "stellplats".'
-             . ' Om du nämner personnamn får du ENDAST använda Mattias och Ulrica — inga andra namn.';
+             . ' Skriv alltid i jag- eller vi-form. Använd aldrig tredje person eller personnamn som "Mattias och Ulrica".'
+             . ' Exempel: "Vi stannade här..." inte "Mattias och Ulrica stannade här...".';
     }
 
     private function callClaude(array $payload): string
@@ -440,7 +441,7 @@ class FakeAiProvider implements AiProviderInterface
         $typeLabel = $placeTypes[$place['place_type']] ?? $place['place_type'];
         $country   = $place['country_code'] ? ' i ' . strtoupper($place['country_code']) : '';
 
-        $meta = "{$place['name']} — en {$typeLabel}{$country}. Recenserad av Mattias och Ulrica på Frizon of Sweden ur ett husbilsperspektiv.";
+        $meta = "{$place['name']} — en {$typeLabel}{$country} som vi besökt med vår husbil. Läs vår recension på Frizon of Sweden.";
 
         $faq = [
             [

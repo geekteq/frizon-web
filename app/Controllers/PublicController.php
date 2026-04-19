@@ -169,7 +169,7 @@ class PublicController
 
         $metaDesc = $place['meta_description']
             ?? ($place['default_public_text'] ? mb_strimwidth($place['default_public_text'], 0, 155, '...') : null)
-            ?? $place['name'] . ' — besökt av Mattias och Ulrica på Frizon of Sweden.';
+            ?? $place['name'] . ' — besökt med vår husbil Frizze. Läs vår recension på Frizon of Sweden.';
 
         $seoMeta = [
             'description' => $metaDesc,
