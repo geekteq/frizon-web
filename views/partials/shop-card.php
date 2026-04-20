@@ -38,7 +38,9 @@
             <a href="/shop/<?= htmlspecialchars($p['slug']) ?>"
                class="btn btn-secondary btn--sm"
                style="flex:1; text-align:center;"
-               aria-label="Läs mer om <?= htmlspecialchars($p['title']) ?>">Läs mer</a>
+               aria-label="Läs mer om <?= htmlspecialchars($p['title']) ?>">
+                Läs mer<span class="sr-only"> om <?= htmlspecialchars($p['title']) ?></span>
+            </a>
             <a href="/go/<?= htmlspecialchars($p['slug']) ?>"
                target="_blank" rel="noopener sponsored"
                class="btn btn--sm"

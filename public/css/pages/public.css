@@ -88,6 +88,27 @@
   .public-map { height: 400px; }
 }
 
+.public-section-heading {
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 0 var(--space-4) var(--space-4);
+  text-align: center;
+}
+
+.public-section-heading h2 {
+  color: var(--color-text);
+  font-size: var(--text-xl);
+  font-weight: var(--weight-bold);
+  margin-bottom: var(--space-2);
+}
+
+.public-section-heading p {
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+  line-height: var(--leading-relaxed);
+  margin: 0;
+}
+
 /* Filters */
 .public-filters {
   padding: var(--space-3) var(--space-4);

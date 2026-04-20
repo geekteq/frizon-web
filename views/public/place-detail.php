@@ -204,12 +204,15 @@ document.addEventListener('DOMContentLoaded', function() {
     if (!mapEl) return;
     var lat = parseFloat(mapEl.dataset.lat);
     var lng = parseFloat(mapEl.dataset.lng);
-    var map = L.map(mapEl).setView([lat, lng], 13);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; OpenStreetMap', maxZoom: 19
-    }).addTo(map);
-    var title = document.createElement('strong');
-    title.textContent = mapEl.dataset.name;
-    L.marker([lat, lng]).addTo(map).bindPopup(title);
+
+    window.loadFrizonLeaflet().then(function() {
+        var map = L.map(mapEl).setView([lat, lng], 13);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; OpenStreetMap', maxZoom: 19
+        }).addTo(map);
+        var title = document.createElement('strong');
+        title.textContent = mapEl.dataset.name;
+        L.marker([lat, lng]).addTo(map).bindPopup(title);
+    });
 });
 </script>

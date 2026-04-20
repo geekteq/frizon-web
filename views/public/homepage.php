@@ -46,6 +46,11 @@ $placeTypes = [
 </div>
 
 <?php if (!empty($places)): ?>
+<section class="public-section-heading" aria-labelledby="places-heading">
+    <h2 id="places-heading">Platser vi besökt</h2>
+    <p>Våra egna stopp, recensioner och favoriter från vägarna.</p>
+</section>
+
 <!-- Map -->
 <div id="public-map" class="public-map"
      data-places='<?= htmlspecialchars(json_encode(array_map(fn($p) => [
@@ -155,32 +160,63 @@ document.addEventListener('DOMContentLoaded', function() {
     var places = JSON.parse(mapEl.dataset.places || '[]');
     if (places.length === 0) return;
 
-    var map = L.map(mapEl);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; OpenStreetMap',
-        maxZoom: 19
-    }).addTo(map);
+    var hasInitialized = false;
+    function initMap() {
+        if (hasInitialized) return;
+        hasInitialized = true;
 
-    var bounds = L.latLngBounds();
-    places.forEach(function(p) {
-        var marker = L.marker([p.lat, p.lng]).addTo(map);
-        var popupWrapper = document.createElement('div');
-        var title = document.createElement('strong');
-        var link = document.createElement('a');
-        link.href = '/platser/' + encodeURIComponent(p.slug);
-        link.textContent = p.name;
-        title.appendChild(link);
-        popupWrapper.appendChild(title);
+        window.loadFrizonMarkerCluster().then(function() {
+            var map = L.map(mapEl);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; OpenStreetMap',
+                maxZoom: 19
+            }).addTo(map);
 
-        if (p.rating) {
-            popupWrapper.appendChild(document.createElement('br'));
-            popupWrapper.appendChild(document.createTextNode('\u2605 ' + p.rating));
-        }
+            var markerLayer = L.markerClusterGroup({
+                maxClusterRadius: 48,
+                showCoverageOnHover: false,
+                spiderfyOnMaxZoom: true
+            });
+            var bounds = L.latLngBounds();
+            places.forEach(function(p) {
+                var marker = L.marker([p.lat, p.lng]);
+                var popupWrapper = document.createElement('div');
+                var title = document.createElement('strong');
+                var link = document.createElement('a');
+                link.href = '/platser/' + encodeURIComponent(p.slug);
+                link.textContent = p.name;
+                title.appendChild(link);
+                popupWrapper.appendChild(title);
 
-        marker.bindPopup(popupWrapper);
-        bounds.extend([p.lat, p.lng]);
-    });
+                if (p.rating) {
+                    popupWrapper.appendChild(document.createElement('br'));
+                    popupWrapper.appendChild(document.createTextNode('\u2605 ' + p.rating));
+                }
 
-    map.fitBounds(bounds, { padding: [30, 30], maxZoom: 10 });
+                marker.bindPopup(popupWrapper);
+                markerLayer.addLayer(marker);
+                bounds.extend([p.lat, p.lng]);
+            });
+
+            map.addLayer(markerLayer);
+            map.fitBounds(bounds, { padding: [30, 30], maxZoom: 10 });
+        });
+    }
+
+    if ('IntersectionObserver' in window) {
+        var observer = new IntersectionObserver(function(entries) {
+            if (!entries.some(function(entry) { return entry.isIntersecting; })) return;
+            observer.disconnect();
+            initMap();
+        }, { rootMargin: '300px 0px' });
+        observer.observe(mapEl);
+        return;
+    }
+
+    if ('requestIdleCallback' in window) {
+        requestIdleCallback(initMap, { timeout: 2000 });
+    } else {
+        setTimeout(initMap, 500);
+    }
 });
 </script>

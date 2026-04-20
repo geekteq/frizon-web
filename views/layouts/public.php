@@ -46,10 +46,7 @@ $ogTitle         = htmlspecialchars($pageTitle);
     <link rel="preload" as="image" href="/img/frizon-logo.webp" type="image/webp" fetchpriority="high">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <?php if (!empty($useLeaflet)): ?>
-    <link rel="stylesheet" href="/leaflet/leaflet.css">
-    <?php endif; ?>
-    <link rel="stylesheet" href="/css/main.css">
+    <link rel="stylesheet" href="/css/main.bundle.css">
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
     <link rel="apple-touch-icon" href="/apple-touch-icon.png">
     <link rel="manifest" href="/manifest.json">
@@ -78,22 +75,22 @@ $ogTitle         = htmlspecialchars($pageTitle);
     </main>
 
     <footer style="background:var(--color-brand-dark); text-align:center; padding:var(--space-8) var(--space-4) var(--space-6);">
-        <p style="color:rgba(255,255,255,0.85); font-size:var(--text-sm); margin-bottom:var(--space-3);">Frizon of Sweden — Resedagbok med Frizze</p>
+        <p style="color:rgba(255,255,255,0.92); font-size:var(--text-sm); margin-bottom:var(--space-3);">Frizon of Sweden — Resedagbok med Frizze</p>
         <p style="font-size:var(--text-xs); margin-bottom:var(--space-3);">
-            <a href="/topplista" style="color:rgba(255,255,255,0.8); text-decoration:underline;">Topplista</a>
-            <span style="color:rgba(255,255,255,0.4);"> &middot; </span>
-            <a href="/shop" style="color:rgba(255,255,255,0.8); text-decoration:underline;">Shop</a>
-            <span style="color:rgba(255,255,255,0.4);"> &middot; </span>
-            <a href="/integritetspolicy" style="color:rgba(255,255,255,0.8); text-decoration:underline;">Integritetspolicy</a>
-            <span style="color:rgba(255,255,255,0.4);"> &middot; </span>
-            <a href="/cookiepolicy" style="color:rgba(255,255,255,0.8); text-decoration:underline;">Cookiepolicy</a>
-            <span style="color:rgba(255,255,255,0.4);"> &middot; </span>
-            <a href="/samarbeta" style="color:rgba(255,255,255,0.8); text-decoration:underline;">Samarbeta</a>
-            <span style="color:rgba(255,255,255,0.4);"> &middot; </span>
-            <a href="/adm" style="color:rgba(255,255,255,0.65); text-decoration:underline;">Admin</a>
+            <a href="/topplista" style="color:rgba(255,255,255,0.92); text-decoration:underline;">Topplista</a>
+            <span style="color:rgba(255,255,255,0.7);"> &middot; </span>
+            <a href="/shop" style="color:rgba(255,255,255,0.92); text-decoration:underline;">Shop</a>
+            <span style="color:rgba(255,255,255,0.7);"> &middot; </span>
+            <a href="/integritetspolicy" style="color:rgba(255,255,255,0.92); text-decoration:underline;">Integritetspolicy</a>
+            <span style="color:rgba(255,255,255,0.7);"> &middot; </span>
+            <a href="/cookiepolicy" style="color:rgba(255,255,255,0.92); text-decoration:underline;">Cookiepolicy</a>
+            <span style="color:rgba(255,255,255,0.7);"> &middot; </span>
+            <a href="/samarbeta" style="color:rgba(255,255,255,0.92); text-decoration:underline;">Samarbeta</a>
+            <span style="color:rgba(255,255,255,0.7);"> &middot; </span>
+            <a href="/adm" style="color:rgba(255,255,255,0.86); text-decoration:underline;">Admin</a>
         </p>
-        <p style="font-size:var(--text-xs); color:rgba(255,255,255,0.45);">
-            &copy; <?= date('Y') ?> <a href="https://mobileminds.se" target="_blank" rel="noopener" style="color:rgba(255,255,255,0.55); text-decoration:underline;">Mobile Minds AB</a>
+        <p style="font-size:var(--text-xs); color:rgba(255,255,255,0.76);">
+            &copy; <?= date('Y') ?> <a href="https://mobileminds.se" target="_blank" rel="noopener" style="color:rgba(255,255,255,0.86); text-decoration:underline;">Mobile Minds AB</a>
         </p>
     </footer>
 
@@ -106,15 +103,72 @@ $ogTitle         = htmlspecialchars($pageTitle);
             </p>
             <div style="display:flex; gap:var(--space-2); flex-shrink:0;">
                 <button id="accept-cookies-btn" style="background:var(--color-accent); color:white; border:none; padding:var(--space-2) var(--space-4); border-radius:var(--radius-md); cursor:pointer; font-size:var(--text-sm); font-weight:var(--weight-semibold); min-height:44px;">Godkänn</button>
-                <button id="decline-cookies-btn" style="background:transparent; color:rgba(255,255,255,0.7); border:1px solid rgba(255,255,255,0.3); padding:var(--space-2) var(--space-4); border-radius:var(--radius-md); cursor:pointer; font-size:var(--text-sm); min-height:44px;">Avböj</button>
+                <button id="decline-cookies-btn" style="background:transparent; color:rgba(255,255,255,0.88); border:1px solid rgba(255,255,255,0.55); padding:var(--space-2) var(--space-4); border-radius:var(--radius-md); cursor:pointer; font-size:var(--text-sm); min-height:44px;">Avböj</button>
             </div>
         </div>
     </div>
 
-    <?php if (!empty($useLeaflet)): ?>
-    <script src="/leaflet/leaflet.js"></script>
-    <?php endif; ?>
     <script<?= app_csp_nonce_attr() ?>>
+    window.loadFrizonLeaflet = (function() {
+        var promise;
+
+        return function() {
+            if (window.L) return Promise.resolve(window.L);
+            if (promise) return promise;
+
+            promise = new Promise(function(resolve, reject) {
+                if (!document.querySelector('link[href="/leaflet/leaflet.css"]')) {
+                    var css = document.createElement('link');
+                    css.rel = 'stylesheet';
+                    css.href = '/leaflet/leaflet.css';
+                    document.head.appendChild(css);
+                }
+
+                var script = document.createElement('script');
+                script.src = '/leaflet/leaflet.js';
+                script.defer = true;
+                script.onload = function() { resolve(window.L); };
+                script.onerror = reject;
+                document.head.appendChild(script);
+            });
+
+            return promise;
+        };
+    })();
+
+    window.loadFrizonMarkerCluster = (function() {
+        var promise;
+
+        return function() {
+            if (window.L && window.L.markerClusterGroup) return Promise.resolve(window.L);
+            if (promise) return promise;
+
+            promise = window.loadFrizonLeaflet().then(function() {
+                [
+                    '/leaflet/MarkerCluster.css',
+                    '/leaflet/MarkerCluster.Default.css'
+                ].forEach(function(href) {
+                    if (document.querySelector('link[href="' + href + '"]')) return;
+                    var css = document.createElement('link');
+                    css.rel = 'stylesheet';
+                    css.href = href;
+                    document.head.appendChild(css);
+                });
+
+                return new Promise(function(resolve, reject) {
+                    var script = document.createElement('script');
+                    script.src = '/leaflet/leaflet.markercluster.js';
+                    script.defer = true;
+                    script.onload = function() { resolve(window.L); };
+                    script.onerror = reject;
+                    document.head.appendChild(script);
+                });
+            });
+
+            return promise;
+        };
+    })();
+
     // Cookie consent
     function getCookieConsent() { return localStorage.getItem('cookie_consent'); }
 
