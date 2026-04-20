@@ -188,7 +188,7 @@ class PublicController
         // TouristAttraction schema
         $placeSchema = [
             '@context' => 'https://schema.org',
-            '@type'    => 'TouristAttraction',
+            '@type'    => ['TouristAttraction', 'LocalBusiness'],
             'name'     => $place['name'],
             'url'      => $appUrl . '/platser/' . $place['slug'],
             'geo'      => [
@@ -354,7 +354,7 @@ class PublicController
                 '@context'      => 'https://schema.org',
                 '@type'         => 'Review',
                 'itemReviewed'  => [
-                    '@type' => 'TouristAttraction',
+                    '@type' => ['TouristAttraction', 'LocalBusiness'],
                     'name'  => $place['name'],
                     'url'   => $appUrl . '/platser/' . $place['slug'],
                 ],

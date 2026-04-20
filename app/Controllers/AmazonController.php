@@ -543,7 +543,7 @@ class AmazonController
         }
         $breadcrumbItems[] = ['@type' => 'ListItem', 'position' => $pos, 'name' => $product['title'], 'item' => $productUrl];
 
-        // Build Product schema
+        // Build Product schema (no Offer — we don't control the price)
         $productSchema = [
             '@context'    => 'https://schema.org',
             '@type'       => 'Product',
@@ -551,14 +551,6 @@ class AmazonController
             'description' => $product['amazon_description'] ?: ($product['our_description'] ?? ''),
             'url'         => $productUrl,
             'image'       => $ogImage,
-            'offers'      => [
-                '@type'           => 'Offer',
-                'url'             => $product['affiliate_url'],
-                'priceCurrency'   => 'SEK',
-                'seller'          => ['@type' => 'Organization', 'name' => 'Amazon'],
-                'availability'    => 'https://schema.org/InStock',
-                'itemCondition'   => 'https://schema.org/NewCondition',
-            ],
         ];
         if ($asin) {
             $productSchema['sku'] = $asin;
