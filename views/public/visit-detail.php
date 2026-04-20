@@ -46,13 +46,14 @@ $formattedDate = (int)date('j', $visitDate) . ' ' . $svMonths[(int)date('n', $vi
                         data-lightbox
                         data-lightbox-src="/uploads/detail/<?= htmlspecialchars($img['filename']) ?>"
                         data-lightbox-caption="<?= htmlspecialchars($img['alt_text'] ?? '') ?>">
-                    <img src="/uploads/<?= $i === 0 ? 'detail' : 'cards' ?>/<?= htmlspecialchars($img['filename']) ?>"
-                         srcset="/uploads/cards/<?= htmlspecialchars($img['filename']) ?> 400w, /uploads/medium/<?= htmlspecialchars($img['filename']) ?> 800w, /uploads/detail/<?= htmlspecialchars($img['filename']) ?> 1200w"
+                    <img src="/uploads/<?= $i === 0 ? 'medium' : 'cards' ?>/<?= htmlspecialchars($img['filename']) ?>"
+                         srcset="/uploads/cards/<?= htmlspecialchars($img['filename']) ?> 400w, /uploads/gallery/<?= htmlspecialchars($img['filename']) ?> 600w, /uploads/medium/<?= htmlspecialchars($img['filename']) ?> 800w, /uploads/detail/<?= htmlspecialchars($img['filename']) ?> 1200w"
                          sizes="<?= $i === 0 ? '(min-width: 900px) 760px, calc(100vw - 32px)' : '(min-width: 900px) 372px, (min-width: 600px) calc((100vw - 48px) / 2), calc(100vw - 32px)' ?>"
                          alt="<?= htmlspecialchars($img['alt_text'] ?? $place['name']) ?>"
-                         width="<?= $i === 0 ? '1200' : '400' ?>"
-                         height="<?= $i === 0 ? '900' : '300' ?>"
-                         loading="<?= $i === 0 ? 'eager' : 'lazy' ?>">
+                         width="<?= $i === 0 ? '800' : '400' ?>"
+                         height="<?= $i === 0 ? '600' : '300' ?>"
+                         loading="<?= $i === 0 ? 'eager' : 'lazy' ?>"
+                         <?php if ($i === 0): ?> fetchpriority="high"<?php endif; ?>>
                 </button>
             <?php endforeach; ?>
         </div>
@@ -69,7 +70,7 @@ $formattedDate = (int)date('j', $visitDate) . ' ' . $svMonths[(int)date('n', $vi
     <!-- Ratings -->
     <?php if ($visit['total_rating_cached']): ?>
         <div class="pub-visit__ratings">
-            <h3 class="pub-visit__section-title">Betyg</h3>
+            <h2 class="pub-visit__section-title">Betyg</h2>
             <div class="pub-visit__rating-grid">
                 <?php
                 $ratingLabels = [

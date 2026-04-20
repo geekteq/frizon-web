@@ -4,18 +4,24 @@ declare(strict_types=1);
 
 $root = dirname(__DIR__);
 $uploadDir = $root . '/storage/uploads';
-$mediumDir = $uploadDir . '/medium';
 $detailDir = $uploadDir . '/detail';
 $originalDir = $uploadDir . '/originals';
+$variants = [
+    'gallery' => [600, 450],
+    'medium' => [800, 600],
+];
 
 if (!extension_loaded('gd') || !function_exists('imagewebp')) {
     fwrite(STDERR, "GD med WebP-stod saknas.\n");
     exit(1);
 }
 
-if (!is_dir($mediumDir) && !mkdir($mediumDir, 0775, true) && !is_dir($mediumDir)) {
-    fwrite(STDERR, "Kunde inte skapa {$mediumDir}\n");
-    exit(1);
+foreach ($variants as $dir => $_size) {
+    $variantDir = $uploadDir . '/' . $dir;
+    if (!is_dir($variantDir) && !mkdir($variantDir, 0775, true) && !is_dir($variantDir)) {
+        fwrite(STDERR, "Kunde inte skapa {$variantDir}\n");
+        exit(1);
+    }
 }
 
 $detailFiles = glob($detailDir . '/*.webp') ?: [];
@@ -25,13 +31,6 @@ $failed = 0;
 
 foreach ($detailFiles as $detailPath) {
     $filename = basename($detailPath);
-    $target = $mediumDir . '/' . $filename;
-
-    if (is_file($target)) {
-        $skipped++;
-        continue;
-    }
-
     [$source, $mimeType] = findSourceImage($originalDir, $detailPath, $filename);
     if ($source === null || $mimeType === null) {
         fwrite(STDERR, "Hoppar over {$filename}: ingen lasbar kallbild.\n");
@@ -39,15 +38,24 @@ foreach ($detailFiles as $detailPath) {
         continue;
     }
 
-    if (resizeToWebp($source, $target, 800, 600, $mimeType)) {
-        $created++;
-    } else {
-        fwrite(STDERR, "Misslyckades med {$filename}\n");
-        $failed++;
+    foreach ($variants as $dir => [$maxW, $maxH]) {
+        $target = $uploadDir . '/' . $dir . '/' . $filename;
+
+        if (is_file($target)) {
+            $skipped++;
+            continue;
+        }
+
+        if (resizeToWebp($source, $target, $maxW, $maxH, $mimeType)) {
+            $created++;
+        } else {
+            fwrite(STDERR, "Misslyckades med {$dir}/{$filename}\n");
+            $failed++;
+        }
     }
 }
 
-echo "Medium-varianter skapade: {$created}\n";
+echo "Varianter skapade: {$created}\n";
 echo "Redan fanns: {$skipped}\n";
 echo "Misslyckades: {$failed}\n";
 

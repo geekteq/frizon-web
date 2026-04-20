@@ -10,6 +10,7 @@ class ImageService
     private const VARIANTS = [
         'thumbnails' => [150, 150],
         'cards'      => [400, 300],
+        'gallery'    => [600, 450],
         'medium'     => [800, 600],
         'detail'     => [1200, 900],
     ];

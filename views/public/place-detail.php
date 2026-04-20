@@ -41,7 +41,7 @@ $typeLabel = $placeTypes[$place['place_type']] ?? $place['place_type'];
     <?php if (!empty($previewImage)): ?>
         <div class="pub-detail__preview-img">
             <img src="/uploads/detail/<?= htmlspecialchars($previewImage['filename']) ?>"
-                 srcset="/uploads/cards/<?= htmlspecialchars($previewImage['filename']) ?> 400w, /uploads/medium/<?= htmlspecialchars($previewImage['filename']) ?> 800w, /uploads/detail/<?= htmlspecialchars($previewImage['filename']) ?> 1200w"
+                 srcset="/uploads/cards/<?= htmlspecialchars($previewImage['filename']) ?> 400w, /uploads/gallery/<?= htmlspecialchars($previewImage['filename']) ?> 600w, /uploads/medium/<?= htmlspecialchars($previewImage['filename']) ?> 800w, /uploads/detail/<?= htmlspecialchars($previewImage['filename']) ?> 1200w"
                  sizes="(min-width: 900px) 760px, calc(100vw - 32px)"
                  alt="<?= htmlspecialchars($previewImage['alt_text'] ?? $place['name']) ?>"
                  width="1200" height="900"
@@ -65,7 +65,7 @@ $typeLabel = $placeTypes[$place['place_type']] ?? $place['place_type'];
                         data-lightbox-src="/uploads/detail/<?= htmlspecialchars($img['filename']) ?>"
                         data-lightbox-caption="<?= htmlspecialchars($img['alt_text'] ?? '') ?>">
                     <img src="/uploads/cards/<?= htmlspecialchars($img['filename']) ?>"
-                         srcset="/uploads/cards/<?= htmlspecialchars($img['filename']) ?> 400w, /uploads/medium/<?= htmlspecialchars($img['filename']) ?> 800w, /uploads/detail/<?= htmlspecialchars($img['filename']) ?> 1200w"
+                         srcset="/uploads/cards/<?= htmlspecialchars($img['filename']) ?> 400w, /uploads/gallery/<?= htmlspecialchars($img['filename']) ?> 600w, /uploads/medium/<?= htmlspecialchars($img['filename']) ?> 800w, /uploads/detail/<?= htmlspecialchars($img['filename']) ?> 1200w"
                          sizes="(min-width: 900px) 372px, (min-width: 600px) calc((100vw - 48px) / 2), calc(100vw - 32px)"
                          alt="<?= htmlspecialchars($img['alt_text'] ?? $place['name']) ?>"
                          class="pub-detail__img"
