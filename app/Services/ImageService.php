@@ -10,6 +10,7 @@ class ImageService
     private const VARIANTS = [
         'thumbnails' => [150, 150],
         'cards'      => [400, 300],
+        'medium'     => [800, 600],
         'detail'     => [1200, 900],
     ];
 
@@ -205,7 +206,7 @@ class ImageService
 
     public function delete(string $filename): void
     {
-        foreach (['thumbnails', 'cards', 'detail'] as $dir) {
+        foreach (array_keys(self::VARIANTS) as $dir) {
             $path = $this->basePath . '/' . $dir . '/' . $filename;
             if (file_exists($path)) {
                 unlink($path);

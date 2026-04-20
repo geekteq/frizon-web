@@ -126,7 +126,14 @@ $ogTitle         = htmlspecialchars($pageTitle);
                 var script = document.createElement('script');
                 script.src = '<?= htmlspecialchars(asset_url('/leaflet/leaflet.js')) ?>';
                 script.defer = true;
-                script.onload = function() { resolve(window.L); };
+                script.onload = function() {
+                    if (window.L && window.L.Icon && window.L.Icon.Default) {
+                        window.L.Icon.Default.mergeOptions({
+                            shadowRetinaUrl: '<?= htmlspecialchars(asset_url('/leaflet/images/marker-shadow-2x.png')) ?>'
+                        });
+                    }
+                    resolve(window.L);
+                };
                 script.onerror = reject;
                 document.head.appendChild(script);
             });

@@ -47,6 +47,8 @@ $formattedDate = (int)date('j', $visitDate) . ' ' . $svMonths[(int)date('n', $vi
                         data-lightbox-src="/uploads/detail/<?= htmlspecialchars($img['filename']) ?>"
                         data-lightbox-caption="<?= htmlspecialchars($img['alt_text'] ?? '') ?>">
                     <img src="/uploads/<?= $i === 0 ? 'detail' : 'cards' ?>/<?= htmlspecialchars($img['filename']) ?>"
+                         srcset="/uploads/cards/<?= htmlspecialchars($img['filename']) ?> 400w, /uploads/medium/<?= htmlspecialchars($img['filename']) ?> 800w, /uploads/detail/<?= htmlspecialchars($img['filename']) ?> 1200w"
+                         sizes="<?= $i === 0 ? '(min-width: 900px) 760px, calc(100vw - 32px)' : '(min-width: 900px) 372px, (min-width: 600px) calc((100vw - 48px) / 2), calc(100vw - 32px)' ?>"
                          alt="<?= htmlspecialchars($img['alt_text'] ?? $place['name']) ?>"
                          width="<?= $i === 0 ? '1200' : '400' ?>"
                          height="<?= $i === 0 ? '900' : '300' ?>"

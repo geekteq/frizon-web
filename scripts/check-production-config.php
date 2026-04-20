@@ -69,6 +69,7 @@ $requiredDirs = [
     $root . '/storage/uploads/originals',
     $root . '/storage/uploads/thumbnails',
     $root . '/storage/uploads/cards',
+    $root . '/storage/uploads/medium',
     $root . '/storage/uploads/detail',
     $root . '/storage/runtime-secrets',
 ];

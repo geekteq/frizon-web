@@ -16,6 +16,7 @@ var PRECACHE = [
   '/leaflet/leaflet.markercluster.js',
   '/leaflet/images/marker-icon.png',
   '/leaflet/images/marker-icon-2x.png',
+  '/leaflet/images/marker-shadow-2x.png',
   '/leaflet/images/marker-shadow.png'
 ];
 
