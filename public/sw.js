@@ -1,4 +1,4 @@
-var CACHE_NAME = 'frizon-v13';
+var CACHE_NAME = 'frizon-v14';
 var PRECACHE = [
   '/css/main.bundle.css',
   '/img/frizon-logo.png',
@@ -8,8 +8,6 @@ var PRECACHE = [
   '/apple-touch-icon.png',
   '/leaflet/leaflet.css',
   '/leaflet/leaflet.js',
-  '/leaflet/MarkerCluster.css',
-  '/leaflet/MarkerCluster.Default.css',
   '/leaflet/leaflet.markercluster.js',
   '/leaflet/images/marker-icon.png',
   '/leaflet/images/marker-icon-2x.png',

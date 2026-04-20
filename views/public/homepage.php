@@ -169,7 +169,8 @@ document.addEventListener('DOMContentLoaded', function() {
             var map = L.map(mapEl);
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 attribution: '&copy; OpenStreetMap',
-                maxZoom: 19
+                maxZoom: 19,
+                detectRetina: true
             }).addTo(map);
 
             var markerLayer = L.markerClusterGroup({

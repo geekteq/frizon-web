@@ -43,10 +43,10 @@ $ogTitle         = htmlspecialchars($pageTitle);
     <script type="application/ld+json"<?= app_csp_nonce_attr() ?>><?= json_encode($schemaObj, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG) ?></script>
     <?php endforeach; ?>
 
-    <link rel="preload" as="image" href="/img/frizon-logo.webp" type="image/webp" fetchpriority="high">
+    <link rel="preload" as="image" href="<?= htmlspecialchars(asset_url('/img/frizon-logo.webp')) ?>" type="image/webp" fetchpriority="high">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="stylesheet" href="/css/main.bundle.css">
+    <link rel="stylesheet" href="<?= htmlspecialchars(asset_url('/css/main.bundle.css')) ?>">
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
     <link rel="apple-touch-icon" href="/apple-touch-icon.png">
     <link rel="manifest" href="/manifest.json">
@@ -120,12 +120,12 @@ $ogTitle         = htmlspecialchars($pageTitle);
                 if (!document.querySelector('link[href="/leaflet/leaflet.css"]')) {
                     var css = document.createElement('link');
                     css.rel = 'stylesheet';
-                    css.href = '/leaflet/leaflet.css';
+                    css.href = '<?= htmlspecialchars(asset_url('/leaflet/leaflet.css')) ?>';
                     document.head.appendChild(css);
                 }
 
                 var script = document.createElement('script');
-                script.src = '/leaflet/leaflet.js';
+                script.src = '<?= htmlspecialchars(asset_url('/leaflet/leaflet.js')) ?>';
                 script.defer = true;
                 script.onload = function() { resolve(window.L); };
                 script.onerror = reject;
@@ -144,20 +144,9 @@ $ogTitle         = htmlspecialchars($pageTitle);
             if (promise) return promise;
 
             promise = window.loadFrizonLeaflet().then(function() {
-                [
-                    '/leaflet/MarkerCluster.css',
-                    '/leaflet/MarkerCluster.Default.css'
-                ].forEach(function(href) {
-                    if (document.querySelector('link[href="' + href + '"]')) return;
-                    var css = document.createElement('link');
-                    css.rel = 'stylesheet';
-                    css.href = href;
-                    document.head.appendChild(css);
-                });
-
                 return new Promise(function(resolve, reject) {
                     var script = document.createElement('script');
-                    script.src = '/leaflet/leaflet.markercluster.js';
+                    script.src = '<?= htmlspecialchars(asset_url('/leaflet/leaflet.markercluster.js')) ?>';
                     script.defer = true;
                     script.onload = function() { resolve(window.L); };
                     script.onerror = reject;

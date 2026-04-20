@@ -13,11 +13,7 @@ if ($entryCss === false) {
     exit(1);
 }
 
-$bundle = "/**\n";
-$bundle .= " * Frizon.org — generated CSS bundle.\n";
-$bundle .= " * Source: public/css/main.css and its local imports.\n";
-$bundle .= " * Rebuild with: php scripts/build-css-bundle.php\n";
-$bundle .= " */\n\n";
+$bundle = '';
 
 $importPattern = '/@import\s+url\([\'"]?([^\'")]+)[\'"]?\)\s*;/';
 preg_match_all($importPattern, $entryCss, $matches);
@@ -40,13 +36,25 @@ foreach ($matches[1] as $relativeImport) {
         exit(1);
     }
 
-    $bundle .= "/* ---- {$relativeImport} ---- */\n";
-    $bundle .= rtrim($css) . "\n\n";
+    $bundle .= rtrim($css) . "\n";
 }
 
-if (file_put_contents($target, $bundle) === false) {
+$bundle = minifyCss($bundle);
+
+if (file_put_contents($target, $bundle . "\n") === false) {
     fwrite(STDERR, "Could not write {$target}\n");
     exit(1);
 }
 
 echo "Wrote public/css/main.bundle.css\n";
+
+function minifyCss(string $css): string
+{
+    $css = preg_replace('#/\*.*?\*/#s', '', $css) ?? $css;
+    $css = preg_replace('/\s+/', ' ', $css) ?? $css;
+    $css = preg_replace('/\s*([{}:;,>+~])\s*/', '$1', $css) ?? $css;
+    $css = str_replace(';}', '}', $css);
+    $css = preg_replace('/\s*!important/', '!important', $css) ?? $css;
+
+    return trim($css);
+}

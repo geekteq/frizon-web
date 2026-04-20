@@ -208,7 +208,9 @@ document.addEventListener('DOMContentLoaded', function() {
     window.loadFrizonLeaflet().then(function() {
         var map = L.map(mapEl).setView([lat, lng], 13);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; OpenStreetMap', maxZoom: 19
+            attribution: '&copy; OpenStreetMap',
+            maxZoom: 19,
+            detectRetina: true
         }).addTo(map);
         var title = document.createElement('strong');
         title.textContent = mapEl.dataset.name;

@@ -23,13 +23,15 @@ Följande har nu fixats i DEV:
 - Startsideskartan använder lokal Leaflet MarkerCluster för att minska överlappande markörer.
 - Publik layout använder `public/css/main.bundle.css`; käll-CSS är fortfarande modulär via `public/css/main.css`.
 - `scripts/build-css-bundle.php` genererar CSS-bundlen.
-- Service worker-cache är bumpad till `frizon-v13` och precachar nya bundle-/cluster-assets.
+- Service worker-cache är bumpad till `frizon-v14` och precachar nya bundle-/cluster-assets.
+- Efter ny Lighthouse-runda: statiska assets har versionerade URL:er, origin-cache headers är satta till 1 år/immutable, CSS-bundlen är minifierad, MarkerCluster-CSS ligger i huvudbundlen i stället för separata requests, och OSM tiles använder Leaflets `detectRetina`.
 
 Verifiering efter fixrundan:
 
 - `php -l` över alla PHP-filer: OK.
 - Befintlig testsvit i `tests/*.php`: OK.
 - CSS-bundle genererad med `php scripts/build-css-bundle.php`.
+- `node --check public/leaflet/leaflet.markercluster.js`: OK.
 
 ## Verifierat
 
