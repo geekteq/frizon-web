@@ -66,7 +66,7 @@ $typeLabel = $placeTypes[$place['place_type']] ?? $place['place_type'];
                         data-lightbox-caption="<?= htmlspecialchars($img['alt_text'] ?? '') ?>">
                     <img src="/uploads/cards/<?= htmlspecialchars($img['filename']) ?>"
                          srcset="/uploads/cards/<?= htmlspecialchars($img['filename']) ?> 400w, /uploads/gallery/<?= htmlspecialchars($img['filename']) ?> 600w, /uploads/medium/<?= htmlspecialchars($img['filename']) ?> 800w, /uploads/detail/<?= htmlspecialchars($img['filename']) ?> 1200w"
-                         sizes="(min-width: 900px) 372px, (min-width: 600px) calc((100vw - 48px) / 2), calc(100vw - 32px)"
+                         sizes="(min-width: 900px) 280px, (min-width: 600px) calc((100vw - 64px) / 2), calc(100vw - 32px)"
                          alt="<?= htmlspecialchars($img['alt_text'] ?? $place['name']) ?>"
                          class="pub-detail__img"
                          width="400" height="300"

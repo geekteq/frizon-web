@@ -342,7 +342,8 @@
 
 .pub-visit-card__rating {
   font-size: var(--text-sm);
-  color: var(--color-warning);
+  color: #7a4b00;
+  font-weight: var(--weight-semibold);
   margin-top: var(--space-1);
   display: inline-block;
 }
@@ -566,8 +567,9 @@
 .pub-visit-card--linked {
     display: block;
     text-decoration: none;
-    color: inherit;
+    color: var(--color-text);
     background: var(--color-bg-muted, #f8f9fa);
+    border: 1px solid var(--color-border);
     border-radius: var(--radius-lg);
     padding: var(--space-4);
     margin-bottom: var(--space-2);
@@ -587,20 +589,20 @@
     gap: var(--space-2);
 }
 .pub-visit-card__chevron {
-    color: var(--color-text-muted);
+    color: var(--color-text);
     font-size: var(--text-lg);
 }
 .pub-visit-card__text {
     font-size: var(--text-sm);
     line-height: var(--leading-relaxed);
-    color: var(--color-text-muted);
+    color: var(--color-text);
     margin: 0;
 }
 .pub-visit-card__img-count {
     display: inline-block;
     margin-top: var(--space-2);
     font-size: var(--text-xs);
-    color: var(--color-text-muted);
+    color: var(--color-text);
 }
 
 /* Older visits — collapsible */
