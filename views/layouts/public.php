@@ -44,9 +44,8 @@ $ogTitle         = htmlspecialchars($pageTitle);
     <?php endforeach; ?>
 
     <link rel="preload" as="image" href="<?= htmlspecialchars(asset_url('/img/frizon-logo.webp')) ?>" type="image/webp" fetchpriority="high">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="stylesheet" href="<?= htmlspecialchars(asset_url('/css/main.bundle.css')) ?>">
+    <link rel="preload" as="font" href="/fonts/dm-sans-latin.woff2" type="font/woff2" crossorigin>
+    <link rel="stylesheet" href="<?= htmlspecialchars(asset_url('/css/public.bundle.css')) ?>">
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
     <link rel="apple-touch-icon" href="/apple-touch-icon.png">
     <link rel="manifest" href="/manifest.json">
@@ -61,8 +60,8 @@ $ogTitle         = htmlspecialchars($pageTitle);
             <a href="/shop" class="public-header__link <?= str_starts_with($reqPath ?? '/', '/shop') ? 'public-header__link--active' : '' ?>" style="font-weight:var(--weight-semibold);">Shop</a>
             <a href="/" style="text-decoration:none; flex-shrink:0;">
                 <picture>
-                    <source srcset="/img/frizon-logo.webp" type="image/webp">
-                    <img src="/img/frizon-logo.png" alt="Frizon of Sweden" width="64" height="64" fetchpriority="high" style="width:64px; height:64px; border-radius:50%; display:block;">
+                    <source srcset="<?= htmlspecialchars(asset_url('/img/frizon-logo.webp')) ?>" type="image/webp">
+                    <img src="<?= htmlspecialchars(asset_url('/img/frizon-logo.png')) ?>" alt="Frizon of Sweden" width="64" height="64" fetchpriority="high" style="width:64px; height:64px; border-radius:50%; display:block;">
                 </picture>
             </a>
             <a href="/topplista" class="public-header__link" style="font-weight:var(--weight-semibold);">Topplista</a>
@@ -215,13 +214,6 @@ $ogTitle         = htmlspecialchars($pageTitle);
         window.gtag('event', 'affiliate_click', payload);
     });
 
-    // Non-blocking font load (avoids render-blocking Google Fonts request)
-    (function() {
-        var fl = document.createElement('link');
-        fl.rel = 'stylesheet';
-        fl.href = 'https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&display=swap';
-        document.head.appendChild(fl);
-    })();
     if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js');
     </script>
 </body>

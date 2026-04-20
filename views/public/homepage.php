@@ -27,7 +27,7 @@ $placeTypes = [
         </a>
         <a href="https://www.facebook.com/frizonofsweden" target="_blank" rel="noopener noreferrer"
            aria-label="Följ oss på Facebook"
-           style="display:flex; flex-direction:column; align-items:center; gap:4px; padding:10px 14px; border-radius:12px; text-decoration:none; color:#fff; font-size:11px; font-weight:600; background:#1877F2; box-shadow:0 3px 10px rgba(0,0,0,0.18);">
+           style="display:flex; flex-direction:column; align-items:center; gap:4px; padding:10px 14px; border-radius:12px; text-decoration:none; color:#fff; font-size:11px; font-weight:600; background:#0B5CAD; box-shadow:0 3px 10px rgba(0,0,0,0.18);">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                 <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
@@ -35,7 +35,7 @@ $placeTypes = [
         </a>
         <a href="https://www.youtube.com/@frizon_of_sweden" target="_blank" rel="noopener noreferrer"
            aria-label="Titta på oss på YouTube"
-           style="display:flex; flex-direction:column; align-items:center; gap:4px; padding:10px 14px; border-radius:12px; text-decoration:none; color:#fff; font-size:11px; font-weight:600; background:#FF0000; box-shadow:0 3px 10px rgba(0,0,0,0.18);">
+           style="display:flex; flex-direction:column; align-items:center; gap:4px; padding:10px 14px; border-radius:12px; text-decoration:none; color:#fff; font-size:11px; font-weight:600; background:#B00000; box-shadow:0 3px 10px rgba(0,0,0,0.18);">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                 <path d="M22.54 6.42a2.78 2.78 0 0 0-1.95-1.96C18.88 4 12 4 12 4s-6.88 0-8.59.46A2.78 2.78 0 0 0 1.46 6.42 29 29 0 0 0 1 12a29 29 0 0 0 .46 5.58 2.78 2.78 0 0 0 1.95 1.96C5.12 20 12 20 12 20s6.88 0 8.59-.46a2.78 2.78 0 0 0 1.95-1.96A29 29 0 0 0 23 12a29 29 0 0 0-.46-5.58z" stroke="white" stroke-width="1.8"/>
                 <polygon points="9.75 15.02 15.5 12 9.75 8.98 9.75 15.02" stroke="white" stroke-width="1.6" stroke-linejoin="round" fill="white"/>

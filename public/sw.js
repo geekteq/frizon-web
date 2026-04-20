@@ -1,6 +1,11 @@
-var CACHE_NAME = 'frizon-v14';
+var CACHE_NAME = 'frizon-v15';
 var PRECACHE = [
   '/css/main.bundle.css',
+  '/css/public.bundle.css',
+  '/fonts/dm-sans-latin.woff2',
+  '/fonts/dm-sans-latin-ext.woff2',
+  '/fonts/dancing-script-latin-700.woff2',
+  '/fonts/dancing-script-latin-ext-700.woff2',
   '/img/frizon-logo.png',
   '/img/frizon-logo.webp',
   '/icon-192.png',

@@ -153,8 +153,8 @@ function set_security_headers(): void
         "manifest-src 'self'",
         "worker-src 'self'",
         "img-src 'self' data: blob: https://*.tile.openstreetmap.org https://www.google-analytics.com https://www.googletagmanager.com",
-        "font-src 'self' data: https://fonts.gstatic.com",
-        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+        "font-src 'self' data:",
+        "style-src 'self' 'unsafe-inline'",
         "script-src 'self' 'nonce-{$nonce}' https://www.googletagmanager.com https://static.cloudflareinsights.com",
         "connect-src 'self' https://*.tile.openstreetmap.org https://www.googletagmanager.com https://www.google-analytics.com https://region1.google-analytics.com https://cloudflareinsights.com",
     ]);
