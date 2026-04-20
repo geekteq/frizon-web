@@ -60,6 +60,8 @@ $regular  = array_values(array_filter($products, fn($p) => !$p['is_featured']));
     <h2 style="font-size:var(--text-lg); font-weight:var(--weight-semibold); margin-bottom:var(--space-4); color:var(--color-text);">Alla produkter</h2>
     <?php elseif ($filterCategory): ?>
     <h2 style="font-size:var(--text-lg); font-weight:var(--weight-semibold); margin-bottom:var(--space-4); color:var(--color-text);"><?= htmlspecialchars($filterCategory) ?></h2>
+    <?php else: ?>
+    <h2 style="font-size:var(--text-lg); font-weight:var(--weight-semibold); margin-bottom:var(--space-4); color:var(--color-text);">Alla produkter</h2>
     <?php endif; ?>
 
     <?php $allVisible = $filterCategory ? $products : $regular; ?>

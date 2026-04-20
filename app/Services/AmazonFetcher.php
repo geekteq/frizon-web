@@ -15,6 +15,9 @@ declare(strict_types=1);
 class AmazonFetcher
 {
     private const MAX_DOWNLOAD_BYTES = 10485760;
+    private const CARD_VARIANT_DIR = 'amazon-card';
+    private const CARD_VARIANT_MAX_SIZE = 600;
+    private const CARD_VARIANT_QUALITY = 72;
     private const ALLOWED_IMAGE_MIME_TYPES = [
         'image/jpeg',
         'image/png',
@@ -209,6 +212,7 @@ class AmazonFetcher
         if ($webpData) {
             $filename = bin2hex(random_bytes(8)) . '.webp';
             file_put_contents($this->uploadDir . '/' . $filename, $webpData);
+            $this->ensureCardVariant($filename);
             return $filename;
         }
 
@@ -228,7 +232,38 @@ class AmazonFetcher
 
         $filename = bin2hex(random_bytes(8)) . '.' . $ext;
         file_put_contents($this->uploadDir . '/' . $filename, $rawData);
+        $this->ensureCardVariant($filename);
         return $filename;
+    }
+
+    public function ensureCardVariant(string $filename): bool
+    {
+        $filename = basename($filename);
+        $sourcePath = $this->uploadDir . '/' . $filename;
+        if (!is_file($sourcePath)) {
+            return false;
+        }
+
+        $rawData = file_get_contents($sourcePath);
+        if ($rawData === false) {
+            return false;
+        }
+
+        $webpData = $this->processToWebp(
+            $rawData,
+            self::CARD_VARIANT_MAX_SIZE,
+            self::CARD_VARIANT_QUALITY
+        );
+        if (!$webpData) {
+            return false;
+        }
+
+        $variantDir = dirname($this->uploadDir) . '/' . self::CARD_VARIANT_DIR;
+        if (!is_dir($variantDir) && !mkdir($variantDir, 0755, true) && !is_dir($variantDir)) {
+            return false;
+        }
+
+        return file_put_contents($variantDir . '/' . pathinfo($filename, PATHINFO_FILENAME) . '.webp', $webpData) !== false;
     }
 
     /**
@@ -272,11 +307,9 @@ class AmazonFetcher
             imagecolorallocatealpha($dst, 255, 255, 255, 127));
 
         imagecopyresampled($dst, $src, 0, 0, 0, 0, $newW, $newH, $srcW, $srcH);
-        imagedestroy($src);
 
         ob_start();
         imagewebp($dst, null, $quality);
-        imagedestroy($dst);
         $out = ob_get_clean();
 
         return $out ?: null;

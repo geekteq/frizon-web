@@ -9,7 +9,7 @@
     <?php if ($p['image_path']): ?>
         <a href="/shop/<?= htmlspecialchars($p['slug']) ?>" style="display:block; text-decoration:none;">
             <div class="shop-card__img-wrap">
-                <img src="/uploads/amazon/<?= htmlspecialchars($p['image_path']) ?>"
+                <img src="/uploads/amazon-card/<?= htmlspecialchars($p['image_path']) ?>"
                      alt="<?= htmlspecialchars($p['title']) ?>"
                      width="300" height="160"
                      loading="<?= ($shopCardIndex ?? 1) === 0 ? 'eager' : 'lazy' ?>"

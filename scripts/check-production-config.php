@@ -72,6 +72,7 @@ $requiredDirs = [
     $root . '/storage/uploads/gallery',
     $root . '/storage/uploads/medium',
     $root . '/storage/uploads/detail',
+    $root . '/storage/uploads/amazon-card',
     $root . '/storage/runtime-secrets',
 ];
 

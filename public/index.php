@@ -10,10 +10,20 @@ set_security_headers();
 
 // Serve uploaded images from storage
 $uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
-if (preg_match('#^/uploads/(thumbnails|cards|gallery|medium|detail|amazon)/([^/]+)$#', $uri, $m)) {
-    $variantDir = realpath(dirname(__DIR__) . '/storage/uploads/' . $m[1]);
+if (preg_match('#^/uploads/(thumbnails|cards|gallery|medium|detail|amazon|amazon-card)/([^/]+)$#', $uri, $m)) {
+    $uploadsDir = dirname(__DIR__) . '/storage/uploads';
+    $variantDir = realpath($uploadsDir . '/' . $m[1]);
     $candidatePath = $variantDir ? $variantDir . DIRECTORY_SEPARATOR . $m[2] : null;
     $realFilePath = $candidatePath ? realpath($candidatePath) : false;
+
+    if (
+        (!$variantDir || !$realFilePath || !is_file($realFilePath))
+        && $m[1] === 'amazon-card'
+    ) {
+        $variantDir = realpath($uploadsDir . '/amazon');
+        $candidatePath = $variantDir ? $variantDir . DIRECTORY_SEPARATOR . $m[2] : null;
+        $realFilePath = $candidatePath ? realpath($candidatePath) : false;
+    }
 
     if ($variantDir && $realFilePath && str_starts_with($realFilePath, $variantDir . DIRECTORY_SEPARATOR) && is_file($realFilePath)) {
         $mime = mime_content_type($realFilePath);
