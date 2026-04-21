@@ -47,6 +47,7 @@ function registerRoutes(Router $router): void
     $router->get('/adm/frizze/serviceplan', 'FrizzeController', 'servicePlan');
     $router->get('/adm/frizze/utrustning', 'FrizzeController', 'equipment');
     $router->get('/adm/frizze/manual', 'FrizzeController', 'manual');
+    $router->get('/adm/frizze/manual/{slug}', 'FrizzeController', 'manualDocument');
 
     // Places
     $router->get('/adm/platser', 'PlaceController', 'index');

@@ -88,6 +88,7 @@
 .frizze-grid--status,
 .frizze-grid--equipment,
 .frizze-grid--manual,
+.frizze-doc-grid,
 .frizze-split,
 .frizze-actions {
   grid-template-columns: 1fr;
@@ -248,9 +249,87 @@
   text-decoration: none;
 }
 
+.frizze-doc-card {
+  display: grid;
+  gap: var(--space-1);
+  color: inherit;
+  text-decoration: none;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+  background: var(--color-bg);
+}
+
 .frizze-action span {
   color: var(--color-text-muted);
   font-size: var(--text-sm);
+}
+
+.frizze-doc-card span,
+.frizze-doc-card small {
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+}
+
+.frizze-doc-card:hover {
+  border-color: var(--color-accent);
+  text-decoration: none;
+}
+
+.frizze-doc-card:hover strong {
+  color: var(--color-accent);
+}
+
+.frizze-markdown {
+  max-width: 860px;
+}
+
+.frizze-markdown__toolbar {
+  margin-bottom: var(--space-4);
+}
+
+.frizze-markdown__body {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+}
+
+.frizze-markdown__body h1,
+.frizze-markdown__body h2,
+.frizze-markdown__body h3 {
+  margin: var(--space-6) 0 var(--space-3);
+}
+
+.frizze-markdown__body h1:first-child,
+.frizze-markdown__body h2:first-child,
+.frizze-markdown__body h3:first-child {
+  margin-top: 0;
+}
+
+.frizze-markdown__body p,
+.frizze-markdown__body ul,
+.frizze-markdown__body ol,
+.frizze-markdown__body table {
+  margin-bottom: var(--space-4);
+}
+
+.frizze-markdown__body table {
+  width: 100%;
+  overflow-x: auto;
+  display: block;
+}
+
+.frizze-markdown__body th,
+.frizze-markdown__body td {
+  border: 1px solid var(--color-border);
+  padding: var(--space-2);
+  text-align: left;
+  vertical-align: top;
+}
+
+.frizze-markdown__body th {
+  background: var(--color-info-bg);
 }
 
 .frizze-timeline__item,
@@ -452,7 +531,8 @@
   }
 
   .frizze-grid--equipment,
-  .frizze-actions {
+  .frizze-actions,
+  .frizze-doc-grid {
     grid-template-columns: repeat(3, 1fr);
   }
 

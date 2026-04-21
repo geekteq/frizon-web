@@ -5,6 +5,7 @@ declare(strict_types=1);
 require_once dirname(__DIR__) . '/Services/Auth.php';
 require_once dirname(__DIR__) . '/Services/CsrfService.php';
 require_once dirname(__DIR__) . '/Services/SecurityAudit.php';
+require_once dirname(__DIR__) . '/Lib/Parsedown.php';
 require_once dirname(__DIR__) . '/Models/FrizzeDocument.php';
 require_once dirname(__DIR__) . '/Models/FrizzeEvent.php';
 require_once dirname(__DIR__) . '/Models/FrizzeServiceTask.php';
@@ -316,6 +317,34 @@ class FrizzeController
         $this->render('manual');
     }
 
+    public function manualDocument(array $params): void
+    {
+        Auth::requireLogin();
+
+        $document = $this->manualDocumentBySlug((string) ($params['slug'] ?? ''));
+        if (!$document) {
+            http_response_code(404);
+            echo '<h1>Dokumentet hittades inte</h1>';
+            return;
+        }
+
+        $markdown = file_get_contents($document['path']);
+        if ($markdown === false) {
+            http_response_code(404);
+            echo '<h1>Dokumentet kunde inte läsas</h1>';
+            return;
+        }
+
+        $parsedown = new Parsedown();
+        $parsedown->setSafeMode(true);
+
+        $documentHtml = $parsedown->text($this->rewriteManualMarkdownLinks($markdown));
+        $pageTitle = $document['title'] . ' — Frizze';
+        $tabs = $this->tabs();
+
+        view('frizze/manual-document', compact('document', 'documentHtml', 'pageTitle', 'tabs'));
+    }
+
     private function render(string $activeTab): void
     {
         Auth::requireLogin();
@@ -330,6 +359,7 @@ class FrizzeController
         $documentTypes = $this->documentTypes();
         $equipment = $this->equipmentGroups();
         $manualSections = $this->manualSections();
+        $manualDocuments = $this->manualDocuments();
         $budget = $this->budget();
         $tabs = $this->tabs();
 
@@ -340,6 +370,7 @@ class FrizzeController
             'documentTypes',
             'equipment',
             'journal',
+            'manualDocuments',
             'manualSections',
             'pageTitle',
             'servicePlan',
@@ -688,6 +719,129 @@ class FrizzeController
                 ],
             ],
         ];
+    }
+
+    private function manualDocuments(): array
+    {
+        $files = [
+            '00-README.md',
+            '01-fordon-identifikation.md',
+            '02-servicehistorik.md',
+            '03-gasolcertifikat.md',
+            '04-citroen-underhall.md',
+            '05-adria-manual-bostadsdel.md',
+            '06-adria-manual-sovplatser.md',
+            '07-adria-manual-elforsorjning.md',
+            '08-adria-manual-gasol.md',
+            '09-adria-manual-sakerhet.md',
+            '10-utrustning-specifikation.md',
+            '11-underhallsstatus.md',
+            '12-serviceplan-2027-2031.md',
+            '13-kanda-problem.md',
+            '14-tekniska-specifikationer.md',
+            '15-vintercamping.md',
+        ];
+
+        $documents = [];
+        foreach ($files as $filename) {
+            $path = $this->manualDocumentRoot() . '/' . $filename;
+            if (!is_file($path)) {
+                continue;
+            }
+
+            $slug = substr($filename, 0, -3);
+            $documents[] = [
+                'filename' => $filename,
+                'slug' => $slug,
+                'path' => $path,
+                'title' => $this->manualTitle($path, $filename),
+                'summary' => $this->manualSummary($filename),
+                'href' => '/adm/frizze/manual/' . rawurlencode($slug),
+            ];
+        }
+
+        return $documents;
+    }
+
+    private function manualDocumentBySlug(string $slug): ?array
+    {
+        foreach ($this->manualDocuments() as $document) {
+            if ($document['slug'] === $slug) {
+                return $document;
+            }
+        }
+
+        return null;
+    }
+
+    private function manualDocumentRoot(): string
+    {
+        return dirname(dirname(__DIR__, 2));
+    }
+
+    private function manualTitle(string $path, string $fallback): string
+    {
+        $handle = fopen($path, 'r');
+        if ($handle === false) {
+            return $fallback;
+        }
+
+        while (($line = fgets($handle)) !== false) {
+            $line = trim($line);
+            if (str_starts_with($line, '# ')) {
+                fclose($handle);
+                return trim(substr($line, 2));
+            }
+        }
+
+        fclose($handle);
+        return $fallback;
+    }
+
+    private function manualSummary(string $filename): string
+    {
+        $summaries = [
+            '00-README.md' => 'Översikt och snabbreferens för hela dokumentationen.',
+            '01-fordon-identifikation.md' => 'Chassi, registrering, försäkring, besiktning och garanti.',
+            '02-servicehistorik.md' => 'Servicejournal, fakturor, reparationer och historiska arbeten.',
+            '03-gasolcertifikat.md' => 'Gasolintyg och täthetskontroller.',
+            '04-citroen-underhall.md' => 'Citroën/PSA-intervaller och basfordonsunderhåll.',
+            '05-adria-manual-bostadsdel.md' => 'Bodel, fönster, luckor, ventilation och vardagsanvändning.',
+            '06-adria-manual-sovplatser.md' => 'Sängar, bäddning och sovplatslösningar.',
+            '07-adria-manual-elforsorjning.md' => '230 V, 12 V, säkringar, batterier och laddning.',
+            '08-adria-manual-gasol.md' => 'Gasolsystem, flaskbyte, regulator och säker hantering.',
+            '09-adria-manual-sakerhet.md' => 'Säkerhet, brand, ventilation och larm.',
+            '10-utrustning-specifikation.md' => 'Utrustning, tillbehör och specifikationer.',
+            '11-underhallsstatus.md' => 'Vad som är gjort, status och kommande åtgärder.',
+            '12-serviceplan-2027-2031.md' => 'Praktisk serviceplan och budget framåt.',
+            '13-kanda-problem.md' => 'Kända problem, bevakningspunkter och felsökning.',
+            '14-tekniska-specifikationer.md' => 'Mått, tekniska data och referensvärden.',
+            '15-vintercamping.md' => 'Vinterdrift, vatten, värme och vinterförvaring.',
+        ];
+
+        return $summaries[$filename] ?? 'Internt Frizze-dokument.';
+    }
+
+    private function rewriteManualMarkdownLinks(string $markdown): string
+    {
+        $slugByFilename = [];
+        foreach ($this->manualDocuments() as $document) {
+            $slugByFilename[$document['filename']] = $document['slug'];
+        }
+
+        return preg_replace_callback(
+            '/\]\((\.\/)?([^)\s#]+\.md)(#[^)]+)?\)/',
+            static function (array $match) use ($slugByFilename): string {
+                $filename = basename($match[2]);
+                if (!isset($slugByFilename[$filename])) {
+                    return $match[0];
+                }
+
+                $anchor = $match[3] ?? '';
+                return '](/adm/frizze/manual/' . rawurlencode($slugByFilename[$filename]) . $anchor . ')';
+            },
+            $markdown
+        ) ?? $markdown;
     }
 
     private function budget(): array

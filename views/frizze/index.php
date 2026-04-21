@@ -339,6 +339,22 @@ $statusLabels = [
     <?php endif; ?>
 
     <?php if ($tab === 'manual'): ?>
+        <section class="frizze-panel">
+            <div class="frizze-panel__header">
+                <h2>Dokumentation</h2>
+                <span><?= count($manualDocuments) ?> filer</span>
+            </div>
+            <div class="frizze-doc-grid">
+                <?php foreach ($manualDocuments as $document): ?>
+                    <a class="frizze-doc-card" href="<?= htmlspecialchars($document['href']) ?>">
+                        <span><?= htmlspecialchars($document['filename']) ?></span>
+                        <strong><?= htmlspecialchars($document['title']) ?></strong>
+                        <small><?= htmlspecialchars($document['summary']) ?></small>
+                    </a>
+                <?php endforeach; ?>
+            </div>
+        </section>
+
         <section class="frizze-grid frizze-grid--manual">
             <?php foreach ($manualSections as $section): ?>
                 <article class="frizze-panel">
