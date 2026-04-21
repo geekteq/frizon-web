@@ -776,7 +776,7 @@ class FrizzeController
 
     private function manualDocumentRoot(): string
     {
-        return dirname(dirname(__DIR__, 2));
+        return dirname(__DIR__) . '/Data/frizze-docs';
     }
 
     private function manualTitle(string $path, string $fallback): string
