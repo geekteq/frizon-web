@@ -165,6 +165,142 @@ class FrizzeController
         $this->render('receipts');
     }
 
+    public function storeDocument(array $params): void
+    {
+        Auth::requireLogin();
+        CsrfService::requireValid();
+
+        if (empty($_FILES['document']) || ($_FILES['document']['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_OK) {
+            flash('error', 'Välj en PDF eller bild att ladda upp.');
+            redirect('/adm/frizze/kvitton');
+        }
+
+        $vehicle = $this->vehicle();
+        $file = $_FILES['document'];
+        $maxSize = (int) ($this->config['upload_max_size'] ?? 10485760);
+
+        if ((int) $file['size'] > $maxSize) {
+            flash('error', 'Filen är för stor.');
+            redirect('/adm/frizze/kvitton');
+        }
+
+        $mimeType = $this->detectUploadMimeType((string) $file['tmp_name']);
+        $extensions = [
+            'application/pdf' => 'pdf',
+            'image/jpeg' => 'jpg',
+            'image/png' => 'png',
+            'image/webp' => 'webp',
+        ];
+
+        if (!isset($extensions[$mimeType])) {
+            flash('error', 'Tillåtna filtyper är PDF, JPG, PNG och WEBP.');
+            redirect('/adm/frizze/kvitton');
+        }
+
+        $storageDir = $this->privateDocumentStorageDir();
+        if (!is_dir($storageDir) && !mkdir($storageDir, 0755, true)) {
+            flash('error', 'Kunde inte skapa privat dokumentmapp.');
+            redirect('/adm/frizze/kvitton');
+        }
+
+        $filename = date('Ymd-His') . '-' . bin2hex(random_bytes(8)) . '.' . $extensions[$mimeType];
+        $destination = $storageDir . '/' . $filename;
+
+        if (!move_uploaded_file((string) $file['tmp_name'], $destination)) {
+            flash('error', 'Uppladdningen misslyckades.');
+            redirect('/adm/frizze/kvitton');
+        }
+
+        $amount = str_replace(',', '.', trim($_POST['amount_total'] ?? ''));
+        $title = trim($_POST['title'] ?? '') ?: pathinfo((string) $file['name'], PATHINFO_FILENAME);
+        if ($title === '') {
+            $title = 'Frizze-dokument ' . date('Y-m-d');
+        }
+
+        $documentType = $_POST['document_type'] ?? 'receipt';
+        if (!array_key_exists($documentType, $this->documentTypes())) {
+            $documentType = 'receipt';
+        }
+
+        $documentModel = new FrizzeDocument($this->pdo);
+        $documentId = $documentModel->create([
+            'vehicle_id' => (int) $vehicle['id'],
+            'document_type' => $documentType,
+            'title' => $title,
+            'original_filename' => (string) $file['name'],
+            'file_path' => 'frizze/documents/' . $filename,
+            'mime_type' => $mimeType,
+            'supplier' => trim($_POST['supplier'] ?? '') ?: null,
+            'document_date' => trim($_POST['document_date'] ?? '') ?: null,
+            'amount_total' => $amount !== '' && is_numeric($amount) ? (float) $amount : null,
+            'currency' => 'SEK',
+            'notes' => trim($_POST['notes'] ?? '') ?: null,
+            'created_by' => Auth::userId(),
+        ]);
+
+        SecurityAudit::log($this->pdo, 'frizze.document.uploaded', [
+            'document_id' => $documentId,
+            'document_title' => $title,
+            'mime_type' => $mimeType,
+        ], Auth::userId());
+
+        flash('success', 'Dokumentet har laddats upp privat.');
+        redirect('/adm/frizze/kvitton');
+    }
+
+    public function showDocument(array $params): void
+    {
+        Auth::requireLogin();
+
+        $documentModel = new FrizzeDocument($this->pdo);
+        $document = $documentModel->findById((int) $params['id']);
+        if (!$document) {
+            http_response_code(404);
+            echo '<h1>Dokumentet hittades inte</h1>';
+            return;
+        }
+
+        $path = $this->privateStoragePath((string) $document['file_path']);
+        if ($path === null || !is_file($path)) {
+            http_response_code(404);
+            echo '<h1>Filen hittades inte</h1>';
+            return;
+        }
+
+        header('Content-Type: ' . ($document['mime_type'] ?: 'application/octet-stream'));
+        header('Content-Length: ' . filesize($path));
+        header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
+        header('Pragma: no-cache');
+        header('X-Content-Type-Options: nosniff');
+        header('Content-Disposition: inline; filename="' . $this->downloadFilename($document) . '"');
+        readfile($path);
+    }
+
+    public function destroyDocument(array $params): void
+    {
+        Auth::requireLogin();
+        CsrfService::requireValid();
+
+        $documentModel = new FrizzeDocument($this->pdo);
+        $document = $documentModel->findById((int) $params['id']);
+
+        if ($document) {
+            $path = $this->privateStoragePath((string) $document['file_path']);
+            if ($path !== null && is_file($path)) {
+                unlink($path);
+            }
+
+            $documentModel->delete((int) $document['id']);
+            SecurityAudit::log($this->pdo, 'frizze.document.deleted', [
+                'document_id' => (int) $document['id'],
+                'document_title' => $document['title'],
+            ], Auth::userId());
+            flash('success', 'Dokumentet har tagits bort.');
+        }
+
+        redirect('/adm/frizze/kvitton');
+    }
+
     public function servicePlan(array $params): void
     {
         $this->render('service');
@@ -190,6 +326,8 @@ class FrizzeController
         $journal = $this->journalItems();
         $servicePlan = $this->servicePlanItems();
         $serviceTasks = $this->serviceTasks((int) $vehicle['id']);
+        $documents = $this->documents((int) $vehicle['id']);
+        $documentTypes = $this->documentTypes();
         $equipment = $this->equipmentGroups();
         $manualSections = $this->manualSections();
         $budget = $this->budget();
@@ -198,6 +336,8 @@ class FrizzeController
         view('frizze/index', compact(
             'activeTab',
             'budget',
+            'documents',
+            'documentTypes',
             'equipment',
             'journal',
             'manualSections',
@@ -318,6 +458,7 @@ class FrizzeController
                 'meta' => $this->eventMeta($event),
                 'details' => $event['details'],
                 'description' => $event['description'],
+                'document_id' => $event['document_id'] ?? null,
                 'document_title' => $event['document_title'] ?? null,
             ];
         }, $events);
@@ -327,6 +468,51 @@ class FrizzeController
     {
         $documentModel = new FrizzeDocument($this->pdo);
         return $documentModel->allForVehicle($vehicleId);
+    }
+
+    private function documentTypes(): array
+    {
+        return [
+            'receipt' => 'Kvitto',
+            'invoice' => 'Faktura',
+            'protocol' => 'Protokoll',
+            'photo' => 'Foto',
+            'manual' => 'Manual',
+            'other' => 'Annat',
+        ];
+    }
+
+    private function detectUploadMimeType(string $tmpPath): string
+    {
+        $finfo = new finfo(FILEINFO_MIME_TYPE);
+        return $finfo->file($tmpPath) ?: 'application/octet-stream';
+    }
+
+    private function privateDocumentStorageDir(): string
+    {
+        return dirname(__DIR__, 2) . '/storage/frizze/documents';
+    }
+
+    private function privateStoragePath(string $relativePath): ?string
+    {
+        $storageRoot = realpath(dirname(__DIR__, 2) . '/storage');
+        if ($storageRoot === false || str_contains($relativePath, '..')) {
+            return null;
+        }
+
+        $path = $storageRoot . '/' . ltrim($relativePath, '/');
+        $dir = realpath(dirname($path));
+        if ($dir === false || !str_starts_with($dir, $storageRoot . DIRECTORY_SEPARATOR)) {
+            return null;
+        }
+
+        return $path;
+    }
+
+    private function downloadFilename(array $document): string
+    {
+        $filename = $document['original_filename'] ?: $document['title'];
+        return preg_replace('/[^A-Za-z0-9._ -]/', '_', (string) $filename) ?: 'frizze-dokument';
     }
 
     private function serviceTasks(int $vehicleId): array

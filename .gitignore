@@ -4,6 +4,7 @@ storage/uploads/thumbnails/*
 storage/uploads/cards/*
 storage/uploads/detail/*
 !storage/uploads/*/.gitkeep
+storage/frizze/*
 storage/runtime-secrets/*
 !storage/runtime-secrets/.gitkeep
 vendor/

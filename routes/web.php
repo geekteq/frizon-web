@@ -41,6 +41,9 @@ function registerRoutes(Router $router): void
     $router->put('/adm/frizze/journal/{id}', 'FrizzeController', 'updateJournalEvent');
     $router->delete('/adm/frizze/journal/{id}', 'FrizzeController', 'destroyJournalEvent');
     $router->get('/adm/frizze/kvitton', 'FrizzeController', 'receipts');
+    $router->post('/adm/frizze/dokument', 'FrizzeController', 'storeDocument');
+    $router->get('/adm/frizze/dokument/{id}', 'FrizzeController', 'showDocument');
+    $router->delete('/adm/frizze/dokument/{id}', 'FrizzeController', 'destroyDocument');
     $router->get('/adm/frizze/serviceplan', 'FrizzeController', 'servicePlan');
     $router->get('/adm/frizze/utrustning', 'FrizzeController', 'equipment');
     $router->get('/adm/frizze/manual', 'FrizzeController', 'manual');

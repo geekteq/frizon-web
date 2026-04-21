@@ -139,7 +139,16 @@ $statusLabels = [
                                     <p><?= htmlspecialchars($item['meta']) ?></p>
                                 <?php endif; ?>
                                 <?php if (!empty($item['document_title'])): ?>
-                                    <p>Dokument: <?= htmlspecialchars($item['document_title']) ?></p>
+                                    <p>
+                                        Dokument:
+                                        <?php if (!empty($item['document_id'])): ?>
+                                            <a href="/adm/frizze/dokument/<?= (int) $item['document_id'] ?>" target="_blank" rel="noopener">
+                                                <?= htmlspecialchars($item['document_title']) ?>
+                                            </a>
+                                        <?php else: ?>
+                                            <?= htmlspecialchars($item['document_title']) ?>
+                                        <?php endif; ?>
+                                    </p>
                                 <?php endif; ?>
                                 <?php if (!empty($item['details'])): ?>
                                     <ul>
@@ -159,15 +168,108 @@ $statusLabels = [
     <?php if ($tab === 'receipts'): ?>
         <section class="frizze-panel">
             <div class="frizze-panel__header">
-                <h2>Kvitton och tolkning</h2>
-                <button class="btn btn-primary btn--sm" type="button" disabled>Ladda upp</button>
+                <h2>Privat dokumentarkiv</h2>
+                <span>Ej publikt</span>
             </div>
-            <div class="frizze-receipt-flow">
-                <div><strong>1. Fota eller ladda upp</strong><span>PDF, JPG eller PNG från mobil.</span></div>
-                <div><strong>2. Tolka med Anthropic</strong><span>Datum, leverantör, totalsumma, rader och åtgärder.</span></div>
-                <div><strong>3. Granska och redigera</strong><span>Du godkänner innan journalen uppdateras.</span></div>
+
+            <form method="POST" action="/adm/frizze/dokument" enctype="multipart/form-data" class="frizze-upload">
+                <?php include dirname(__DIR__) . '/partials/csrf-field.php'; ?>
+                <div class="frizze-form-grid">
+                    <div class="form-group">
+                        <label for="document" class="form-label">Fil *</label>
+                        <input type="file" id="document" name="document" class="form-input" accept="application/pdf,image/jpeg,image/png,image/webp" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="document_type" class="form-label">Typ</label>
+                        <select id="document_type" name="document_type" class="form-select">
+                            <?php foreach ($documentTypes as $value => $label): ?>
+                                <option value="<?= htmlspecialchars($value) ?>"><?= htmlspecialchars($label) ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="frizze-form-grid">
+                    <div class="form-group">
+                        <label for="document_title" class="form-label">Titel</label>
+                        <input type="text" id="document_title" name="title" class="form-input" placeholder="t.ex. Torvalla LCV 2026-04-02">
+                    </div>
+                    <div class="form-group">
+                        <label for="document_supplier" class="form-label">Leverantör</label>
+                        <input type="text" id="document_supplier" name="supplier" class="form-input" placeholder="t.ex. Torvalla LCV">
+                    </div>
+                </div>
+
+                <div class="frizze-form-grid">
+                    <div class="form-group">
+                        <label for="document_date" class="form-label">Datum</label>
+                        <input type="date" id="document_date" name="document_date" class="form-input">
+                    </div>
+                    <div class="form-group">
+                        <label for="document_amount" class="form-label">Belopp, kr</label>
+                        <input type="text" id="document_amount" name="amount_total" class="form-input" inputmode="decimal" placeholder="3743">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="document_notes" class="form-label">Notering</label>
+                    <textarea id="document_notes" name="notes" class="form-textarea" rows="3" placeholder="Kort intern notering..."></textarea>
+                </div>
+
+                <button type="submit" class="btn btn-primary">Ladda upp privat</button>
+                <p class="frizze-note">Filen sparas utanför public-katalogen och kan bara visas via inloggad adminroute.</p>
+            </form>
+        </section>
+
+        <section class="frizze-panel">
+            <div class="frizze-panel__header">
+                <h2>Dokument</h2>
+                <span><?= count($documents) ?> st</span>
             </div>
-            <p class="frizze-note">Nästa tekniska steg är DB-tabeller för dokument, tolkningsförslag och journalhändelser. Den här sidan är därför avsiktligt skrivskyddad i första versionen.</p>
+            <?php if (empty($documents)): ?>
+                <p class="frizze-empty">Inga dokument uppladdade ännu.</p>
+            <?php else: ?>
+                <div class="frizze-document-list">
+                    <?php foreach ($documents as $document): ?>
+                        <article>
+                            <div>
+                                <span class="frizze-chip"><?= htmlspecialchars($documentTypes[$document['document_type']] ?? $document['document_type']) ?></span>
+                                <?php if (!empty($document['file_path'])): ?>
+                                    <a class="frizze-document-list__title" href="/adm/frizze/dokument/<?= (int) $document['id'] ?>" target="_blank" rel="noopener">
+                                        <?= htmlspecialchars($document['title']) ?>
+                                    </a>
+                                <?php else: ?>
+                                    <strong><?= htmlspecialchars($document['title']) ?></strong>
+                                <?php endif; ?>
+                                <p>
+                                    <?php if (!empty($document['document_date'])): ?>
+                                        <?= htmlspecialchars($document['document_date']) ?>
+                                    <?php endif; ?>
+                                    <?php if (!empty($document['supplier'])): ?>
+                                        <?= !empty($document['document_date']) ? ' · ' : '' ?><?= htmlspecialchars($document['supplier']) ?>
+                                    <?php endif; ?>
+                                    <?php if ($document['amount_total'] !== null && $document['amount_total'] !== ''): ?>
+                                        <?= (!empty($document['document_date']) || !empty($document['supplier'])) ? ' · ' : '' ?><?= number_format((float) $document['amount_total'], 0, ',', ' ') ?> kr
+                                    <?php endif; ?>
+                                </p>
+                                <?php if (!empty($document['notes'])): ?>
+                                    <p><?= htmlspecialchars($document['notes']) ?></p>
+                                <?php endif; ?>
+                            </div>
+                            <div class="frizze-document-list__actions">
+                                <?php if (!empty($document['file_path'])): ?>
+                                    <a class="btn btn-ghost btn--sm" href="/adm/frizze/dokument/<?= (int) $document['id'] ?>" target="_blank" rel="noopener">Visa</a>
+                                <?php endif; ?>
+                                <form method="POST" action="/adm/frizze/dokument/<?= (int) $document['id'] ?>">
+                                    <?php include dirname(__DIR__) . '/partials/csrf-field.php'; ?>
+                                    <input type="hidden" name="_method" value="DELETE">
+                                    <button type="submit" class="btn btn-danger btn--sm" data-confirm="Ta bort dokumentet?">Ta bort</button>
+                                </form>
+                            </div>
+                        </article>
+                    <?php endforeach; ?>
+                </div>
+            <?php endif; ?>
         </section>
     <?php endif; ?>
 
