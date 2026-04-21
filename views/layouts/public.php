@@ -10,6 +10,7 @@ $canonicalUrl    = $seoMeta['og_url']      ?? $appUrl . $reqPath;
 $ogImage         = $seoMeta['og_image']    ?? $appUrl . '/img/frizon-logo.png';
 $ogType          = $seoMeta['og_type']     ?? 'website';
 $ogTitle         = htmlspecialchars($pageTitle);
+$useLeaflet      = !empty($useLeaflet);
 ?>
 <!DOCTYPE html>
 <html lang="sv">
@@ -45,7 +46,11 @@ $ogTitle         = htmlspecialchars($pageTitle);
 
     <link rel="preload" as="image" href="<?= htmlspecialchars(asset_url('/img/frizon-logo.webp')) ?>" type="image/webp" fetchpriority="high">
     <link rel="preload" as="font" href="/fonts/dm-sans-latin.woff2" type="font/woff2" crossorigin>
+    <link rel="preload" as="font" href="/fonts/dm-sans-latin-ext.woff2" type="font/woff2" crossorigin>
     <link rel="stylesheet" href="<?= htmlspecialchars(asset_url('/css/public.bundle.css')) ?>">
+    <?php if ($useLeaflet): ?>
+    <link rel="stylesheet" href="<?= htmlspecialchars(asset_url('/leaflet/leaflet.css')) ?>" data-frizon-leaflet-css>
+    <?php endif; ?>
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
     <link rel="apple-touch-icon" href="/apple-touch-icon.png">
     <link rel="manifest" href="/manifest.json">
@@ -116,10 +121,11 @@ $ogTitle         = htmlspecialchars($pageTitle);
             if (promise) return promise;
 
             promise = new Promise(function(resolve, reject) {
-                if (!document.querySelector('link[href="/leaflet/leaflet.css"]')) {
+                if (!document.querySelector('link[data-frizon-leaflet-css]')) {
                     var css = document.createElement('link');
                     css.rel = 'stylesheet';
                     css.href = '<?= htmlspecialchars(asset_url('/leaflet/leaflet.css')) ?>';
+                    css.setAttribute('data-frizon-leaflet-css', '');
                     document.head.appendChild(css);
                 }
 
