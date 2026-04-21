@@ -25,6 +25,7 @@ MIGRATIONS=(
     012_trip_teaser.sql
     013_security_controls.sql
     014_place_preview_image.sql
+    015_frizze_vehicle_data.sql
 )
 
 TOTAL=${#MIGRATIONS[@]}

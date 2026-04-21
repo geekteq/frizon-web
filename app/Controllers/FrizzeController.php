@@ -3,6 +3,12 @@
 declare(strict_types=1);
 
 require_once dirname(__DIR__) . '/Services/Auth.php';
+require_once dirname(__DIR__) . '/Services/CsrfService.php';
+require_once dirname(__DIR__) . '/Services/SecurityAudit.php';
+require_once dirname(__DIR__) . '/Models/FrizzeDocument.php';
+require_once dirname(__DIR__) . '/Models/FrizzeEvent.php';
+require_once dirname(__DIR__) . '/Models/FrizzeServiceTask.php';
+require_once dirname(__DIR__) . '/Models/FrizzeVehicle.php';
 
 class FrizzeController
 {
@@ -23,6 +29,135 @@ class FrizzeController
     public function journal(array $params): void
     {
         $this->render('journal');
+    }
+
+    public function createJournalEvent(array $params): void
+    {
+        Auth::requireLogin();
+
+        $pageTitle = 'Ny Frizze-händelse';
+        $vehicle = $this->vehicle();
+        $documents = $this->documents((int) $vehicle['id']);
+        $event = $this->emptyEvent();
+        $eventTypes = $this->eventTypes();
+        $formAction = '/adm/frizze/journal';
+        $formMethod = 'POST';
+
+        view('frizze/event-form', compact(
+            'documents',
+            'event',
+            'eventTypes',
+            'formAction',
+            'formMethod',
+            'pageTitle',
+            'vehicle'
+        ));
+    }
+
+    public function storeJournalEvent(array $params): void
+    {
+        Auth::requireLogin();
+        CsrfService::requireValid();
+
+        $vehicle = $this->vehicle();
+        $data = $this->eventInput((int) $vehicle['id']);
+
+        if ($data['title'] === '' || $data['event_date'] === '') {
+            flash('error', 'Titel och datum krävs.');
+            redirect('/adm/frizze/journal/ny');
+        }
+
+        $eventModel = new FrizzeEvent($this->pdo);
+        $eventId = $eventModel->create($data);
+
+        SecurityAudit::log($this->pdo, 'frizze.event.created', [
+            'event_id' => $eventId,
+            'event_title' => $data['title'],
+        ], Auth::userId());
+
+        flash('success', 'Journalhändelsen har sparats.');
+        redirect('/adm/frizze/journal');
+    }
+
+    public function editJournalEvent(array $params): void
+    {
+        Auth::requireLogin();
+
+        $eventModel = new FrizzeEvent($this->pdo);
+        $event = $eventModel->findById((int) $params['id']);
+        if (!$event) {
+            http_response_code(404);
+            echo '<h1>Händelsen hittades inte</h1>';
+            return;
+        }
+
+        $pageTitle = 'Redigera Frizze-händelse';
+        $vehicle = $this->vehicle();
+        $documents = $this->documents((int) $vehicle['id']);
+        $eventTypes = $this->eventTypes();
+        $formAction = '/adm/frizze/journal/' . (int) $event['id'];
+        $formMethod = 'PUT';
+
+        view('frizze/event-form', compact(
+            'documents',
+            'event',
+            'eventTypes',
+            'formAction',
+            'formMethod',
+            'pageTitle',
+            'vehicle'
+        ));
+    }
+
+    public function updateJournalEvent(array $params): void
+    {
+        Auth::requireLogin();
+        CsrfService::requireValid();
+
+        $eventModel = new FrizzeEvent($this->pdo);
+        $event = $eventModel->findById((int) $params['id']);
+        if (!$event) {
+            http_response_code(404);
+            return;
+        }
+
+        $vehicle = $this->vehicle();
+        $data = $this->eventInput((int) $vehicle['id']);
+
+        if ($data['title'] === '' || $data['event_date'] === '') {
+            flash('error', 'Titel och datum krävs.');
+            redirect('/adm/frizze/journal/' . (int) $event['id'] . '/redigera');
+        }
+
+        $eventModel->update((int) $event['id'], $data);
+
+        SecurityAudit::log($this->pdo, 'frizze.event.updated', [
+            'event_id' => (int) $event['id'],
+            'event_title' => $data['title'],
+        ], Auth::userId());
+
+        flash('success', 'Journalhändelsen har uppdaterats.');
+        redirect('/adm/frizze/journal');
+    }
+
+    public function destroyJournalEvent(array $params): void
+    {
+        Auth::requireLogin();
+        CsrfService::requireValid();
+
+        $eventModel = new FrizzeEvent($this->pdo);
+        $event = $eventModel->findById((int) $params['id']);
+
+        if ($event) {
+            $eventModel->delete((int) $event['id']);
+            SecurityAudit::log($this->pdo, 'frizze.event.deleted', [
+                'event_id' => (int) $event['id'],
+                'event_title' => $event['title'],
+            ], Auth::userId());
+            flash('success', 'Journalhändelsen har tagits bort.');
+        }
+
+        redirect('/adm/frizze/journal');
     }
 
     public function receipts(array $params): void
@@ -54,6 +189,7 @@ class FrizzeController
         $statusCards = $this->statusCards();
         $journal = $this->journalItems();
         $servicePlan = $this->servicePlanItems();
+        $serviceTasks = $this->serviceTasks((int) $vehicle['id']);
         $equipment = $this->equipmentGroups();
         $manualSections = $this->manualSections();
         $budget = $this->budget();
@@ -67,6 +203,7 @@ class FrizzeController
             'manualSections',
             'pageTitle',
             'servicePlan',
+            'serviceTasks',
             'statusCards',
             'tabs',
             'vehicle'
@@ -87,7 +224,27 @@ class FrizzeController
 
     private function vehicle(): array
     {
+        $vehicleModel = new FrizzeVehicle($this->pdo);
+        $vehicle = $vehicleModel->primary();
+
+        if ($vehicle) {
+            return [
+                'id' => (int) $vehicle['id'],
+                'name' => $vehicle['name'],
+                'model' => $vehicle['model'],
+                'year' => (string) ($vehicle['model_year'] ?? ''),
+                'base' => $vehicle['base_vehicle'] ?? '',
+                'engine' => $vehicle['engine'] ?? '',
+                'registration' => $vehicle['registration'] ?? '',
+                'vin' => $vehicle['vin'] ?? '',
+                'odometer' => !empty($vehicle['odometer_km']) ? 'ca ' . number_format((int) $vehicle['odometer_km'], 0, ',', ' ') . ' km' : '',
+                'owner' => $vehicle['owner_name'] ?? '',
+                'purchased_at' => $vehicle['purchased_at'] ?? '',
+            ];
+        }
+
         return [
+            'id' => 1,
             'name' => 'Frizze',
             'model' => 'Adria Twin 600 SPT / SPT 600 Platinum',
             'year' => '2017',
@@ -145,68 +302,111 @@ class FrizzeController
 
     private function journalItems(): array
     {
+        $vehicle = $this->vehicle();
+        $eventModel = new FrizzeEvent($this->pdo);
+        $events = $eventModel->all((int) $vehicle['id']);
+        $eventTypes = $this->eventTypes();
+
+        return array_map(function (array $event) use ($eventTypes): array {
+            return [
+                'id' => (int) $event['id'],
+                'date' => $event['event_date'],
+                'time' => $event['event_time'],
+                'type' => $eventTypes[$event['event_type']] ?? $event['event_type'],
+                'type_key' => $event['event_type'],
+                'title' => $event['title'],
+                'meta' => $this->eventMeta($event),
+                'details' => $event['details'],
+                'description' => $event['description'],
+                'document_title' => $event['document_title'] ?? null,
+            ];
+        }, $events);
+    }
+
+    private function documents(int $vehicleId): array
+    {
+        $documentModel = new FrizzeDocument($this->pdo);
+        return $documentModel->allForVehicle($vehicleId);
+    }
+
+    private function serviceTasks(int $vehicleId): array
+    {
+        $taskModel = new FrizzeServiceTask($this->pdo);
+        return $taskModel->allForVehicle($vehicleId);
+    }
+
+    private function eventTypes(): array
+    {
         return [
-            [
-                'date' => '2026-04-02',
-                'type' => 'Service',
-                'title' => '100 000 km-service + gasoltest',
-                'meta' => 'Torvalla LCV, ca 100 000 km, 3 743 kr',
-                'details' => [
-                    'Byte motorolja enligt PSA B71 2312 / B71 2290',
-                    'Byte oljefilter',
-                    'Nollställning serviceindikator',
-                    'Kontroll av vätskenivåer',
-                    'Felkodsläsning/diagnostik',
-                    'Gasoltäthetskontroll enligt EN 1949',
-                ],
-            ],
-            [
-                'date' => '2026',
-                'type' => 'Reparation',
-                'title' => 'Främre taklucka tätad',
-                'meta' => 'Väntar på skyfall för att verifiera resultatet',
-                'details' => [
-                    'Tvätt med Abnet',
-                    'Sika Cleaner 205',
-                    'Sika Primer 210',
-                    'Sikaflex 221',
-                ],
-            ],
-            [
-                'date' => '2025-02-18',
-                'type' => 'Service',
-                'title' => 'Ny motor, kamrem, alla vätskor och filter',
-                'meta' => 'Torvalla LCV, 85 927 km, AO 128299',
-                'details' => [
-                    'Ny motor installerad',
-                    'Kamrem bytt',
-                    'Alla vätskor bytta',
-                    'Alla filter bytta',
-                ],
-            ],
-            [
-                'date' => '2025-02-14',
-                'type' => 'Kontroll',
-                'title' => 'Gasolprotokoll samt fukt/täthet',
-                'meta' => 'Torvalla LCV, godkänt',
-                'details' => [
-                    'Gasol godkänd',
-                    'Fukt- och täthetsprotokoll godkänt',
-                ],
-            ],
-            [
-                'date' => '2024-02-27',
-                'type' => 'Service',
-                'title' => 'Service hos Caravanhallen',
-                'meta' => '73 650 km',
-                'details' => [
-                    'Service',
-                    'Däckventiler',
-                    'Bromsar kontrollerade/bytta',
-                    'Gasoltäthet godkänd',
-                ],
-            ],
+            'service' => 'Service',
+            'repair' => 'Reparation',
+            'control' => 'Kontroll',
+            'inspection' => 'Besiktning',
+            'cost' => 'Kostnad',
+            'note' => 'Notering',
         ];
+    }
+
+    private function eventInput(int $vehicleId): array
+    {
+        $amount = str_replace(',', '.', trim($_POST['amount_total'] ?? ''));
+        $odometer = trim($_POST['odometer_km'] ?? '');
+
+        return [
+            'vehicle_id' => $vehicleId,
+            'document_id' => !empty($_POST['document_id']) ? (int) $_POST['document_id'] : null,
+            'event_type' => array_key_exists($_POST['event_type'] ?? '', $this->eventTypes()) ? $_POST['event_type'] : 'note',
+            'event_date' => trim($_POST['event_date'] ?? ''),
+            'event_time' => trim($_POST['event_time'] ?? '') ?: null,
+            'title' => trim($_POST['title'] ?? ''),
+            'supplier' => trim($_POST['supplier'] ?? '') ?: null,
+            'odometer_km' => $odometer !== '' ? max(0, (int) $odometer) : null,
+            'amount_total' => $amount !== '' && is_numeric($amount) ? (float) $amount : null,
+            'currency' => 'SEK',
+            'description' => trim($_POST['description'] ?? '') ?: null,
+            'details' => preg_split('/\R/', trim($_POST['details'] ?? '')) ?: [],
+            'created_by' => Auth::userId(),
+        ];
+    }
+
+    private function emptyEvent(): array
+    {
+        return [
+            'id' => null,
+            'document_id' => null,
+            'event_type' => 'service',
+            'event_date' => date('Y-m-d'),
+            'event_time' => null,
+            'title' => '',
+            'supplier' => '',
+            'odometer_km' => null,
+            'amount_total' => null,
+            'description' => '',
+            'details' => [],
+        ];
+    }
+
+    private function eventMeta(array $event): string
+    {
+        $parts = [];
+
+        if (!empty($event['supplier'])) {
+            $parts[] = $event['supplier'];
+        }
+
+        if (!empty($event['odometer_km'])) {
+            $parts[] = 'ca ' . number_format((int) $event['odometer_km'], 0, ',', ' ') . ' km';
+        }
+
+        if ($event['amount_total'] !== null && $event['amount_total'] !== '') {
+            $parts[] = number_format((float) $event['amount_total'], 0, ',', ' ') . ' kr';
+        }
+
+        if (!empty($event['description'])) {
+            $parts[] = $event['description'];
+        }
+
+        return implode(', ', $parts);
     }
 
     private function servicePlanItems(): array

@@ -94,7 +94,7 @@ $statusLabels = [
         </section>
 
         <section class="frizze-actions">
-            <a href="/adm/frizze/journal" class="frizze-action">
+            <a href="/adm/frizze/journal/ny" class="frizze-action">
                 <strong>Lägg till händelse</strong>
                 <span>Service, reparation, besiktning eller kontroll.</span>
             </a>
@@ -113,24 +113,45 @@ $statusLabels = [
         <section class="frizze-panel">
             <div class="frizze-panel__header">
                 <h2>Fordonsjournal</h2>
-                <button class="btn btn-ghost btn--sm" type="button" disabled>+ Ny händelse</button>
+                <a class="btn btn-primary btn--sm" href="/adm/frizze/journal/ny">+ Ny händelse</a>
             </div>
             <div class="frizze-timeline">
-                <?php foreach ($journal as $item): ?>
-                    <article class="frizze-timeline__item">
-                        <time><?= htmlspecialchars($item['date']) ?></time>
-                        <div>
-                            <span class="frizze-chip"><?= htmlspecialchars($item['type']) ?></span>
-                            <h3><?= htmlspecialchars($item['title']) ?></h3>
-                            <p><?= htmlspecialchars($item['meta']) ?></p>
-                            <ul>
-                                <?php foreach ($item['details'] as $detail): ?>
-                                    <li><?= htmlspecialchars($detail) ?></li>
-                                <?php endforeach; ?>
-                            </ul>
-                        </div>
-                    </article>
-                <?php endforeach; ?>
+                <?php if (empty($journal)): ?>
+                    <p class="frizze-empty">Inga journalhändelser ännu.</p>
+                <?php else: ?>
+                    <?php foreach ($journal as $item): ?>
+                        <article class="frizze-timeline__item">
+                            <time>
+                                <?= htmlspecialchars($item['date']) ?>
+                                <?php if (!empty($item['time'])): ?>
+                                    <span><?= htmlspecialchars(substr((string) $item['time'], 0, 5)) ?></span>
+                                <?php endif; ?>
+                            </time>
+                            <div>
+                                <div class="frizze-timeline__actions">
+                                    <span class="frizze-chip"><?= htmlspecialchars($item['type']) ?></span>
+                                    <?php if (!empty($item['id'])): ?>
+                                        <a href="/adm/frizze/journal/<?= (int) $item['id'] ?>/redigera">Redigera</a>
+                                    <?php endif; ?>
+                                </div>
+                                <h3><?= htmlspecialchars($item['title']) ?></h3>
+                                <?php if (!empty($item['meta'])): ?>
+                                    <p><?= htmlspecialchars($item['meta']) ?></p>
+                                <?php endif; ?>
+                                <?php if (!empty($item['document_title'])): ?>
+                                    <p>Dokument: <?= htmlspecialchars($item['document_title']) ?></p>
+                                <?php endif; ?>
+                                <?php if (!empty($item['details'])): ?>
+                                    <ul>
+                                        <?php foreach ($item['details'] as $detail): ?>
+                                            <li><?= htmlspecialchars($detail) ?></li>
+                                        <?php endforeach; ?>
+                                    </ul>
+                                <?php endif; ?>
+                            </div>
+                        </article>
+                    <?php endforeach; ?>
+                <?php endif; ?>
             </div>
         </section>
     <?php endif; ?>
@@ -156,6 +177,29 @@ $statusLabels = [
                 <h2>Serviceplan</h2>
                 <span>2026-2035</span>
             </div>
+            <?php if (!empty($serviceTasks)): ?>
+                <div class="frizze-task-list">
+                    <?php foreach ($serviceTasks as $task): ?>
+                        <article>
+                            <div>
+                                <span class="frizze-chip"><?= htmlspecialchars($task['status']) ?></span>
+                                <strong><?= htmlspecialchars($task['title']) ?></strong>
+                            </div>
+                            <p>
+                                <?php if (!empty($task['due_date'])): ?>
+                                    Datum: <?= htmlspecialchars($task['due_date']) ?>
+                                <?php endif; ?>
+                                <?php if (!empty($task['due_odometer_km'])): ?>
+                                    <?= !empty($task['due_date']) ? ' · ' : '' ?>ca <?= number_format((int) $task['due_odometer_km'], 0, ',', ' ') ?> km
+                                <?php endif; ?>
+                                <?php if (!empty($task['notes'])): ?>
+                                    <?= (!empty($task['due_date']) || !empty($task['due_odometer_km'])) ? ' · ' : '' ?><?= htmlspecialchars($task['notes']) ?>
+                                <?php endif; ?>
+                            </p>
+                        </article>
+                    <?php endforeach; ?>
+                </div>
+            <?php endif; ?>
             <div class="frizze-service-list">
                 <?php foreach ($servicePlan as $item): ?>
                     <article>

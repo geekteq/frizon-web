@@ -35,6 +35,11 @@ function registerRoutes(Router $router): void
     // Frizze vehicle hub (private)
     $router->get('/adm/frizze', 'FrizzeController', 'overview');
     $router->get('/adm/frizze/journal', 'FrizzeController', 'journal');
+    $router->get('/adm/frizze/journal/ny', 'FrizzeController', 'createJournalEvent');
+    $router->post('/adm/frizze/journal', 'FrizzeController', 'storeJournalEvent');
+    $router->get('/adm/frizze/journal/{id}/redigera', 'FrizzeController', 'editJournalEvent');
+    $router->put('/adm/frizze/journal/{id}', 'FrizzeController', 'updateJournalEvent');
+    $router->delete('/adm/frizze/journal/{id}', 'FrizzeController', 'destroyJournalEvent');
     $router->get('/adm/frizze/kvitton', 'FrizzeController', 'receipts');
     $router->get('/adm/frizze/serviceplan', 'FrizzeController', 'servicePlan');
     $router->get('/adm/frizze/utrustning', 'FrizzeController', 'equipment');
