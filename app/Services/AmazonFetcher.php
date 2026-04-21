@@ -15,9 +15,9 @@ declare(strict_types=1);
 class AmazonFetcher
 {
     private const MAX_DOWNLOAD_BYTES = 10485760;
-    private const CARD_VARIANT_DIR = 'amazon-card';
-    private const CARD_VARIANT_MAX_SIZE = 600;
-    private const CARD_VARIANT_QUALITY = 72;
+    private const CARD_VARIANT_DIR = 'amazon-thumb';
+    private const CARD_VARIANT_MAX_SIZE = 340;
+    private const CARD_VARIANT_QUALITY = 68;
     private const ALLOWED_IMAGE_MIME_TYPES = [
         'image/jpeg',
         'image/png',

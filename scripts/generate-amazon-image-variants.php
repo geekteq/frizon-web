@@ -23,7 +23,7 @@ foreach ($files as $path) {
     if ($fetcher->ensureCardVariant($filename)) {
         $created++;
     } else {
-        fwrite(STDERR, "Misslyckades med amazon-card/{$filename}\n");
+        fwrite(STDERR, "Misslyckades med amazon-thumb/{$filename}\n");
         $failed++;
     }
 }
