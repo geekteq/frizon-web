@@ -48,7 +48,7 @@
 
 ### Gasol
 - **Täthetskontroll:** årligen (EN 1949)
-- **Senaste:** 2026-04-02 (Torvalla LCV) ✅
+- **Senaste:** 2026-02-04 (Torvalla LCV) ✅
 - **Tryck:** 0,3 bar drift / 0,5 bar täthet
 
 ### Bodel

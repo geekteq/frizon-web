@@ -8,8 +8,8 @@
 | **Årsmodell** | 2017 (9 år gammal) |
 | **Kamrem bytt** | 2025-02-18 vid 85 927 km (vid motorbyte) |
 | **Alla vätskor + filter** | Bytt 2025-02-18 i samband med kamrems-/motorarbete |
-| **Senaste service** | 2026-04-02 hos Torvalla LCV |
-| **Senaste gasoltest** | 2026-04-02 hos Torvalla LCV |
+| **Senaste service** | 2026-02-04 hos Torvalla LCV |
+| **Senaste gasoltest** | 2026-02-04 hos Torvalla LCV |
 
 ---
 
@@ -23,7 +23,7 @@
 | 2022-06-29 | 52 165 | Upplands B&F | Olja + filter |
 | 2024-02-27 | 73 650 | Caravanhallen | Service, däckventiler, bromsar |
 | 2025-02-18 | 85 927 | Torvalla LCV | **Motorbyte (ny motor) + Kamrem**, alla vätskor och filter |
-| 2026-04-02 | ca 100 000 | Torvalla LCV | 100 000 km-service: olja, oljefilter, serviceindikator, vätskenivåer, diagnostik + gasoltest |
+| 2026-02-04 | ca 100 000 | Torvalla LCV | 100 000 km-service: olja, oljefilter, serviceindikator, vätskenivåer, diagnostik + gasoltest |
 
 ---
 
@@ -37,7 +37,7 @@
 | 2023-05-22 | Upplands B&F | ✅ Godkänd | - |
 | 2024-02-27 | Caravanhallen | ✅ Godkänd | - |
 | 2025-02-14 | Torvalla LCV | ✅ Godkänd | - |
-| 2026-04-02 | Torvalla LCV | ✅ Godkänd | **2027-04** |
+| 2026-02-04 | Torvalla LCV | ✅ Godkänd | **2027-02** |
 
 ---
 
@@ -50,17 +50,17 @@
 - [x] Alla filter bytta (2025-02-18, i samband med kamrems-/motorarbete)
 - [x] ~~Kamrem bytt (2021-06-18, 48 953 km)~~ - ersatt 2025
 - [x] Olja & filter (vid motorbyte 2025)
-- [x] Oljebyte (2026-04-02, Torvalla LCV)
-- [x] Oljefilter (2026-04-02, Torvalla LCV)
-- [x] Nollställning serviceindikator (beställt 2026-04-02, Torvalla LCV)
-- [x] Kontroll av vätskenivåer: kyl, broms, spolarvätska (beställt 2026-04-02, Torvalla LCV)
-- [x] Felkodsläsning/diagnostik (2026-04-02, Torvalla LCV)
+- [x] Oljebyte (2026-02-04, Torvalla LCV)
+- [x] Oljefilter (2026-02-04, Torvalla LCV)
+- [x] Nollställning serviceindikator (beställt 2026-02-04, Torvalla LCV)
+- [x] Kontroll av vätskenivåer: kyl, broms, spolarvätska (beställt 2026-02-04, Torvalla LCV)
+- [x] Felkodsläsning/diagnostik (2026-02-04, Torvalla LCV)
 
 ### Bromsar
 - [x] Bromsbelägg kontrollerade/bytta (2024-02-27)
 
 ### Gasol
-- [x] Gasoltäthetskontroll enligt EN 1949 (2026-04-02) - giltig till 2027
+- [x] Gasoltäthetskontroll enligt EN 1949 (2026-02-04) - giltig till 2027
 
 ### Övrigt
 - [x] Däckventiler bytta (2024-02-27)
@@ -71,7 +71,7 @@
 ## Kommande underhåll ⏳
 
 ### Nästa ordinarie service
-**Senast utfört: 2026-04-02 hos Torvalla LCV**
+**Senast utfört: 2026-02-04 hos Torvalla LCV**
 
 Utfört:
 - [x] Byte motorolja
@@ -82,7 +82,7 @@ Utfört:
 - [x] Gasoltäthetskontroll enligt EN 1949
 
 Att verifiera mot rekommenderat intervall:
-- [ ] Nästa olja + oljefilter senast 2027-04-02 eller efter ca 15 000 km
+- [ ] Nästa olja + oljefilter senast 2027-02-04 eller efter ca 15 000 km
 - [ ] Boka/utför fukttest och habitation check om det inte redan är gjort 2026
 
 ### Kamrem
@@ -92,7 +92,7 @@ Att verifiera mot rekommenderat intervall:
 - ✅ Nybytt - ingen åtgärd på länge
 
 ### Gasoltäthetskontroll
-**Nästa: April 2027**
+**Nästa: Februari 2027**
 - Rekommenderas årligen
 - Krävs vid besiktning av husbil
 
@@ -138,7 +138,7 @@ Att verifiera mot rekommenderat intervall:
 
 ## Noteringar
 
-### 2026-04-02 - Torvalla LCV
+### 2026-02-04 - Torvalla LCV
 100 000 km-service och gasoltäthetskontroll enligt EN 1949.
 - Byte motorolja (spec: PSA B71 2312 / B71 2290)
 - Byte oljefilter

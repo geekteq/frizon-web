@@ -94,11 +94,11 @@ Fordonet har genomgått regelbundna gasoltäthetskontroller enligt EN 1949.
 
 ---
 
-### 2026-04-02 - Gasoltäthetskontroll enligt EN 1949 (Torvalla LCV)
+### 2026-02-04 - Gasoltäthetskontroll enligt EN 1949 (Torvalla LCV)
 | Fält | Värde |
 |------|-------|
 | **Utfärdare** | Torvalla LCV AB |
-| **Datum** | 2026-04-02 |
+| **Datum** | 2026-02-04 |
 | **Reg.nr** | ZLG267 |
 | **Resultat** | Godkänt |
 | **Kommentar** | Utfört tillsammans med 100 000 km-service |

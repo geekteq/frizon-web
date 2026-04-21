@@ -139,7 +139,7 @@ INSERT INTO frizze_events (
 (
     1,
     'service',
-    '2026-04-02',
+    '2026-02-04',
     '100 000 km-service + gasoltest',
     'Torvalla LCV',
     100000,
@@ -212,24 +212,24 @@ INSERT INTO frizze_service_tasks (
     'Årlig service: olja, oljefilter, diagnostik och nivåkontroll',
     'base_vehicle',
     'planned',
-    '2027-04-02',
+    '2027-02-04',
     115000,
     12,
     15000,
-    '2026-04-02',
-    'Senast gjort hos Torvalla LCV 2026-04-02.'
+    '2026-02-04',
+    'Senast gjort hos Torvalla LCV 2026-02-04.'
 ),
 (
     1,
     'Gasoltäthetskontroll enligt EN 1949',
     'gas',
     'planned',
-    '2027-04-02',
+    '2027-02-04',
     NULL,
     12,
     NULL,
-    '2026-04-02',
-    'Senast godkänd 2026-04-02.'
+    '2026-02-04',
+    'Senast godkänd 2026-02-04.'
 ),
 (
     1,

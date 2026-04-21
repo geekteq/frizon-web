@@ -10,7 +10,7 @@
 | 2022-06-29 | 52 165 | Upplands Bil & Fritidscenter (Lodgatan 14, 741 71 Knivsta) | Olja + Filter | Normala |
 | 2024-02-27 | 73 650 | Caravanhallen (Fors 9, 137 91 Västerhaninge) | Service | Normala |
 | 2025-02-18 | 85 927 | FIAT Torvalla LCV AB | Motorbyte (Ny motor) AO 128299 + **Kamrem**, alla vätskor och filter | Normala |
-| 2026-04-02 | ca 100 000 | Torvalla LCV AB | 100 000 km-service: olja, oljefilter, serviceindikator, vätskenivåer, diagnostik + gasoltest | Normala |
+| 2026-02-04 | ca 100 000 | Torvalla LCV AB | 100 000 km-service: olja, oljefilter, serviceindikator, vätskenivåer, diagnostik + gasoltest | Normala |
 
 ## Skador och Reparationer
 
@@ -73,7 +73,7 @@
 **Summa material:** 603,84 kr
 **Totalt:** (se faktura)
 
-### 2026-04-02 - Torvalla LCV
+### 2026-02-04 - Torvalla LCV
 **Arbete:** 100 000 km-service samt gasoltäthetskontroll enligt EN 1949
 
 | Beskrivning | Pris |

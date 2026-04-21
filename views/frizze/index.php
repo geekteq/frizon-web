@@ -192,7 +192,7 @@ $statusLabels = [
                 <div class="frizze-form-grid">
                     <div class="form-group">
                         <label for="document_title" class="form-label">Titel</label>
-                        <input type="text" id="document_title" name="title" class="form-input" placeholder="t.ex. Torvalla LCV 2026-04-02">
+                        <input type="text" id="document_title" name="title" class="form-input" placeholder="t.ex. Torvalla LCV 2026-02-04">
                     </div>
                     <div class="form-group">
                         <label for="document_supplier" class="form-label">Leverantör</label>

@@ -1,4 +1,4 @@
-var CACHE_NAME = 'frizon-v19';
+var CACHE_NAME = 'frizon-v20';
 var PRECACHE = [
   '/css/main.bundle.css',
   '/css/public.bundle.css',

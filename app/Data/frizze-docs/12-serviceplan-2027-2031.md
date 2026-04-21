@@ -16,13 +16,13 @@ Planen kombinerar:
 | **Fordon** | Adria Twin 600 SPT / SPT 600 Platinum 2017 |
 | **Basfordon** | Citroën Jumper III |
 | **Motor** | 2.0 HDI / BlueHDi diesel |
-| **Utgångsläge** | ca 100 000 km (april 2026) |
+| **Utgångsläge** | ca 100 000 km (februari 2026) |
 | **Uppskattad körning** | ~12 000 - 15 000 km/år |
 | **Ny motor** | 2025-02-18 vid 85 927 km (AO 128299) |
 | **Kamrem** | Ny 2025-02-18 (nästa ~2035 eller ca 235 000 km) |
 | **Alla vätskor + filter** | Bytt 2025-02-18 i samband med kamrems-/motorarbete |
-| **Senaste 100 000 km-service** | 2026-04-02 hos Torvalla LCV |
-| **Senaste gasoltest** | 2026-04-02 enligt EN 1949 hos Torvalla LCV |
+| **Senaste 100 000 km-service** | 2026-02-04 hos Torvalla LCV |
+| **Senaste gasoltest** | 2026-02-04 enligt EN 1949 hos Torvalla LCV |
 
 ---
 
@@ -95,7 +95,7 @@ Detta är en försiktig husbilsplan. Vissa generella scheman anger längre inter
 
 | År | Beräknad km | Planerade åtgärder |
 |----|-------------|--------------------|
-| **2026** | ca 100 000 | Utfört 2026-04-02: 100 000 km-service, olja, oljefilter, serviceindikator, vätskenivåer, diagnostik och gasoltest. Främre taklucka är tätad men inväntar verifiering vid skyfall. Besiktning är bokad i början av juni. Kvar för att komma ikapp: fukttest/habitation check om ej gjort. |
+| **2026** | ca 100 000 | Utfört 2026-02-04: 100 000 km-service, olja, oljefilter, serviceindikator, vätskenivåer, diagnostik och gasoltest. Främre taklucka är tätad men inväntar verifiering vid skyfall. Besiktning är bokad i början av juni. Kvar för att komma ikapp: fukttest/habitation check om ej gjort. |
 | **2027** | ~115 000 | Årlig service: olja + oljefilter, diagnostik, gasolkontroll, fukttest, habitation check. Däckfirma bevakar däckbyte. Bromsvätska bör bytas igen ca 2027 eftersom den byttes 2025. Kupéfilter bör också bytas ca 2027. |
 | **2028** | ~130 000 | Årlig service: olja + oljefilter, diagnostik, gasol, fukt, habitation. Bromsar, hjulupphängning och AC vid behov. |
 | **2029** | ~145 000 | Årlig service: olja + oljefilter, diagnostik, gasol, fukt, habitation. Kontrollera däckens ålder/skick extra noga. Planera stor filterservice om 50 000 km närmar sig sedan 2025. |

@@ -434,14 +434,14 @@ class FrizzeController
         return [
             [
                 'label' => 'Nästa motorservice',
-                'value' => 'April 2027',
-                'meta' => 'Olja + oljefilter senast 12 månader eller ca 15 000 km efter 2026-04-02.',
+                'value' => 'Februari 2027',
+                'meta' => 'Olja + oljefilter senast 12 månader eller ca 15 000 km efter 2026-02-04.',
                 'state' => 'watch',
             ],
             [
                 'label' => 'Gasol',
-                'value' => 'April 2027',
-                'meta' => 'Senast godkänd 2026-04-02 enligt EN 1949 hos Torvalla LCV.',
+                'value' => 'Februari 2027',
+                'meta' => 'Senast godkänd 2026-02-04 enligt EN 1949 hos Torvalla LCV.',
                 'state' => 'ok',
             ],
             [
@@ -703,8 +703,8 @@ class FrizzeController
             [
                 'title' => 'Snabbsvar',
                 'items' => [
-                    ['label' => 'Nästa service', 'value' => 'April 2027 eller ca 15 000 km efter 2026-04-02'],
-                    ['label' => 'Nästa gasol', 'value' => 'April 2027'],
+                    ['label' => 'Nästa service', 'value' => 'Februari 2027 eller ca 15 000 km efter 2026-02-04'],
+                    ['label' => 'Nästa gasol', 'value' => 'Februari 2027'],
                     ['label' => 'Nästa kamrem', 'value' => 'ca 2035 eller ca 235 000 km'],
                     ['label' => 'Rekommenderad olja', 'value' => 'PSA B71 2312 / PSA B71 2290'],
                 ],
