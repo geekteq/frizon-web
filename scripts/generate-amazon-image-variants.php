@@ -20,10 +20,10 @@ $failed = 0;
 
 foreach ($files as $path) {
     $filename = basename($path);
-    if ($fetcher->ensureCardVariant($filename)) {
+    if ($fetcher->ensureResponsiveVariants($filename)) {
         $created++;
     } else {
-        fwrite(STDERR, "Misslyckades med amazon-thumb/{$filename}\n");
+        fwrite(STDERR, "Misslyckades med Amazon-varianter för {$filename}\n");
         $failed++;
     }
 }

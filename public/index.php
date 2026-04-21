@@ -10,7 +10,7 @@ set_security_headers();
 
 // Serve uploaded images from storage
 $uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
-if (preg_match('#^/uploads/(thumbnails|cards|gallery|medium|detail|amazon|amazon-card|amazon-thumb)/([^/]+)$#', $uri, $m)) {
+if (preg_match('#^/uploads/(thumbnails|cards|gallery|medium|detail|amazon|amazon-card|amazon-thumb|amazon-detail)/([^/]+)$#', $uri, $m)) {
     $uploadsDir = dirname(__DIR__) . '/storage/uploads';
     $variantDir = realpath($uploadsDir . '/' . $m[1]);
     $candidatePath = $variantDir ? $variantDir . DIRECTORY_SEPARATOR . $m[2] : null;
@@ -18,7 +18,7 @@ if (preg_match('#^/uploads/(thumbnails|cards|gallery|medium|detail|amazon|amazon
 
     if (
         (!$variantDir || !$realFilePath || !is_file($realFilePath))
-        && in_array($m[1], ['amazon-card', 'amazon-thumb'], true)
+        && in_array($m[1], ['amazon-card', 'amazon-thumb', 'amazon-detail'], true)
     ) {
         $variantDir = realpath($uploadsDir . '/amazon');
         $candidatePath = $variantDir ? $variantDir . DIRECTORY_SEPARATOR . $m[2] : null;

@@ -17,9 +17,12 @@
 
     <?php if ($product['image_path']): ?>
     <div style="text-align:center; background:#fff; border-radius:var(--radius-lg); padding:var(--space-6); border:1px solid var(--color-border); margin-bottom:var(--space-6);">
-        <img src="/uploads/amazon/<?= htmlspecialchars($product['image_path']) ?>"
+        <img src="/uploads/amazon-detail/<?= htmlspecialchars($product['image_path']) ?>"
              alt="<?= htmlspecialchars($product['title']) ?>"
-             style="display:block; margin:0 auto; max-width:100%; max-height:340px; object-fit:contain;">
+             loading="eager"
+             fetchpriority="high"
+             decoding="async"
+             style="display:block; margin:0 auto; width:auto; max-width:100%; max-height:340px; object-fit:contain;">
     </div>
     <?php endif; ?>
 

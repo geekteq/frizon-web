@@ -18,6 +18,9 @@ class AmazonFetcher
     private const CARD_VARIANT_DIR = 'amazon-thumb';
     private const CARD_VARIANT_MAX_SIZE = 340;
     private const CARD_VARIANT_QUALITY = 68;
+    private const DETAIL_VARIANT_DIR = 'amazon-detail';
+    private const DETAIL_VARIANT_MAX_SIZE = 680;
+    private const DETAIL_VARIANT_QUALITY = 74;
     private const ALLOWED_IMAGE_MIME_TYPES = [
         'image/jpeg',
         'image/png',
@@ -212,7 +215,7 @@ class AmazonFetcher
         if ($webpData) {
             $filename = bin2hex(random_bytes(8)) . '.webp';
             file_put_contents($this->uploadDir . '/' . $filename, $webpData);
-            $this->ensureCardVariant($filename);
+            $this->ensureResponsiveVariants($filename);
             return $filename;
         }
 
@@ -232,11 +235,39 @@ class AmazonFetcher
 
         $filename = bin2hex(random_bytes(8)) . '.' . $ext;
         file_put_contents($this->uploadDir . '/' . $filename, $rawData);
-        $this->ensureCardVariant($filename);
+        $this->ensureResponsiveVariants($filename);
         return $filename;
     }
 
+    public function ensureResponsiveVariants(string $filename): bool
+    {
+        $cardOk = $this->ensureCardVariant($filename);
+        $detailOk = $this->ensureDetailVariant($filename);
+
+        return $cardOk && $detailOk;
+    }
+
     public function ensureCardVariant(string $filename): bool
+    {
+        return $this->ensureVariant(
+            $filename,
+            self::CARD_VARIANT_DIR,
+            self::CARD_VARIANT_MAX_SIZE,
+            self::CARD_VARIANT_QUALITY
+        );
+    }
+
+    public function ensureDetailVariant(string $filename): bool
+    {
+        return $this->ensureVariant(
+            $filename,
+            self::DETAIL_VARIANT_DIR,
+            self::DETAIL_VARIANT_MAX_SIZE,
+            self::DETAIL_VARIANT_QUALITY
+        );
+    }
+
+    private function ensureVariant(string $filename, string $variantDirectory, int $maxSize, int $quality): bool
     {
         $filename = basename($filename);
         $sourcePath = $this->uploadDir . '/' . $filename;
@@ -249,16 +280,12 @@ class AmazonFetcher
             return false;
         }
 
-        $webpData = $this->processToWebp(
-            $rawData,
-            self::CARD_VARIANT_MAX_SIZE,
-            self::CARD_VARIANT_QUALITY
-        );
+        $webpData = $this->processToWebp($rawData, $maxSize, $quality);
         if (!$webpData) {
             return false;
         }
 
-        $variantDir = dirname($this->uploadDir) . '/' . self::CARD_VARIANT_DIR;
+        $variantDir = dirname($this->uploadDir) . '/' . $variantDirectory;
         if (!is_dir($variantDir) && !mkdir($variantDir, 0755, true) && !is_dir($variantDir)) {
             return false;
         }
