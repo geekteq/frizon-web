@@ -26,6 +26,8 @@ MIGRATIONS=(
     013_security_controls.sql
     014_place_preview_image.sql
     015_frizze_vehicle_data.sql
+    016_fix_frizze_service_date.sql
+    017_frizze_document_interpretations.sql
 )
 
 TOTAL=${#MIGRATIONS[@]}

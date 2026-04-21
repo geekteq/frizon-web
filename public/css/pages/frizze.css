@@ -492,6 +492,18 @@
   text-decoration: underline;
 }
 
+.frizze-document-list__status {
+  display: inline-flex;
+  align-items: center;
+  margin-left: var(--space-2);
+  border-radius: var(--radius-full);
+  background: var(--color-success-bg);
+  color: var(--color-success);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-medium);
+  padding: 3px var(--space-2);
+}
+
 .frizze-document-list__actions {
   display: flex;
   flex-wrap: wrap;
@@ -505,6 +517,24 @@
 
 .frizze-note {
   margin-bottom: 0;
+}
+
+.frizze-ai-note {
+  display: grid;
+  gap: var(--space-2);
+  margin-bottom: var(--space-4);
+}
+
+.frizze-ai-note h3 {
+  margin: 0;
+}
+
+.frizze-ai-note p {
+  margin: 0;
+}
+
+.frizze-interpretation-form {
+  max-width: 860px;
 }
 
 @media (min-width: 760px) {

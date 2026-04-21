@@ -56,6 +56,32 @@ class FrizzeDocument
         return (int) $this->pdo->lastInsertId();
     }
 
+    public function updateMetadata(int $id, array $data): void
+    {
+        $stmt = $this->pdo->prepare('
+            UPDATE frizze_documents
+            SET document_type = ?,
+                title = ?,
+                supplier = ?,
+                document_date = ?,
+                amount_total = ?,
+                currency = ?,
+                notes = ?,
+                updated_at = NOW()
+            WHERE id = ?
+        ');
+        $stmt->execute([
+            $data['document_type'] ?? 'other',
+            $data['title'],
+            $data['supplier'] ?? null,
+            $data['document_date'] ?? null,
+            $data['amount_total'] ?? null,
+            $data['currency'] ?? 'SEK',
+            $data['notes'] ?? null,
+            $id,
+        ]);
+    }
+
     public function delete(int $id): void
     {
         $stmt = $this->pdo->prepare('DELETE FROM frizze_documents WHERE id = ?');

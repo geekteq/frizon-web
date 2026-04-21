@@ -99,8 +99,8 @@ $statusLabels = [
                 <span>Service, reparation, besiktning eller kontroll.</span>
             </a>
             <a href="/adm/frizze/kvitton" class="frizze-action">
-                <strong>Ladda upp kvitto</strong>
-                <span>Förbered ytan för Anthropic-tolkning och granskning.</span>
+                <strong>Ladda upp dokument</strong>
+                <span>Kvitton, fakturor, protokoll, foton och annat privat underlag.</span>
             </a>
             <a href="/adm/frizze/manual" class="frizze-action">
                 <strong>Sök i manualen</strong>
@@ -231,9 +231,15 @@ $statusLabels = [
             <?php else: ?>
                 <div class="frizze-document-list">
                     <?php foreach ($documents as $document): ?>
+                        <?php $interpretation = $interpretations[(int) $document['id']] ?? null; ?>
                         <article>
                             <div>
                                 <span class="frizze-chip"><?= htmlspecialchars($documentTypes[$document['document_type']] ?? $document['document_type']) ?></span>
+                                <?php if ($interpretation && $interpretation['status'] !== 'rejected'): ?>
+                                    <span class="frizze-document-list__status">
+                                        <?= $interpretation['status'] === 'applied' ? 'Tolkad' : 'Tolkning väntar' ?>
+                                    </span>
+                                <?php endif; ?>
                                 <?php if (!empty($document['file_path'])): ?>
                                     <a class="frizze-document-list__title" href="/adm/frizze/dokument/<?= (int) $document['id'] ?>" target="_blank" rel="noopener">
                                         <?= htmlspecialchars($document['title']) ?>
@@ -259,6 +265,16 @@ $statusLabels = [
                             <div class="frizze-document-list__actions">
                                 <?php if (!empty($document['file_path'])): ?>
                                     <a class="btn btn-ghost btn--sm" href="/adm/frizze/dokument/<?= (int) $document['id'] ?>" target="_blank" rel="noopener">Visa</a>
+                                <?php endif; ?>
+                                <?php if ($interpretation && $interpretation['status'] !== 'rejected'): ?>
+                                    <a class="btn btn-secondary btn--sm" href="/adm/frizze/tolkningar/<?= (int) $interpretation['id'] ?>/granska">
+                                        <?= $interpretation['status'] === 'applied' ? 'Visa tolkning' : 'Granska tolkning' ?>
+                                    </a>
+                                <?php elseif (!empty($document['file_path'])): ?>
+                                    <form method="POST" action="/adm/frizze/dokument/<?= (int) $document['id'] ?>/tolka">
+                                        <?php include dirname(__DIR__) . '/partials/csrf-field.php'; ?>
+                                        <button type="submit" class="btn btn-ai btn--sm">Tolka med AI</button>
+                                    </form>
                                 <?php endif; ?>
                                 <form method="POST" action="/adm/frizze/dokument/<?= (int) $document['id'] ?>">
                                     <?php include dirname(__DIR__) . '/partials/csrf-field.php'; ?>

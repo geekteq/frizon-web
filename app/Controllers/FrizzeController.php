@@ -3,10 +3,13 @@
 declare(strict_types=1);
 
 require_once dirname(__DIR__) . '/Services/Auth.php';
+require_once dirname(__DIR__) . '/Services/ActionRateLimiter.php';
+require_once dirname(__DIR__) . '/Services/AiService.php';
 require_once dirname(__DIR__) . '/Services/CsrfService.php';
 require_once dirname(__DIR__) . '/Services/SecurityAudit.php';
 require_once dirname(__DIR__) . '/Lib/Parsedown.php';
 require_once dirname(__DIR__) . '/Models/FrizzeDocument.php';
+require_once dirname(__DIR__) . '/Models/FrizzeDocumentInterpretation.php';
 require_once dirname(__DIR__) . '/Models/FrizzeEvent.php';
 require_once dirname(__DIR__) . '/Models/FrizzeServiceTask.php';
 require_once dirname(__DIR__) . '/Models/FrizzeVehicle.php';
@@ -302,6 +305,191 @@ class FrizzeController
         redirect('/adm/frizze/kvitton');
     }
 
+    public function interpretDocument(array $params): void
+    {
+        Auth::requireLogin();
+        CsrfService::requireValid();
+
+        try {
+            (new ActionRateLimiter())->consumeForUser('frizze-document-ai', (int) Auth::userId(), 8, 900);
+        } catch (RuntimeException $e) {
+            flash('error', $e->getMessage());
+            redirect('/adm/frizze/kvitton');
+        }
+
+        $documentModel = new FrizzeDocument($this->pdo);
+        $document = $documentModel->findById((int) $params['id']);
+        if (!$document) {
+            http_response_code(404);
+            echo '<h1>Dokumentet hittades inte</h1>';
+            return;
+        }
+
+        $path = $this->privateStoragePath((string) $document['file_path']);
+        if ($path === null || !is_file($path)) {
+            flash('error', 'Dokumentfilen hittades inte.');
+            redirect('/adm/frizze/kvitton');
+        }
+
+        try {
+            $interpreted = (new AiService())->interpretFrizzeDocument($document, $path);
+        } catch (RuntimeException $e) {
+            flash('error', 'AI-tolkningen misslyckades: ' . $e->getMessage());
+            redirect('/adm/frizze/kvitton');
+        }
+
+        $interpretationId = (new FrizzeDocumentInterpretation($this->pdo))->create(
+            (int) $document['id'],
+            $interpreted,
+            (int) Auth::userId()
+        );
+
+        SecurityAudit::log($this->pdo, 'frizze.document.interpreted', [
+            'document_id' => (int) $document['id'],
+            'interpretation_id' => $interpretationId,
+        ], Auth::userId());
+
+        flash('success', 'Dokumentet har tolkats. Granska innan journalen uppdateras.');
+        redirect('/adm/frizze/tolkningar/' . $interpretationId . '/granska');
+    }
+
+    public function reviewInterpretation(array $params): void
+    {
+        Auth::requireLogin();
+
+        $interpretation = (new FrizzeDocumentInterpretation($this->pdo))->findById((int) $params['id']);
+        if (!$interpretation) {
+            http_response_code(404);
+            echo '<h1>Tolkningen hittades inte</h1>';
+            return;
+        }
+
+        $draft = $this->interpretationDraft($interpretation);
+        $documentTypes = $this->documentTypes();
+        $eventTypes = $this->eventTypes();
+        $pageTitle = 'Granska dokumenttolkning';
+
+        view('frizze/interpretation-form', compact(
+            'documentTypes',
+            'draft',
+            'eventTypes',
+            'interpretation',
+            'pageTitle'
+        ));
+    }
+
+    public function saveInterpretation(array $params): void
+    {
+        Auth::requireLogin();
+        CsrfService::requireValid();
+
+        $model = new FrizzeDocumentInterpretation($this->pdo);
+        $interpretation = $model->findById((int) $params['id']);
+        if (!$interpretation) {
+            http_response_code(404);
+            return;
+        }
+
+        if ($interpretation['status'] === 'applied') {
+            flash('error', 'Tolkningen är redan godkänd och applicerad.');
+            redirect('/adm/frizze/tolkningar/' . (int) $interpretation['id'] . '/granska');
+        }
+
+        $edited = $this->interpretationInput();
+        $model->updateEdited((int) $interpretation['id'], $edited, 'reviewed', (int) Auth::userId());
+
+        flash('success', 'Tolkningen har sparats.');
+        redirect('/adm/frizze/tolkningar/' . (int) $interpretation['id'] . '/granska');
+    }
+
+    public function applyInterpretation(array $params): void
+    {
+        Auth::requireLogin();
+        CsrfService::requireValid();
+
+        $interpretationModel = new FrizzeDocumentInterpretation($this->pdo);
+        $interpretation = $interpretationModel->findById((int) $params['id']);
+        if (!$interpretation) {
+            http_response_code(404);
+            return;
+        }
+
+        if ($interpretation['status'] === 'applied') {
+            flash('error', 'Tolkningen är redan godkänd och applicerad.');
+            redirect('/adm/frizze/journal');
+        }
+
+        $vehicle = $this->vehicle();
+        $edited = $this->interpretationInput();
+        if ($edited['title'] === '' || $edited['event_date'] === '') {
+            flash('error', 'Titel och händelsedatum krävs innan journalhändelsen kan skapas.');
+            redirect('/adm/frizze/tolkningar/' . (int) $interpretation['id'] . '/granska');
+        }
+
+        $this->pdo->beginTransaction();
+        try {
+            (new FrizzeDocument($this->pdo))->updateMetadata((int) $interpretation['document_id'], [
+                'document_type' => $edited['document_type'],
+                'title' => $edited['title'],
+                'supplier' => $edited['supplier'],
+                'document_date' => $edited['document_date'],
+                'amount_total' => $edited['amount_total'],
+                'currency' => $edited['currency'],
+                'notes' => $edited['description'],
+            ]);
+
+            $eventId = (new FrizzeEvent($this->pdo))->create([
+                'vehicle_id' => (int) $vehicle['id'],
+                'document_id' => (int) $interpretation['document_id'],
+                'event_type' => $edited['event_type'],
+                'event_date' => $edited['event_date'],
+                'event_time' => $edited['event_time'],
+                'title' => $edited['title'],
+                'supplier' => $edited['supplier'],
+                'odometer_km' => $edited['odometer_km'],
+                'amount_total' => $edited['amount_total'],
+                'currency' => $edited['currency'],
+                'description' => $edited['description'],
+                'details' => $edited['details'],
+                'created_by' => Auth::userId(),
+            ]);
+
+            $interpretationModel->markApplied((int) $interpretation['id'], $eventId, $edited, (int) Auth::userId());
+            $this->pdo->commit();
+        } catch (Throwable $e) {
+            $this->pdo->rollBack();
+            flash('error', 'Kunde inte skapa journalhändelsen: ' . $e->getMessage());
+            redirect('/adm/frizze/tolkningar/' . (int) $interpretation['id'] . '/granska');
+        }
+
+        SecurityAudit::log($this->pdo, 'frizze.document.interpretation.applied', [
+            'document_id' => (int) $interpretation['document_id'],
+            'interpretation_id' => (int) $interpretation['id'],
+        ], Auth::userId());
+
+        flash('success', 'Tolkningen är godkänd och journalhändelsen har skapats.');
+        redirect('/adm/frizze/journal');
+    }
+
+    public function rejectInterpretation(array $params): void
+    {
+        Auth::requireLogin();
+        CsrfService::requireValid();
+
+        $model = new FrizzeDocumentInterpretation($this->pdo);
+        $interpretation = $model->findById((int) $params['id']);
+        if ($interpretation) {
+            $model->markRejected((int) $interpretation['id'], (int) Auth::userId());
+            SecurityAudit::log($this->pdo, 'frizze.document.interpretation.rejected', [
+                'document_id' => (int) $interpretation['document_id'],
+                'interpretation_id' => (int) $interpretation['id'],
+            ], Auth::userId());
+            flash('success', 'Tolkningen har avvisats.');
+        }
+
+        redirect('/adm/frizze/kvitton');
+    }
+
     public function servicePlan(array $params): void
     {
         $this->render('service');
@@ -356,6 +544,7 @@ class FrizzeController
         $servicePlan = $this->servicePlanItems();
         $serviceTasks = $this->serviceTasks((int) $vehicle['id']);
         $documents = $this->documents((int) $vehicle['id']);
+        $interpretations = $this->latestInterpretations($documents);
         $documentTypes = $this->documentTypes();
         $equipment = $this->equipmentGroups();
         $manualSections = $this->manualSections();
@@ -369,6 +558,7 @@ class FrizzeController
             'documents',
             'documentTypes',
             'equipment',
+            'interpretations',
             'journal',
             'manualDocuments',
             'manualSections',
@@ -386,7 +576,7 @@ class FrizzeController
         return [
             'overview' => ['label' => 'Översikt', 'href' => '/adm/frizze'],
             'journal' => ['label' => 'Journal', 'href' => '/adm/frizze/journal'],
-            'receipts' => ['label' => 'Kvitton', 'href' => '/adm/frizze/kvitton'],
+            'receipts' => ['label' => 'Dokument', 'href' => '/adm/frizze/kvitton'],
             'service' => ['label' => 'Serviceplan', 'href' => '/adm/frizze/serviceplan'],
             'equipment' => ['label' => 'Utrustning', 'href' => '/adm/frizze/utrustning'],
             'manual' => ['label' => 'Manual', 'href' => '/adm/frizze/manual'],
@@ -501,6 +691,12 @@ class FrizzeController
         return $documentModel->allForVehicle($vehicleId);
     }
 
+    private function latestInterpretations(array $documents): array
+    {
+        $ids = array_map(static fn(array $document): int => (int) $document['id'], $documents);
+        return (new FrizzeDocumentInterpretation($this->pdo))->latestByDocumentIds($ids);
+    }
+
     private function documentTypes(): array
     {
         return [
@@ -584,6 +780,82 @@ class FrizzeController
             'details' => preg_split('/\R/', trim($_POST['details'] ?? '')) ?: [],
             'created_by' => Auth::userId(),
         ];
+    }
+
+    private function interpretationDraft(array $interpretation): array
+    {
+        $source = $interpretation['edited'] ?: $interpretation['interpreted'];
+        $documentDate = $source['document_date'] ?? null;
+
+        return [
+            'document_type' => $this->validDocumentType($source['document_type'] ?? $interpretation['document_type'] ?? 'other'),
+            'title' => trim((string) ($source['title'] ?? $interpretation['document_title'] ?? '')),
+            'supplier' => trim((string) ($source['supplier'] ?? '')),
+            'document_date' => $this->dateValue($documentDate),
+            'event_type' => $this->validEventType($source['event_type'] ?? 'note'),
+            'event_date' => $this->dateValue($source['event_date'] ?? $documentDate),
+            'event_time' => $this->timeValue($source['event_time'] ?? null),
+            'odometer_km' => isset($source['odometer_km']) && $source['odometer_km'] !== null ? (string) (int) $source['odometer_km'] : '',
+            'amount_total' => isset($source['amount_total']) && $source['amount_total'] !== null ? (string) $source['amount_total'] : '',
+            'currency' => trim((string) ($source['currency'] ?? 'SEK')) ?: 'SEK',
+            'description' => trim((string) ($source['description'] ?? '')),
+            'details' => is_array($source['details'] ?? null) ? $source['details'] : [],
+            'confidence' => trim((string) ($source['confidence'] ?? '')),
+            'needs_review' => is_array($source['needs_review'] ?? null) ? $source['needs_review'] : [],
+        ];
+    }
+
+    private function interpretationInput(): array
+    {
+        $amount = str_replace(',', '.', trim($_POST['amount_total'] ?? ''));
+        $odometer = trim($_POST['odometer_km'] ?? '');
+
+        return [
+            'document_type' => $this->validDocumentType($_POST['document_type'] ?? 'other'),
+            'title' => trim($_POST['title'] ?? ''),
+            'supplier' => trim($_POST['supplier'] ?? '') ?: null,
+            'document_date' => $this->dateValue($_POST['document_date'] ?? null) ?: null,
+            'event_type' => $this->validEventType($_POST['event_type'] ?? 'note'),
+            'event_date' => $this->dateValue($_POST['event_date'] ?? null),
+            'event_time' => $this->timeValue($_POST['event_time'] ?? null) ?: null,
+            'odometer_km' => $odometer !== '' ? max(0, (int) $odometer) : null,
+            'amount_total' => $amount !== '' && is_numeric($amount) ? (float) $amount : null,
+            'currency' => trim($_POST['currency'] ?? 'SEK') ?: 'SEK',
+            'description' => trim($_POST['description'] ?? '') ?: null,
+            'details' => $this->linesFromTextarea($_POST['details'] ?? ''),
+            'confidence' => trim($_POST['confidence'] ?? ''),
+            'needs_review' => $this->linesFromTextarea($_POST['needs_review'] ?? ''),
+        ];
+    }
+
+    private function validDocumentType(string $value): string
+    {
+        return array_key_exists($value, $this->documentTypes()) ? $value : 'other';
+    }
+
+    private function validEventType(string $value): string
+    {
+        return array_key_exists($value, $this->eventTypes()) ? $value : 'note';
+    }
+
+    private function dateValue(mixed $value): string
+    {
+        $text = trim((string) $value);
+        return preg_match('/^\d{4}-\d{2}-\d{2}$/', $text) ? $text : '';
+    }
+
+    private function timeValue(mixed $value): string
+    {
+        $text = trim((string) $value);
+        return preg_match('/^\d{2}:\d{2}$/', $text) ? $text : '';
+    }
+
+    private function linesFromTextarea(mixed $value): array
+    {
+        return array_values(array_filter(array_map(
+            static fn($line) => trim((string) $line),
+            preg_split('/\R/', trim((string) $value)) ?: []
+        )));
     }
 
     private function emptyEvent(): array

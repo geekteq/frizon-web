@@ -43,7 +43,12 @@ function registerRoutes(Router $router): void
     $router->get('/adm/frizze/kvitton', 'FrizzeController', 'receipts');
     $router->post('/adm/frizze/dokument', 'FrizzeController', 'storeDocument');
     $router->get('/adm/frizze/dokument/{id}', 'FrizzeController', 'showDocument');
+    $router->post('/adm/frizze/dokument/{id}/tolka', 'FrizzeController', 'interpretDocument');
     $router->delete('/adm/frizze/dokument/{id}', 'FrizzeController', 'destroyDocument');
+    $router->get('/adm/frizze/tolkningar/{id}/granska', 'FrizzeController', 'reviewInterpretation');
+    $router->post('/adm/frizze/tolkningar/{id}/spara', 'FrizzeController', 'saveInterpretation');
+    $router->post('/adm/frizze/tolkningar/{id}/godkann', 'FrizzeController', 'applyInterpretation');
+    $router->post('/adm/frizze/tolkningar/{id}/avvisa', 'FrizzeController', 'rejectInterpretation');
     $router->get('/adm/frizze/serviceplan', 'FrizzeController', 'servicePlan');
     $router->get('/adm/frizze/utrustning', 'FrizzeController', 'equipment');
     $router->get('/adm/frizze/manual', 'FrizzeController', 'manual');

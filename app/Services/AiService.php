@@ -15,6 +15,7 @@ interface AiProviderInterface
     public function generateInstagramCaption(array $context): string;
     public function translateToSwedish(string $text): string;
     public function describeImage(string $imagePath, array $context = []): string;
+    public function interpretFrizzeDocument(array $document, string $filePath): array;
 }
 
 // ---------------------------------------------------------------------------
@@ -340,6 +341,140 @@ class ClaudeAiProvider implements AiProviderInterface
         }
     }
 
+    public function interpretFrizzeDocument(array $document, string $filePath): array
+    {
+        if (!is_file($filePath)) {
+            throw new RuntimeException('Dokumentfilen hittades inte.');
+        }
+
+        $raw = file_get_contents($filePath);
+        if ($raw === false || $raw === '') {
+            throw new RuntimeException('Dokumentfilen kunde inte läsas.');
+        }
+
+        $mimeType = (string) ($document['mime_type'] ?? 'application/octet-stream');
+        if (!in_array($mimeType, ['application/pdf', 'image/jpeg', 'image/png', 'image/webp'], true)) {
+            throw new RuntimeException('Filtypen kan inte tolkas med AI.');
+        }
+
+        $source = [
+            'type' => 'base64',
+            'media_type' => $mimeType,
+            'data' => base64_encode($raw),
+        ];
+
+        $fileBlock = $mimeType === 'application/pdf'
+            ? ['type' => 'document', 'source' => $source]
+            : ['type' => 'image', 'source' => $source];
+
+        $knownMeta = [
+            'nuvarande_titel' => $document['title'] ?? null,
+            'nuvarande_typ' => $document['document_type'] ?? null,
+            'nuvarande_leverantor' => $document['supplier'] ?? null,
+            'nuvarande_datum' => $document['document_date'] ?? null,
+            'nuvarande_belopp' => $document['amount_total'] ?? null,
+            'filnamn' => $document['original_filename'] ?? null,
+        ];
+
+        $prompt = "Det här är ett privat internt dokument för husbilen Frizze. "
+            . "Det kan vara kvitto, faktura, protokoll, foto, kontrollintyg, serviceunderlag eller annan dokumentation.\n\n"
+            . "Kända metadata:\n" . json_encode($knownMeta, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) . "\n\n"
+            . "Tolka dokumentet och extrahera ENBART giltig JSON med exakt dessa nycklar:\n"
+            . "{"
+            . "\"document_type\":\"receipt|invoice|protocol|photo|manual|other\","
+            . "\"title\":\"kort svensk titel\","
+            . "\"supplier\":\"leverantör eller null\","
+            . "\"document_date\":\"YYYY-MM-DD eller null\","
+            . "\"event_type\":\"service|repair|control|inspection|cost|note\","
+            . "\"event_date\":\"YYYY-MM-DD eller null\","
+            . "\"event_time\":\"HH:MM eller null\","
+            . "\"odometer_km\":100000,"
+            . "\"amount_total\":3743,"
+            . "\"currency\":\"SEK\","
+            . "\"description\":\"kort svensk sammanfattning eller null\","
+            . "\"details\":[\"rad 1\",\"rad 2\"],"
+            . "\"confidence\":\"high|medium|low\","
+            . "\"needs_review\":[\"saker som bör kontrolleras manuellt\"]"
+            . "}\n\n"
+            . "Hitta datum, leverantör, belopp, mätarställning, utfört arbete och viktiga punkter. "
+            . "Skriv svenska värden. Gissa inte: sätt null eller tom array när något saknas.";
+
+        $payload = [
+            'model' => self::MODEL_STRUCTURED,
+            'max_tokens' => 1200,
+            'system' => 'Du tolkar privata fordonsdokument för en intern servicejournal. Svara alltid med giltig JSON och inget annat.',
+            'messages' => [[
+                'role' => 'user',
+                'content' => [
+                    $fileBlock,
+                    ['type' => 'text', 'text' => $prompt],
+                ],
+            ]],
+        ];
+
+        $text = $this->extractJson($this->callClaude($payload));
+        $result = json_decode($text, true);
+        if (!is_array($result)) {
+            throw new RuntimeException('Ogiltigt JSON-svar från Claude vid dokumenttolkning: ' . mb_substr($text, 0, 200));
+        }
+
+        return $this->normalizeFrizzeDocumentInterpretation($result, $document);
+    }
+
+    private function normalizeFrizzeDocumentInterpretation(array $result, array $document): array
+    {
+        $documentTypes = ['receipt', 'invoice', 'protocol', 'photo', 'manual', 'other'];
+        $eventTypes = ['service', 'repair', 'control', 'inspection', 'cost', 'note'];
+        $confidence = ['high', 'medium', 'low'];
+
+        $details = $result['details'] ?? [];
+        if (!is_array($details)) {
+            $details = [];
+        }
+
+        $needsReview = $result['needs_review'] ?? [];
+        if (!is_array($needsReview)) {
+            $needsReview = [];
+        }
+
+        return [
+            'document_type' => in_array($result['document_type'] ?? '', $documentTypes, true)
+                ? $result['document_type']
+                : ($document['document_type'] ?? 'other'),
+            'title' => trim((string) ($result['title'] ?? $document['title'] ?? 'Frizze-dokument')),
+            'supplier' => $this->nullableString($result['supplier'] ?? $document['supplier'] ?? null),
+            'document_date' => $this->dateOrNull($result['document_date'] ?? $document['document_date'] ?? null),
+            'event_type' => in_array($result['event_type'] ?? '', $eventTypes, true) ? $result['event_type'] : 'note',
+            'event_date' => $this->dateOrNull($result['event_date'] ?? $result['document_date'] ?? $document['document_date'] ?? null),
+            'event_time' => $this->timeOrNull($result['event_time'] ?? null),
+            'odometer_km' => is_numeric($result['odometer_km'] ?? null) ? max(0, (int) $result['odometer_km']) : null,
+            'amount_total' => is_numeric($result['amount_total'] ?? null) ? (float) $result['amount_total'] : null,
+            'currency' => trim((string) ($result['currency'] ?? 'SEK')) ?: 'SEK',
+            'description' => $this->nullableString($result['description'] ?? null),
+            'details' => array_values(array_filter(array_map(static fn($line) => trim((string) $line), $details))),
+            'confidence' => in_array($result['confidence'] ?? '', $confidence, true) ? $result['confidence'] : 'low',
+            'needs_review' => array_values(array_filter(array_map(static fn($line) => trim((string) $line), $needsReview))),
+        ];
+    }
+
+    private function nullableString(mixed $value): ?string
+    {
+        $text = trim((string) $value);
+        return $text === '' || strtolower($text) === 'null' ? null : $text;
+    }
+
+    private function dateOrNull(mixed $value): ?string
+    {
+        $text = trim((string) $value);
+        return preg_match('/^\d{4}-\d{2}-\d{2}$/', $text) ? $text : null;
+    }
+
+    private function timeOrNull(mixed $value): ?string
+    {
+        $text = trim((string) $value);
+        return preg_match('/^\d{2}:\d{2}$/', $text) ? $text : null;
+    }
+
     private function buildUserPrompt(array $ctx): string
     {
         $lines = [];
@@ -500,6 +635,29 @@ class FakeAiProvider implements AiProviderInterface
     {
         return '';
     }
+
+    public function interpretFrizzeDocument(array $document, string $filePath): array
+    {
+        $title = trim((string) ($document['title'] ?? 'Frizze-dokument'));
+        $date = $document['document_date'] ?? null;
+
+        return [
+            'document_type' => $document['document_type'] ?? 'other',
+            'title' => $title !== '' ? $title : 'Frizze-dokument',
+            'supplier' => $document['supplier'] ?? null,
+            'document_date' => $date,
+            'event_type' => 'note',
+            'event_date' => $date,
+            'event_time' => null,
+            'odometer_km' => null,
+            'amount_total' => isset($document['amount_total']) && $document['amount_total'] !== null ? (float) $document['amount_total'] : null,
+            'currency' => $document['currency'] ?? 'SEK',
+            'description' => 'AI-testtolkning från fake provider. Granska och justera innan journalhändelsen skapas.',
+            'details' => ['Dokumentet är uppladdat privat och redo för manuell granskning.'],
+            'confidence' => 'low',
+            'needs_review' => ['Fake provider användes, ingen verklig dokumenttolkning är gjord.'],
+        ];
+    }
 }
 
 // ---------------------------------------------------------------------------
@@ -559,5 +717,10 @@ class AiService
     public function describeImage(string $imagePath, array $context = []): string
     {
         return $this->provider->describeImage($imagePath, $context);
+    }
+
+    public function interpretFrizzeDocument(array $document, string $filePath): array
+    {
+        return $this->provider->interpretFrizzeDocument($document, $filePath);
     }
 }
