@@ -32,6 +32,14 @@ function registerRoutes(Router $router): void
     $router->get('/adm', 'DashboardController', 'index');
     $router->get('/adm/statistik', 'DashboardController', 'stats');
 
+    // Frizze vehicle hub (private)
+    $router->get('/adm/frizze', 'FrizzeController', 'overview');
+    $router->get('/adm/frizze/journal', 'FrizzeController', 'journal');
+    $router->get('/adm/frizze/kvitton', 'FrizzeController', 'receipts');
+    $router->get('/adm/frizze/serviceplan', 'FrizzeController', 'servicePlan');
+    $router->get('/adm/frizze/utrustning', 'FrizzeController', 'equipment');
+    $router->get('/adm/frizze/manual', 'FrizzeController', 'manual');
+
     // Places
     $router->get('/adm/platser', 'PlaceController', 'index');
     $router->get('/adm/platser/ny', 'PlaceController', 'create');

@@ -42,6 +42,7 @@
 @import url('pages/places.css');
 @import url('pages/trips.css');
 @import url('pages/lists.css');
+@import url('pages/frizze.css');
 @import url('pages/public.css');
 
 /* 5 — Utilities (must be last so helpers override component styles) */
