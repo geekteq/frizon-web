@@ -358,7 +358,13 @@
 @media (display-mode: standalone) {
   /* Override nav height for all downstream calculations (layout.css etc.) */
   :root {
-    --nav-height-mob: 88px;
+    --nav-height-mob: 96px;
+  }
+
+  /* Ensure a minimum bottom buffer for rounded-corner phones even when
+     env(safe-area-inset-bottom) reports 0 in standalone mode. */
+  .bottom-nav {
+    padding-bottom: max(env(safe-area-inset-bottom, 0px), 16px);
   }
 
   /* FAB sits inside the taller bar instead of popping above it */
