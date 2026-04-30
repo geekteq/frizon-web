@@ -44,7 +44,7 @@ $doneCount = count(array_filter($items, fn($i) => $i['is_done']));
 </div>
 
 <!-- Add item form -->
-<form method="POST" action="/adm/listor/<?= $list['id'] ?>/punkt" class="mt-4">
+<form method="POST" action="/adm/listor/<?= $list['id'] ?>/punkt" class="mt-4 mb-8">
     <?php include dirname(__DIR__) . '/partials/csrf-field.php'; ?>
     <div class="flex gap-2">
         <input type="text" name="text" class="form-input" required placeholder="Ny punkt..." style="flex:1;">
