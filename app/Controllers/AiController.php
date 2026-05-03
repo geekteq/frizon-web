@@ -274,13 +274,6 @@ class AiController
         ');
         $stmt->execute([$draft['draft_text'], $visitId]);
 
-        // Also copy to the place's default_public_text
-        $stmt = $this->pdo->prepare('
-            UPDATE places SET default_public_text = ?, updated_at = NOW()
-            WHERE id = (SELECT place_id FROM visits WHERE id = ?)
-        ');
-        $stmt->execute([$draft['draft_text'], $visitId]);
-
         // Regenerate SEO if the place is already public
         $placeModel = new Place($this->pdo);
         $stmt = $this->pdo->prepare('SELECT place_id FROM visits WHERE id = ?');
