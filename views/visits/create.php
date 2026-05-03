@@ -95,6 +95,12 @@
         <input type="file" id="photos-input" name="photos[]" multiple accept="image/jpeg,image/png,image/webp" class="form-input">
     </div>
 
+    <?php
+    $pickerTitle       = 'Produkter vi använde vid detta besök';
+    $pickerDescription = 'Välj utrustning vi tog med just denna gång (visas på platssidan under besöksraden).';
+    include dirname(__DIR__) . '/partials/product-picker.php';
+    ?>
+
     <button type="submit" id="save-btn" class="btn btn-primary btn--full">Spara besök</button>
 
     <!-- Shown while uploading + AI-processing images -->
