@@ -204,10 +204,8 @@ document.addEventListener('DOMContentLoaded', function() {
             fetch('/adm/platser/<?= htmlspecialchars($p['slug']) ?>/ai/generera', {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json',
                     'X-CSRF-Token': csrf ? csrf.value : ''
-                },
-                body: JSON.stringify({ current_text: descField.value })
+                }
             })
             .then(function(r) { return r.json(); })
             .then(function(data) {
