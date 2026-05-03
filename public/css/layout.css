@@ -15,13 +15,16 @@ body.app-layout {
   background: var(--color-bg);
 }
 
-/* Content wrapper — contains header + main, sits next to sidebar on desktop */
+/* Content wrapper — contains header + main, sits next to sidebar on desktop.
+   Extra space-8 buffer keeps the last interactive element clear of the bottom
+   nav (and the FAB that pops above it), so submit/delete buttons are easy to
+   tap when scrolled to the bottom of any admin view. */
 .app-content {
   flex: 1;
   min-width: 0;
   display: flex;
   flex-direction: column;
-  padding-bottom: calc(var(--nav-height-mob) + env(safe-area-inset-bottom, 16px));
+  padding-bottom: calc(var(--nav-height-mob) + env(safe-area-inset-bottom, 16px) + var(--space-8));
 }
 
 /* Main content area */
