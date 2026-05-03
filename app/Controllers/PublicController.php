@@ -155,6 +155,11 @@ class PublicController
         require_once dirname(__DIR__) . '/Models/AmazonProduct.php';
         $placeProducts = (new AmazonProduct($this->pdo))->getByPlaceId((int) $place['id']);
 
+        // Per-visit products
+        require_once dirname(__DIR__) . '/Models/VisitProduct.php';
+        $visitIds      = array_map('intval', array_column($visits, 'id'));
+        $visitProducts = (new VisitProduct($this->pdo))->findByVisitIds($visitIds);
+
         // Avg rating
         $ratingStmt = $this->pdo->prepare('
             SELECT AVG(vr.total_rating_cached) as avg_rating
@@ -274,7 +279,7 @@ class PublicController
         }
 
         $useLeaflet = true;
-        view('public/place-detail', compact('place', 'visits', 'images', 'tags', 'avgRating', 'pageTitle', 'seoMeta', 'schemas', 'faqItems', 'useLeaflet', 'placeProducts', 'visitImageCounts', 'previewImage'), 'public');
+        view('public/place-detail', compact('place', 'visits', 'images', 'tags', 'avgRating', 'pageTitle', 'seoMeta', 'schemas', 'faqItems', 'useLeaflet', 'placeProducts', 'visitProducts', 'visitImageCounts', 'previewImage'), 'public');
     }
 
     public function visitDetail(array $params): void
