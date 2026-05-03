@@ -111,7 +111,13 @@
         <span class="form-hint">Redigera direkt. Använd "Brodera ut text" på besökssidan för att generera ny AI-text.</span>
     </div>
 
-    <button type="submit" class="btn btn-primary btn--full">Spara ändringar</button>
+    <?php
+    $pickerTitle       = 'Produkter vi använde vid detta besök';
+    $pickerDescription = 'Välj utrustning vi tog med just denna gång (visas på platssidan under besöksraden).';
+    include dirname(__DIR__) . '/partials/product-picker.php';
+    ?>
+
+    <button type="submit" class="btn btn-primary btn--full" style="margin-top:var(--space-6);">Spara ändringar</button>
 </form>
 
 <script src="/js/ratings.js"></script>

@@ -40,7 +40,10 @@ class VisitController
         $suitableForSuggestions = $visitModel->suitableForValues();
 
         $pageTitle = 'Nytt besök — ' . $p['name'];
-        view('visits/create', compact('p', 'pageTitle', 'suitableForSuggestions'));
+        require_once dirname(__DIR__) . '/Models/AmazonProduct.php';
+        $allProducts        = (new AmazonProduct($this->pdo))->allPublished();
+        $attachedProductIds = [];
+        view('visits/create', compact('p', 'pageTitle', 'suitableForSuggestions', 'allProducts', 'attachedProductIds'));
     }
 
     public function store(array $params): void
@@ -76,6 +79,10 @@ class VisitController
             'value_rating'        => !empty($_POST['value_rating']) ? (int) $_POST['value_rating'] : null,
             'return_value_rating' => !empty($_POST['return_value_rating']) ? (int) $_POST['return_value_rating'] : null,
         ]);
+
+        require_once dirname(__DIR__) . '/Models/VisitProduct.php';
+        $productIds = array_map('intval', (array) ($_POST['product_ids'] ?? []));
+        (new VisitProduct($this->pdo))->syncForVisit($visitId, $productIds);
 
         // Handle image uploads
         if (!empty($_FILES['photos']['name'][0])) {
@@ -148,7 +155,14 @@ class VisitController
         $suitableForSuggestions = $visitModel->suitableForValues();
 
         $pageTitle = 'Redigera besök';
-        view('visits/edit', compact('visit', 'ratings', 'pageTitle', 'suitableForSuggestions'));
+        require_once dirname(__DIR__) . '/Models/AmazonProduct.php';
+        require_once dirname(__DIR__) . '/Models/VisitProduct.php';
+        $allProducts        = (new AmazonProduct($this->pdo))->allPublished();
+        $attachedProductIds = array_map(
+            'intval',
+            array_column((new VisitProduct($this->pdo))->findByVisit((int) $params['id']), 'id')
+        );
+        view('visits/edit', compact('visit', 'ratings', 'pageTitle', 'suitableForSuggestions', 'allProducts', 'attachedProductIds'));
     }
 
     public function update(array $params): void
@@ -181,6 +195,10 @@ class VisitController
             'value_rating'        => !empty($_POST['value_rating']) ? (int) $_POST['value_rating'] : null,
             'return_value_rating' => !empty($_POST['return_value_rating']) ? (int) $_POST['return_value_rating'] : null,
         ]);
+
+        require_once dirname(__DIR__) . '/Models/VisitProduct.php';
+        $productIds = array_map('intval', (array) ($_POST['product_ids'] ?? []));
+        (new VisitProduct($this->pdo))->syncForVisit((int) $params['id'], $productIds);
 
         SecurityAudit::log($this->pdo, 'visit.updated', [
             'visit_id' => (int) $params['id'],

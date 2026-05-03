@@ -135,40 +135,36 @@ class AiController
             return;
         }
 
-        // Gather context from place + best visit data if any
+        // Build context from place + all PUBLISHED visits (approved_public_text only).
         $context = [
-            'place_name'  => $place['name'],
-            'place_type'  => $place['place_type'],
+            'place_name'   => $place['name'],
+            'place_type'   => $place['place_type'],
             'country_code' => $place['country_code'],
-            'raw_note'    => $place['default_public_text'] ?? '',
+            // Seed text is the human-curated description currently on the place.
+            'raw_note'     => $place['default_public_text'] ?? '',
         ];
 
-        // Enrich with latest visit data if available
+        // Aggregate approved review text from every published visit on this place.
         $stmt = $this->pdo->prepare('
-            SELECT v.*, vr.total_rating_cached, vr.location_rating, vr.calmness_rating,
-                   vr.service_rating, vr.value_rating, vr.return_value_rating
-            FROM visits v
-            LEFT JOIN visit_ratings vr ON vr.visit_id = v.id
-            WHERE v.place_id = ?
-            ORDER BY v.visited_at DESC LIMIT 1
+            SELECT approved_public_text, visited_at
+            FROM visits
+            WHERE place_id = ? AND ready_for_publish = 1
+            ORDER BY visited_at ASC
         ');
         $stmt->execute([$place['id']]);
-        $visit = $stmt->fetch();
+        $visits = $stmt->fetchAll();
 
-        if ($visit) {
-            $context['plus_notes']   = $visit['plus_notes'];
-            $context['minus_notes']  = $visit['minus_notes'];
-            $context['tips_notes']   = $visit['tips_notes'];
-            $context['suitable_for'] = $visit['suitable_for'];
-            $context['price_level']  = $visit['price_level'];
-            $context['would_return'] = $visit['would_return'];
-            $context['total_rating'] = $visit['total_rating_cached'];
+        $reviewExcerpts = [];
+        foreach ($visits as $v) {
+            $text = trim((string) ($v['approved_public_text'] ?? ''));
+            if ($text !== '') {
+                $reviewExcerpts[] = '[' . $v['visited_at'] . '] ' . $text;
+            }
         }
-
-        // Also include user-provided seed text from the textarea
-        $input = json_decode(file_get_contents('php://input'), true);
-        if (!empty($input['current_text'])) {
-            $context['raw_note'] = $input['current_text'];
+        if (!empty($reviewExcerpts)) {
+            // AiService reads `plus_notes` as additional positive context;
+            // we reuse it for the cumulative review summary.
+            $context['plus_notes'] = implode("\n\n", $reviewExcerpts);
         }
 
         try {
@@ -271,13 +267,6 @@ class AiController
             UPDATE visits
             SET approved_public_text = ?, ready_for_publish = 1, updated_at = NOW()
             WHERE id = ?
-        ');
-        $stmt->execute([$draft['draft_text'], $visitId]);
-
-        // Also copy to the place's default_public_text
-        $stmt = $this->pdo->prepare('
-            UPDATE places SET default_public_text = ?, updated_at = NOW()
-            WHERE id = (SELECT place_id FROM visits WHERE id = ?)
         ');
         $stmt->execute([$draft['draft_text'], $visitId]);
 

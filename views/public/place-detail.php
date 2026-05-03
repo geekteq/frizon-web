@@ -124,6 +124,18 @@ $typeLabel = $placeTypes[$place['place_type']] ?? $place['place_type'];
                 <?php if ($latestImgCount > 0): ?>
                     <span class="pub-visit-card__img-count"><?= $latestImgCount ?> <?= $latestImgCount === 1 ? 'bild' : 'bilder' ?></span>
                 <?php endif; ?>
+                <?php
+                $vps = $visitProducts[(int) $latest['id']] ?? [];
+                if (!empty($vps)):
+                ?>
+                    <div class="pub-visit-card__products" style="margin-top:var(--space-2); display:flex; flex-wrap:wrap; gap:var(--space-2);">
+                        <?php foreach ($vps as $vp): ?>
+                            <span style="display:inline-flex; align-items:center; gap:var(--space-1); padding:2px 8px; border:1px solid var(--color-border); border-radius:var(--radius-sm); background:var(--color-bg); font-size:var(--text-xs); color:var(--color-text-muted);">
+                                <?= htmlspecialchars($vp['title']) ?>
+                            </span>
+                        <?php endforeach; ?>
+                    </div>
+                <?php endif; ?>
             </a>
 
             <!-- Older visits -->
@@ -147,6 +159,18 @@ $typeLabel = $placeTypes[$place['place_type']] ?? $place['place_type'];
                             <?php if ($v['approved_public_text']): ?>
                                 <p class="pub-visit-card__text"><?= nl2br(htmlspecialchars(mb_strimwidth($v['approved_public_text'], 0, 150, '...'))) ?></p>
                             <?php endif; ?>
+                            <?php
+                            $vps = $visitProducts[(int) $v['id']] ?? [];
+                            if (!empty($vps)):
+                            ?>
+                                <div class="pub-visit-card__products" style="margin-top:var(--space-2); display:flex; flex-wrap:wrap; gap:var(--space-2);">
+                                    <?php foreach ($vps as $vp): ?>
+                                        <span style="display:inline-flex; align-items:center; gap:var(--space-1); padding:2px 8px; border:1px solid var(--color-border); border-radius:var(--radius-sm); background:var(--color-bg); font-size:var(--text-xs); color:var(--color-text-muted);">
+                                            <?= htmlspecialchars($vp['title']) ?>
+                                        </span>
+                                    <?php endforeach; ?>
+                                </div>
+                            <?php endif; ?>
                         </a>
                     <?php endfor; ?>
                 </details>
@@ -169,7 +193,7 @@ $typeLabel = $placeTypes[$place['place_type']] ?? $place['place_type'];
     </style>
     <section style="margin-top:var(--space-8); padding-top:var(--space-6); border-top:1px solid var(--color-border);">
         <h2 style="font-size:var(--text-lg); font-weight:var(--weight-semibold); margin-bottom:var(--space-4); color:var(--color-text);">
-            Produkter vi använde här
+            Rekommenderat för platsen
         </h2>
         <div class="place-prod-grid">
             <?php foreach ($placeProducts as $prod): ?>
